@@ -99,7 +99,7 @@
     .chart-card { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
     .chart-title { font-size: 0.86rem; font-weight: 700; color: #374151; margin-bottom: 12px; }
     .bar-chart-container { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 24px; border-bottom: 1px solid var(--border); overflow-x: auto; }
-    .chart-column { min-width: 44px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+    .chart-column { min-width: 48px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
     .chart-bar { width: 100%; max-width: 24px; background: var(--pastel-blue-text); border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
     .chart-bar-label { position: absolute; top: -18px; width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700; color: #475569; }
     .chart-x-axis { font-size: 0.64rem; color: var(--text-muted); margin-top: 6px; text-align: center; white-space: nowrap; }
@@ -595,8 +595,6 @@
     let currentEditingCategory = null;
     let currentEditingId = null;
 
-    const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
     function parseTitleVolume(rawTitle) {
       let title = String(rawTitle).trim();
       let m = title.match(/^(.*?)\s*(\d+)\s*\(\1,\s*#\2\)$/);
@@ -914,6 +912,49 @@
       render();
     }
 
+    function saveBook() {
+      const title = document.getElementById('bTitle').value.trim();
+      if (!title) return alert('กรุณาใส่ชื่อเรื่อง');
+      const isOwnedTab = currentBookSubTab === 'read';
+      const volTotal = Math.max(1, parseInt(document.getElementById('bVolTotal').value, 10) || 1);
+      const volOwned = parseInt(document.getElementById('bVolOwned').value, 10) || (isOwnedTab ? volTotal : 0);
+      const pricePerVol = document.getElementById('bPricePerVol').value.trim();
+      const today = new Date().toISOString().split('T')[0];
+
+      const volumes = [];
+      for (let i = 1; i <= volTotal; i++) {
+        const owned = i <= volOwned;
+        volumes.push({
+          volNum: i,
+          owned: owned,
+          status: owned ? (isOwnedTab ? 'Finished' : 'Unread') : 'Unread',
+          price: owned && pricePerVol ? pricePerVol : '',
+          buyDate: owned ? today : null,
+          finishedDate: (owned && isOwnedTab) ? today : null
+        });
+      }
+
+      books.unshift({
+        id: Date.now().toString(),
+        title,
+        author: document.getElementById('bAuthor').value.trim(),
+        volTotal,
+        seriesStatus: document.getElementById('bSeriesStatus').value,
+        platform: document.getElementById('bPlatform').value.trim() || 'Ebook',
+        notes: document.getElementById('bNotes').value.trim(),
+        type: currentBookSubTab,
+        buyStatus: document.getElementById('bBuyStatus').value,
+        digitalStatus: document.getElementById('bDigitalStatus').value,
+        volumes: volumes
+      });
+
+      localStorage.setItem('track_books', JSON.stringify(books));
+      document.getElementById('bTitle').value = '';
+      document.getElementById('bAuthor').value = '';
+      document.getElementById('bNotes').value = '';
+      render();
+    }
+
     function toggleVolStatus(bookId, volNum) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -944,7 +985,7 @@
       render();
     }
 
-    // ==================== EDIT MODAL SYSTEM ====================
+    // Modal Edit Functions
     function openEditModal(category, id) {
       currentEditingCategory = category;
       currentEditingId = id;
@@ -956,7 +997,6 @@
         const b = books.find(x => x.id === id);
         if (!b) return;
         title.innerText = 'Edit Series & Volumes';
-        const isBuy = b.type === 'buy';
 
         content.innerHTML = `
           <div class="input-group">
@@ -1052,23 +1092,9 @@
               <input type="text" id="edit_sChapter" value="${(s.chapter || '').replace(/"/g, '&quot;')}" />
             </div>
           </div>
-          <div class="row">
-            <div class="input-group">
-              <label>Platform</label>
-              <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
-            </div>
-            <div class="input-group">
-              <label>Status</label>
-              <select id="edit_sStatus">
-                <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
-                <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
-                <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
-              </select>
-            </div>
-          </div>
           <div class="input-group">
-            <label>Notes</label>
-            <input type="text" id="edit_sNotes" value="${(s.notes || '').replace(/"/g, '&quot;')}" />
+            <label>Platform</label>
+            <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
           </div>
         `;
       } else if (category === 'task') {
@@ -1095,58 +1121,7 @@
             </div>
           </div>
         `;
-      } else if (category === 'chore') {
-        const ch = chores.find(x => x.id === id);
-        if (!ch) return;
-        title.innerText = 'Edit Chore';
-        content.innerHTML = `
-          <div class="input-group">
-            <label>Chore Name</label>
-            <input type="text" id="edit_chName" value="${(ch.name || '').replace(/"/g, '&quot;')}" />
-          </div>
-          <div class="row">
-            <div class="input-group">
-              <label>Last Done</label>
-              <input type="date" id="edit_chDate" value="${ch.lastDone || ''}" />
-            </div>
-            <div class="input-group">
-              <label>Repeat Every</label>
-              <select id="edit_chFreq">
-                <option value="7" ${ch.frequency === 7 ? 'selected' : ''}>7 Days</option>
-                <option value="14" ${ch.frequency === 14 ? 'selected' : ''}>14 Days</option>
-                <option value="21" ${ch.frequency === 21 ? 'selected' : ''}>21 Days</option>
-                <option value="30" ${ch.frequency === 30 ? 'selected' : ''}>30 Days</option>
-              </select>
-            </div>
-          </div>
-        `;
-      } else if (category === 'care') {
-        const c = careItems.find(x => x.id === id);
-        if (!c) return;
-        title.innerText = 'Edit Care Item';
-        content.innerHTML = `
-          <div class="input-group">
-            <label>Product</label>
-            <input type="text" id="edit_cName" value="${(c.name || '').replace(/"/g, '&quot;')}" />
-          </div>
-          <div class="row">
-            <div class="input-group">
-              <label>Category</label>
-              <select id="edit_cCategory">
-                <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
-                <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
-                <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
-                <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>Price</label>
-              <input type="text" id="edit_cPrice" value="${(c.price || '').replace(/"/g, '&quot;')}" />
-            </div>
-          </div>
-        `;
       }
-
       modal.style.display = 'flex';
     }
 
@@ -1200,9 +1175,7 @@
               title: document.getElementById('edit_sTitle').value.trim() || s.title,
               author: document.getElementById('edit_sAuthor').value.trim(),
               chapter: document.getElementById('edit_sChapter').value.trim(),
-              platform: document.getElementById('edit_sPlatform').value.trim(),
-              status: document.getElementById('edit_sStatus').value,
-              notes: document.getElementById('edit_sNotes').value.trim()
+              platform: document.getElementById('edit_sPlatform').value.trim()
             };
           }
           return s;
@@ -1221,32 +1194,6 @@
           return t;
         });
         localStorage.setItem('track_tasks', JSON.stringify(tasks));
-      } else if (currentEditingCategory === 'chore') {
-        chores = chores.map(ch => {
-          if (ch.id === currentEditingId) {
-            return {
-              ...ch,
-              name: document.getElementById('edit_chName').value.trim() || ch.name,
-              lastDone: document.getElementById('edit_chDate').value,
-              frequency: parseInt(document.getElementById('edit_chFreq').value, 10)
-            };
-          }
-          return ch;
-        });
-        localStorage.setItem('track_chores', JSON.stringify(chores));
-      } else if (currentEditingCategory === 'care') {
-        careItems = careItems.map(c => {
-          if (c.id === currentEditingId) {
-            return {
-              ...c,
-              name: document.getElementById('edit_cName').value.trim() || c.name,
-              category: document.getElementById('edit_cCategory').value,
-              price: document.getElementById('edit_cPrice').value.trim()
-            };
-          }
-          return c;
-        });
-        localStorage.setItem('track_care', JSON.stringify(careItems));
       }
 
       closeEditModal();
@@ -1257,32 +1204,48 @@
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
-      // สรุปสถิติ
       let totalVolsReadCount = 0;
       let totalSpendAmount = 0;
       let completedSeriesCount = 0;
       let totalPurchasedVolsCount = 0;
-      const monthlyVolsMap = {};
+      const monthlyData = {};
 
       books.forEach(b => {
         let allVolsFinished = b.volumes.length > 0;
         b.volumes.forEach(v => {
           if (v.owned) {
             totalPurchasedVolsCount += 1;
-            totalSpendAmount += (parseFloat(v.price) || 0);
+            const priceNum = parseFloat(v.price) || 0;
+            totalSpendAmount += priceNum;
+
+            // คำนวณยอดใช้จ่ายรายเดือนตาม buyDate หรือ finishedDate
+            const targetDate = v.buyDate || v.finishedDate;
+            if (targetDate && priceNum > 0) {
+              const parts = targetDate.split('-');
+              if (parts.length >= 2) {
+                const y = parts[0];
+                const mIndex = parseInt(parts[1], 10) - 1;
+                const mKey = new Date(y, mIndex, 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+                const sortKey = `${y}-${parts[1]}`;
+                if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0, sortKey };
+                monthlyData[mKey].spend += priceNum;
+              }
+            }
           }
+
           if (v.status === 'Finished') {
             totalVolsReadCount += 1;
-            let mKey = 'Past Logs';
             if (v.finishedDate) {
               const parts = v.finishedDate.split('-');
               if (parts.length >= 2) {
-                const year = parts[0];
-                const monthName = new Date(v.finishedDate + 'T00:00:00').toLocaleString('default', { month: 'short' });
-                mKey = `${monthName} ${year}`;
+                const y = parts[0];
+                const mIndex = parseInt(parts[1], 10) - 1;
+                const mKey = new Date(y, mIndex, 1).toLocaleString('default', { month: 'short', year: 'numeric' });
+                const sortKey = `${y}-${parts[1]}`;
+                if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0, sortKey };
+                monthlyData[mKey].readCount += 1;
               }
             }
-            monthlyVolsMap[mKey] = (monthlyVolsMap[mKey] || 0) + 1;
           } else {
             allVolsFinished = false;
           }
@@ -1295,28 +1258,56 @@
       document.getElementById('statCompleteSeries').innerText = `${completedSeriesCount} series`;
       document.getElementById('statAvgPrice').innerText = `฿${totalPurchasedVolsCount > 0 ? (totalSpendAmount / totalPurchasedVolsCount).toFixed(0) : '0'}`;
 
-      // กราฟ
+      // จัดเรียงเดือน
+      const sortedMonthKeys = Object.keys(monthlyData).sort((a, b) => {
+        return monthlyData[b].sortKey.localeCompare(monthlyData[a].sortKey);
+      });
+
+      // กราฟแท่ง
       const barChartBox = document.getElementById('barChartBox');
-      const monthKeys = Object.keys(monthlyVolsMap);
-      if (monthKeys.length === 0) {
-        barChartBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); width:100%; text-align:center; padding-bottom:30px;">ไม่มีข้อมูลเล่มที่อ่านจบ</div>`;
-      } else {
-        const maxCount = Math.max(...Object.values(monthlyVolsMap), 1);
-        barChartBox.innerHTML = monthKeys.map(k => {
-          const count = monthlyVolsMap[k];
-          const heightPercent = Math.max(8, (count / maxCount) * 100);
-          return `
-            <div class="chart-column">
-              <div class="chart-bar" style="height: ${heightPercent}%;">
-                <span class="chart-bar-label">${count}</span>
+      if (barChartBox) {
+        if (sortedMonthKeys.length === 0) {
+          barChartBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); width:100%; text-align:center; padding-bottom:30px;">ไม่มีข้อมูลสถิติรายเดือน</div>`;
+        } else {
+          const chartKeys = [...sortedMonthKeys].reverse();
+          const maxCount = Math.max(...chartKeys.map(k => monthlyData[k].readCount), 1);
+          barChartBox.innerHTML = chartKeys.map(k => {
+            const count = monthlyData[k].readCount;
+            const heightPercent = Math.max(8, (count / maxCount) * 100);
+            return `
+              <div class="chart-column">
+                <div class="chart-bar" style="height: ${heightPercent}%;">
+                  <span class="chart-bar-label">${count}</span>
+                </div>
+                <div class="chart-x-axis">${k}</div>
               </div>
-              <div class="chart-x-axis">${k}</div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
       }
 
-      // Books List
+      // กล่อง Monthly Breakdown
+      const detailedGrid = document.getElementById('detailedMonthlyGrid');
+      if (detailedGrid) {
+        if (sortedMonthKeys.length === 0) {
+          detailedGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:12px;">ยังไม่มีประวัติการอ่านหรือยอดซื้อรายเดือน</div>`;
+        } else {
+          detailedGrid.innerHTML = sortedMonthKeys.map(k => {
+            const m = monthlyData[k];
+            return `
+              <div style="background:#fafbfc; border:1px solid #edf0f5; padding:9px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:0.82rem; font-weight:600; color:#334155;">${k}</span>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  ${m.readCount > 0 ? `<span class="badge badge-sage">✓ ${m.readCount} เล่ม</span>` : ''}
+                  ${m.spend > 0 ? `<span class="badge badge-rose">฿${m.spend.toLocaleString()}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // แสดงรายการหนังสือ
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
@@ -1337,7 +1328,6 @@
         bookContainer.innerHTML = `<div class="empty-state">ไม่มีหนังสือบนชั้นนี้</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
-          const isBuy = b.type === 'buy';
           const ownedCount = b.volumes.filter(v => v.owned).length;
           const finishedCount = b.volumes.filter(v => v.status === 'Finished').length;
           const seriesSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
