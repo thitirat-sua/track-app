@@ -643,37 +643,56 @@
       URL.revokeObjectURL(url);
     }
 
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (confirm('Restore backup and overwrite current entries?')) {
-            books = parsed.books || [];
-            serials = parsed.serials || [];
-            tasks = parsed.tasks || [];
-            chores = parsed.chores || [];
-            careItems = parsed.careItems || [];
-            subscriptions = parsed.subscriptions || [];
-            sales = parsed.sales || [];
-            
-            localStorage.setItem('track_books', JSON.stringify(books));
-            localStorage.setItem('track_serials', JSON.stringify(serials));
-            localStorage.setItem('track_tasks', JSON.stringify(tasks));
-            localStorage.setItem('track_chores', JSON.stringify(chores));
-            localStorage.setItem('track_care', JSON.stringify(careItems));
-            localStorage.setItem('track_subs', JSON.stringify(subscriptions));
-            localStorage.setItem('track_sales', JSON.stringify(sales));
-            render();
-          }
-        } catch (err) {
-          alert('Invalid file format.');
-        }
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      
+      const choice = confirm(
+        "Click 'OK' to MERGE (combine new data with your current data).\n\n" +
+        "Click 'Cancel' if you did this by mistake."
+      );
+      if (!choice) return;
+
+      // Helper function to merge by item ID so duplicates aren't created
+      const mergeArrays = (currentList, incomingList) => {
+        if (!incomingList || !Array.isArray(incomingList)) return currentList;
+        const map = new Map();
+        currentList.forEach(item => map.set(item.id, item));
+        incomingList.forEach(item => map.set(item.id, item)); // Incoming updates or adds
+        return Array.from(map.values());
       };
-      reader.readAsText(file);
+
+      // Safely merge every category
+      books = mergeArrays(books, parsed.books);
+      serials = mergeArrays(serials, parsed.serials);
+      tasks = mergeArrays(tasks, parsed.tasks);
+      chores = mergeArrays(chores, parsed.chores);
+      careItems = mergeArrays(careItems, parsed.careItems);
+      subscriptions = mergeArrays(subscriptions, parsed.subscriptions);
+      sales = mergeArrays(sales, parsed.sales);
+
+      // Save merged result to local storage
+      localStorage.setItem('track_books', JSON.stringify(books));
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      localStorage.setItem('track_sales', JSON.stringify(sales));
+
+      render();
+      alert('Data merged successfully! Nothing was deleted.');
+    } catch (err) {
+      alert('Invalid backup file format.');
     }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // Reset input so you can re-import the same file if needed
+}
 
     function switchMainTab(tab) {
       currentMainTab = tab;
