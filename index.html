@@ -988,6 +988,7 @@
       render();
     }
 
+    /* Save Entities */
     function saveBook() {
       const title = document.getElementById('bTitle').value.trim();
       if (!title) return alert('Enter series title');
@@ -1285,36 +1286,45 @@
           </div>
 
           <div style="margin-top: 14px;">
-            <label style="font-size:0.75rem; font-weight:700; color:#575047;">Volume Details</label>
-            <table class="vol-edit-table">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:0.75rem; font-weight:700; color:#575047;">Volume Details</label>
+              <button type="button" class="btn-action" style="font-size:0.72rem; padding:3px 8px; background:#fff;" onclick="addVolumeRowToEditModal()">+ Add Volume</button>
+            </div>
+            <table class="vol-edit-table" id="editVolTable">
               <thead>
                 <tr>
-                  <th style="width: 30px;">Vol</th>
-                  <th style="width: 48px;">Owned?</th>
+                  <th style="width: 48px;">Vol #</th>
+                  <th style="width: 42px;">Owned</th>
                   <th>Status</th>
-                  <th style="width: 68px;">Price (฿)</th>
+                  <th style="width: 65px;">Price (฿)</th>
                   <th>Finished Date</th>
+                  <th style="width: 28px;"></th>
                 </tr>
               </thead>
-              <tbody>
-                ${b.volumes.map(v => `
-                  <tr>
-                    <td><strong>V${v.volNum}</strong></td>
+              <tbody id="editVolTableBody">
+                ${b.volumes.map((v, idx) => `
+                  <tr data-row-idx="${idx}">
+                    <td>
+                      <input type="number" class="vol-num-input" value="${v.volNum}" style="width:100%; text-align:center; font-weight:600;" min="1" />
+                    </td>
                     <td style="text-align:center;">
-                      <input type="checkbox" id="vol_owned_${v.volNum}" ${v.owned ? 'checked' : ''} />
+                      <input type="checkbox" class="vol-owned-box" ${v.owned ? 'checked' : ''} />
                     </td>
                     <td>
-                      <select id="vol_status_${v.volNum}">
+                      <select class="vol-status-select">
                         <option value="Unread" ${v.status === 'Unread' ? 'selected' : ''}>Unread</option>
                         <option value="Reading" ${v.status === 'Reading' ? 'selected' : ''}>Reading</option>
                         <option value="Finished" ${v.status === 'Finished' ? 'selected' : ''}>Finished</option>
                       </select>
                     </td>
                     <td>
-                      <input type="number" class="vol-price-input" id="vol_price_${v.volNum}" value="${v.price || ''}" placeholder="฿" />
+                      <input type="number" class="vol-price-input" value="${v.price || ''}" placeholder="฿" />
                     </td>
                     <td>
-                      <input type="date" id="vol_date_${v.volNum}" value="${v.finishedDate || ''}" />
+                      <input type="date" class="vol-date-input" value="${v.finishedDate || ''}" />
+                    </td>
+                    <td style="text-align:center;">
+                      <button type="button" style="background:none; border:none; color:#a34848; cursor:pointer; font-size:0.85rem;" onclick="this.closest('tr').remove()">✕</button>
                     </td>
                   </tr>
                 `).join('')}
@@ -1418,6 +1428,45 @@
       modal.style.display = 'flex';
     }
 
+    function addVolumeRowToEditModal() {
+      const tbody = document.getElementById('editVolTableBody');
+      if (!tbody) return;
+      let nextVol = tbody.querySelectorAll('tr').length + 1;
+
+      const numInputs = tbody.querySelectorAll('.vol-num-input');
+      if (numInputs.length > 0) {
+        const vals = Array.from(numInputs).map(inp => parseInt(inp.value, 10) || 0);
+        nextVol = Math.max(...vals, 0) + 1;
+      }
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>
+          <input type="number" class="vol-num-input" value="${nextVol}" style="width:100%; text-align:center; font-weight:600;" min="1" />
+        </td>
+        <td style="text-align:center;">
+          <input type="checkbox" class="vol-owned-box" checked />
+        </td>
+        <td>
+          <select class="vol-status-select">
+            <option value="Unread" selected>Unread</option>
+            <option value="Reading">Reading</option>
+            <option value="Finished">Finished</option>
+          </select>
+        </td>
+        <td>
+          <input type="number" class="vol-price-input" value="" placeholder="฿" />
+        </td>
+        <td>
+          <input type="date" class="vol-date-input" value="" />
+        </td>
+        <td style="text-align:center;">
+          <button type="button" style="background:none; border:none; color:#a34848; cursor:pointer; font-size:0.85rem;" onclick="this.closest('tr').remove()">✕</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+
     function applyTotalSeriesPrice() {
       const val = parseFloat(document.getElementById('edit_bTotalDistribute').value);
       if (isNaN(val) || val <= 0) return alert('Please enter a valid total amount.');
@@ -1425,23 +1474,22 @@
       const b = books.find(x => x.id === currentEditingId);
       if (!b) return;
 
-      const ownedInputs = b.volumes.map(v => ({
-        volNum: v.volNum,
-        checkbox: document.getElementById(`vol_owned_${v.volNum}`),
-        priceInput: document.getElementById(`vol_price_${v.volNum}`)
-      })).filter(x => x.checkbox && x.checkbox.checked);
+      const tbody = document.getElementById('editVolTableBody');
+      const rows = tbody ? tbody.querySelectorAll('tr') : [];
 
-      const count = ownedInputs.length || b.volumes.length;
-      const perVol = (val / count).toFixed(0);
+      const ownedRows = Array.from(rows).filter(r => {
+        const cb = r.querySelector('.vol-owned-box');
+        return cb && cb.checked;
+      });
 
-      if (ownedInputs.length > 0) {
-        ownedInputs.forEach(x => x.priceInput.value = perVol);
-      } else {
-        b.volumes.forEach(v => {
-          const el = document.getElementById(`vol_price_${v.volNum}`);
-          if (el) el.value = perVol;
-        });
-      }
+      const targetRows = ownedRows.length > 0 ? ownedRows : Array.from(rows);
+      if (targetRows.length === 0) return;
+
+      const perVol = (val / targetRows.length).toFixed(0);
+      targetRows.forEach(r => {
+        const pInp = r.querySelector('.vol-price-input');
+        if (pInp) pInp.value = perVol;
+      });
     }
 
     function closeEditModal() {
@@ -1456,20 +1504,29 @@
       if (currentEditingCategory === 'book') {
         books = books.map(b => {
           if (b.id === currentEditingId) {
-            const updatedVols = b.volumes.map(v => {
-              const ownedBox = document.getElementById(`vol_owned_${v.volNum}`);
-              const statusSelect = document.getElementById(`vol_status_${v.volNum}`);
-              const priceInput = document.getElementById(`vol_price_${v.volNum}`);
-              const dateInput = document.getElementById(`vol_date_${v.volNum}`);
+            const tbody = document.getElementById('editVolTableBody');
+            const rows = tbody ? tbody.querySelectorAll('tr') : [];
+            const updatedVols = [];
 
-              return {
-                ...v,
-                owned: ownedBox ? ownedBox.checked : v.owned,
-                status: statusSelect ? statusSelect.value : v.status,
-                price: priceInput ? priceInput.value.trim() : v.price,
-                finishedDate: dateInput ? dateInput.value : v.finishedDate
-              };
+            rows.forEach((row, i) => {
+              const numInput = row.querySelector('.vol-num-input');
+              const ownedBox = row.querySelector('.vol-owned-box');
+              const statusSelect = row.querySelector('.vol-status-select');
+              const priceInput = row.querySelector('.vol-price-input');
+              const dateInput = row.querySelector('.vol-date-input');
+
+              const volNum = parseInt(numInput?.value, 10) || (i + 1);
+              updatedVols.push({
+                volNum: volNum,
+                owned: ownedBox ? ownedBox.checked : false,
+                status: statusSelect ? statusSelect.value : 'Unread',
+                price: priceInput ? priceInput.value.trim() : '',
+                buyDate: b.volumes.find(v => v.volNum === volNum)?.buyDate || null,
+                finishedDate: dateInput ? dateInput.value : null
+              });
             });
+
+            updatedVols.sort((x, y) => x.volNum - y.volNum);
 
             const totalSpend = updatedVols.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
 
@@ -1481,6 +1538,7 @@
               seriesStatus: document.getElementById('edit_bSeriesStatus').value,
               type: document.getElementById('edit_bType').value,
               notes: document.getElementById('edit_bNotes').value.trim(),
+              volTotal: Math.max(updatedVols.length, 1),
               volOwned: updatedVols.filter(v => v.owned).length,
               price: totalSpend > 0 ? String(totalSpend) : b.price,
               volumes: updatedVols
