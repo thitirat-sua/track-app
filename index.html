@@ -11,7 +11,6 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg-main: #fcfbf9;
@@ -68,7 +67,6 @@
     .header-actions { display: flex; gap: 8px; align-items: center; }
     .btn-backup { font-size: 0.74rem; padding: 6px 11px; border-radius: 9px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); transition: all 0.15s; font-weight: 500; }
     .btn-backup:hover { background: #faf8f5; }
-    .btn-import-xlsx { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
 
     .nav-bar { 
       display: flex; 
@@ -101,7 +99,7 @@
     .sub-tab { flex: 1; padding: 8px 12px; text-align: center; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: #f3efe8; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
     .sub-tab.active { background: var(--milk-lavender); color: var(--milk-lavender-text); border: 1px solid var(--milk-lavender-border); }
 
-    .shelf-filters { display: flex; gap: 6px; margin: 4px 16px 8px 16px; overflow-x: auto; }
+    .shelf-filters { display: flex; gap: 6px; margin: 4px 16px 8px 16px; overflow-x: auto; padding-bottom: 2px; }
     .shelf-pill { padding: 5px 12px; border-radius: 16px; font-size: 0.74rem; font-weight: 500; background: #ffffff; border: 1px solid var(--border-card); color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
     .shelf-pill.active { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); font-weight: 600; }
 
@@ -118,16 +116,25 @@
     .metric-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
     .metric-val { font-size: 1.25rem; font-weight: 700; color: #433e38; }
 
+    .alert-card { background: var(--milk-rose); border: 1px solid var(--milk-rose-border); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
+    .alert-card-title { font-size: 0.82rem; font-weight: 700; color: var(--milk-rose-text); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .alert-card-content { font-size: 0.76rem; color: #5a3e42; line-height: 1.4; }
+
     .chart-card { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
     .chart-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .chart-title { font-size: 0.86rem; font-weight: 700; color: #4e473f; }
-    .year-select { font-size: 0.76rem; font-weight: 600; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #fcfbf9; color: var(--text-main); outline: none; }
+    .year-select { font-size: 0.76rem; font-weight: 600; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #fcfbf9; color: var(--text-main); outline: none; }
     
     .bar-chart-container { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: 24px; border-bottom: 1px solid var(--border-card); overflow-x: auto; }
     .chart-column { min-width: 24px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
     .chart-bar { width: 100%; max-width: 22px; border-radius: 6px 6px 0 0; min-height: 2px; position: relative; transition: height 0.25s ease; }
     .chart-bar-label { position: absolute; top: -17px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 700; color: #70685e; }
     .chart-x-axis { font-size: 0.64rem; color: var(--text-muted); margin-top: 6px; text-align: center; }
+
+    .sales-summary-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .sales-month-cell { background: #ffffff; border: 1px solid var(--border-card); border-radius: 10px; padding: 8px 10px; font-size: 0.74rem; }
+    .sales-month-cell.has-fest { background: var(--milk-butter); border-color: var(--milk-butter-border); }
+    .sales-month-name { font-weight: 700; color: var(--text-main); margin-bottom: 2px; }
 
     .year-group-box { margin-bottom: 12px; border: 1px solid var(--border-card); border-radius: 11px; overflow: hidden; background: #ffffff; }
     .year-group-header { background: #faf7f2; padding: 9px 13px; font-size: 0.82rem; font-weight: 700; color: #4e473f; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-card); }
@@ -169,7 +176,6 @@
     .vol-chip.vol-rereading { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
     .vol-chip.vol-finished { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
 
-    .item-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 5px; }
     .item-notes { font-size: 0.78rem; background: #faf8f5; padding: 6px 9px; border-radius: 8px; border-left: 2px solid #d4cdc3; margin-top: 6px; color: #575047; }
     
     .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
@@ -177,6 +183,7 @@
     .btn-action:hover { background: #faf8f5; }
     .btn-own { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
     .btn-open { background: var(--milk-blue); border-color: var(--milk-blue-border); color: var(--milk-blue-text); font-weight: 600; }
+    .btn-warning-action { background: var(--milk-rose); border-color: var(--milk-rose-border); color: var(--milk-rose-text); font-weight: 600; }
     .btn-edit { background: #ffffff; border-color: #e5dfd5; color: #575047; }
     .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
@@ -227,9 +234,6 @@
   <header>
     <h1>TrackApp</h1>
     <div class="header-actions">
-      <button class="btn-backup btn-import-xlsx" onclick="document.getElementById('importXlsxInput').click()">📥 Import Bookmory.xlsx</button>
-      <input type="file" id="importXlsxInput" style="display:none;" onchange="importBookmoryExcel(event)" accept=".xlsx, .xls" />
-      
       <button class="btn-backup" onclick="exportData()">Backup</button>
       <button class="btn-backup" onclick="document.getElementById('importFileInput').click()">Restore</button>
       <input type="file" id="importFileInput" style="display:none;" onchange="importData(event)" accept=".json" />
@@ -274,8 +278,17 @@
       <div class="sub-tab active" id="subTabRead" onclick="switchBookSubTab('read')">Owned Shelf</div>
     </div>
 
+    <!-- Origin / Genre Filter Pills -->
+    <div class="shelf-filters">
+      <div class="shelf-pill active" id="filterOriginAll" onclick="filterOriginGenre('All')">All Origins</div>
+      <div class="shelf-pill" id="filterOriginKorean" onclick="filterOriginGenre('Korean Translated')">🇰🇷 Korean Translated</div>
+      <div class="shelf-pill" id="filterOriginDanmei" onclick="filterOriginGenre('Danmei')">🇨🇳 Danmei</div>
+      <div class="shelf-pill" id="filterOriginThai" onclick="filterOriginGenre('Thai')">🇹🇭 Thai</div>
+      <div class="shelf-pill" id="filterOriginOther" onclick="filterOriginGenre('Other')">Other</div>
+    </div>
+
     <div id="ownedShelfFilters" class="shelf-filters">
-      <div class="shelf-pill active" id="filterOwnedAll" onclick="filterOwnedBooks('All')">All Series</div>
+      <div class="shelf-pill active" id="filterOwnedAll" onclick="filterOwnedBooks('All')">All Statuses</div>
       <div class="shelf-pill" id="filterOwnedReading" onclick="filterOwnedBooks('Reading')">📖 Reading Now</div>
       <div class="shelf-pill" id="filterOwnedUnread" onclick="filterOwnedBooks('Unread')">⏳ Unread</div>
       <div class="shelf-pill" id="filterOwnedFinished" onclick="filterOwnedBooks('Finished')">✓ Completed Series</div>
@@ -287,7 +300,7 @@
         <div class="row">
           <div class="input-group" style="flex: 2;">
             <label>Title / Series</label>
-            <input type="text" id="bTitle" placeholder="e.g. Frieren, Omniscient Reader" />
+            <input type="text" id="bTitle" placeholder="e.g. Omniscient Reader, S-Classes" />
           </div>
           <div class="input-group" style="flex: 1.2;">
             <label>Author</label>
@@ -296,6 +309,15 @@
         </div>
 
         <div class="row">
+          <div class="input-group" style="flex: 1.2;">
+            <label>Origin / Tag</label>
+            <select id="bOrigin">
+              <option value="Korean Translated">Korean Translated</option>
+              <option value="Danmei">Danmei</option>
+              <option value="Thai">Thai</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
           <div class="input-group" style="flex: 1;">
             <label>Vols Owned</label>
             <input type="number" id="bVolOwned" placeholder="0" min="0" value="1" />
@@ -303,14 +325,6 @@
           <div class="input-group" style="flex: 1;">
             <label>Total Released</label>
             <input type="number" id="bVolTotal" placeholder="e.g. 10" min="1" value="1" />
-          </div>
-          <div class="input-group" style="flex: 1.4;">
-            <label>Series State</label>
-            <select id="bSeriesStatus">
-              <option value="Ongoing">Ongoing Series</option>
-              <option value="Waiting Announcement">Waiting Announcement</option>
-              <option value="Completed Series">Story Finished</option>
-            </select>
           </div>
         </div>
 
@@ -332,9 +346,22 @@
           </div>
         </div>
         
+        <!-- Wishlist Specific Fields -->
         <div id="buyingFields" style="display: none;">
           <div class="row">
-            <div class="input-group">
+            <div class="input-group" style="flex: 1;">
+              <label>Release State</label>
+              <select id="bReleaseState" onchange="toggleReleaseDateInput()">
+                <option value="Available">Available Now</option>
+                <option value="TBA">TBA / Waiting Announcement</option>
+                <option value="Confirmed Date">Confirmed Date</option>
+              </select>
+            </div>
+            <div class="input-group" id="releaseDateWrapper" style="flex: 1; display: none;">
+              <label>Target Release Date</label>
+              <input type="date" id="bTargetReleaseDate" />
+            </div>
+            <div class="input-group" style="flex: 1;">
               <label>Decision</label>
               <select id="bBuyStatus">
                 <option value="Decided to Buy">Decided to Buy</option>
@@ -342,21 +369,12 @@
                 <option value="Considering">Considering</option>
               </select>
             </div>
-            <div class="input-group">
-              <label>Digital Status</label>
-              <select id="bDigitalStatus">
-                <option value="Available">Available</option>
-                <option value="Paper Only">Paper Only</option>
-                <option value="In Negotiation">Negotiation</option>
-                <option value="Awaiting Translation">Translating</option>
-              </select>
-            </div>
           </div>
         </div>
 
         <div class="input-group">
           <label>Notes</label>
-          <input type="text" id="bNotes" placeholder="Promo coins, notes, or detail tags" />
+          <input type="text" id="bNotes" placeholder="Promo coins, translation notes, or keywords" />
         </div>
         <button class="btn-submit" onclick="saveBook()">Save Series</button>
       </div>
@@ -364,29 +382,27 @@
     </div>
   </section>
 
-  <!-- 2. SUMMARY / STATS SECTION -->
+  <!-- 2. SUMMARY / STATS SECTION (DYNAMIC SCOPE SELECTOR) -->
   <section id="sectionStats" style="display: none;">
     <div class="content-area">
+      <!-- Time Horizon Dropdown Selector -->
+      <div style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 9px 13px;">
+        <span style="font-size: 0.82rem; font-weight: 700; color: #4e473f;">📅 Viewing Analytics For:</span>
+        <select id="analyticsScopeSelect" class="year-select" onchange="changeAnalyticsScope(this.value)"></select>
+      </div>
+
       <div class="metric-grid">
         <div class="metric-box highlight-lavender">
-          <div class="metric-label">In <span id="statYearLabel">2026</span> (Read)</div>
-          <div class="metric-val" id="statYearVols">0 vols</div>
+          <div class="metric-label" id="scopeReadLabel">Volumes Read</div>
+          <div class="metric-val" id="statScopeVols">0 vols</div>
         </div>
         <div class="metric-box highlight-blue">
-          <div class="metric-label">In <span id="statYearSpendLabel">2026</span> (Spend)</div>
-          <div class="metric-val" id="statYearSpend">฿0</div>
+          <div class="metric-label" id="scopeSpendLabel">Expenditure</div>
+          <div class="metric-val" id="statScopeSpend">฿0</div>
         </div>
       </div>
 
       <div class="metric-grid">
-        <div class="metric-box">
-          <div class="metric-label">All-Time Finished</div>
-          <div class="metric-val" id="statTotalVols">0</div>
-        </div>
-        <div class="metric-box">
-          <div class="metric-label">All-Time Spend</div>
-          <div class="metric-val" id="statTotalSpend">฿0</div>
-        </div>
         <div class="metric-box">
           <div class="metric-label">Completed Series</div>
           <div class="metric-val" id="statCompleteSeries">0</div>
@@ -399,14 +415,13 @@
 
       <div class="chart-card">
         <div class="chart-header-row">
-          <div class="chart-title">📊 Volumes Finished in <span id="displayYearText">2026</span></div>
-          <select id="graphYearSelect" class="year-select" onchange="changeGraphYear(this.value)"></select>
+          <div class="chart-title">📊 Monthly Reading Breakdown (<span id="displayYearText">2026</span>)</div>
         </div>
         <div class="bar-chart-container" id="barChartBox"></div>
       </div>
 
       <div class="chart-card">
-        <div class="chart-title" style="margin-bottom:12px;">🗓️ Breakdown by Year & Month</div>
+        <div class="chart-title" style="margin-bottom:12px;">🗓️ Detailed Year-by-Year Log</div>
         <div id="detailedMonthlyGrid"></div>
       </div>
     </div>
@@ -446,17 +461,22 @@
           </div>
         </div>
         <div class="row">
-          <div class="input-group">
+          <div class="input-group" style="flex: 1;">
+            <label>Status</label>
+            <select id="sStatus" onchange="toggleSerialFinishedInput()">
+              <option value="Stacking Chapters">Stacking</option>
+              <option value="Season Break">Season Break</option>
+              <option value="On Hiatus">Hiatus</option>
+              <option value="Finished">Finished</option>
+            </select>
+          </div>
+          <div class="input-group" id="serialTotalChapterWrapper" style="flex: 1; display: none;">
+            <label>Total Final Chapters</label>
+            <input type="text" id="sTotalChapters" placeholder="e.g. 210 End" />
+          </div>
+          <div class="input-group" style="flex: 1;">
             <label>Platform</label>
             <input type="text" id="sPlatform" placeholder="Webtoon, ReadAWrite, etc." />
-          </div>
-          <div class="input-group">
-            <label>Status</label>
-            <select id="sStatus">
-              <option value="Stacking Chapters">Stacking</option>
-              <option value="On Hiatus">Hiatus</option>
-              <option value="Completed">Finished</option>
-            </select>
           </div>
         </div>
         <div class="input-group">
@@ -469,7 +489,7 @@
     </div>
   </section>
 
-  <!-- 4. TO-DO TASKS -->
+  <!-- 4. TO-DO TASKS (TAGGED & GROUPED) -->
   <section id="sectionTasks" style="display: none;">
     <div class="sub-tabs">
       <div class="sub-tab active" id="taskFilterAll" onclick="filterTasks('All')">All Tasks</div>
@@ -477,6 +497,10 @@
       <div class="sub-tab" id="taskFilterWeek" onclick="filterTasks('Week')">This Week</div>
       <div class="sub-tab" id="taskFilterMonth" onclick="filterTasks('Month')">This Month</div>
     </div>
+
+    <!-- Task Tag Filter Pills Bar -->
+    <div class="shelf-filters" id="taskTagPillBar"></div>
+
     <div class="content-area">
       <div class="form-card">
         <h2>+ Add Task</h2>
@@ -485,7 +509,11 @@
           <input type="text" id="tTitle" placeholder="Task details" />
         </div>
         <div class="row">
-          <div class="input-group">
+          <div class="input-group" style="flex: 1;">
+            <label>Tag / Category</label>
+            <input type="text" id="tTag" placeholder="e.g. Study, Work, Personal" />
+          </div>
+          <div class="input-group" style="flex: 1;">
             <label>Time Horizon</label>
             <select id="tHorizon">
               <option value="Today">Today</option>
@@ -493,14 +521,14 @@
               <option value="Month">This Month</option>
             </select>
           </div>
-          <div class="input-group">
+          <div class="input-group" style="flex: 1;">
             <label>Due Date</label>
             <input type="date" id="tDate" />
           </div>
         </div>
         <div class="input-group">
           <label>Notes (Optional)</label>
-          <input type="text" id="tNotes" placeholder="Sub-tasks, links, or context notes" />
+          <input type="text" id="tNotes" placeholder="Sub-tasks, references, or context" />
         </div>
         <button class="btn-submit" onclick="saveTask()">Save Task</button>
       </div>
@@ -538,11 +566,20 @@
     </div>
   </section>
 
-  <!-- 6. PERSONAL CARE & LIFESPAN TRACKER (WITH PAO AUTO-CALCULATION) -->
+  <!-- 6. PERSONAL CARE & RESTOCK TRACKER -->
   <section id="sectionCare" style="display: none;">
+    <!-- Restock Alert Summary Banner -->
+    <div class="content-area" style="padding-bottom: 0;">
+      <div id="careRestockAlertBox" style="display: none;" class="alert-card">
+        <div class="alert-card-title">🚨 Products Running Low / Need Restock:</div>
+        <div class="alert-card-content" id="careRestockList"></div>
+      </div>
+    </div>
+
     <div class="shelf-filters" style="margin-top: 10px;">
       <div class="shelf-pill active" id="filterCareAll" onclick="filterCareStatus('All')">All Products</div>
       <div class="shelf-pill" id="filterCareInUse" onclick="filterCareStatus('InUse')">🧴 In Use</div>
+      <div class="shelf-pill" id="filterCareLow" onclick="filterCareStatus('Low')">⚠️ Running Low</div>
       <div class="shelf-pill" id="filterCareStock" onclick="filterCareStatus('Stock')">⏳ Stock (Unopened)</div>
       <div class="shelf-pill" id="filterCareEmptied" onclick="filterCareStatus('Emptied')">✓ Emptied</div>
     </div>
@@ -610,19 +647,25 @@
     </div>
   </section>
 
-  <!-- 8. SALES FESTS -->
+  <!-- 8. SALES FESTIVALS (WITH ANNUAL CALENDAR SUMMARY) -->
   <section id="sectionSales" style="display: none;">
     <div class="content-area">
+      <!-- 12-Month Calendar Matrix -->
+      <div class="chart-card">
+        <div class="chart-title" style="margin-bottom: 8px;">🗓️ Annual Book Fair & Sale Calendar</div>
+        <div class="sales-summary-grid" id="salesCalendarMatrix"></div>
+      </div>
+
       <div class="form-card">
-        <h2>+ Add Sale Period</h2>
+        <h2>+ Add Sale / Book Fair Period</h2>
         <div class="input-group">
-          <label>Campaign</label>
-          <input type="text" id="saleCampaignName" placeholder="e.g. Mid-Year Sale" />
+          <label>Campaign / Event</label>
+          <input type="text" id="saleCampaignName" placeholder="e.g. National Book Fair, Mid-Year Sale" />
         </div>
         <div class="row">
           <div class="input-group">
-            <label>Platform</label>
-            <input type="text" id="saleStorePlatform" placeholder="Store" />
+            <label>Platform / Venue</label>
+            <input type="text" id="saleStorePlatform" placeholder="e.g. Queen Sirikit Center, MEB, Shopee" />
           </div>
           <div class="input-group">
             <label>Month</label>
@@ -642,7 +685,7 @@
             </select>
           </div>
         </div>
-        <button class="btn-submit" onclick="saveSaleEvent()">Save Sale Pattern</button>
+        <button class="btn-submit" onclick="saveSaleEvent()">Save Event to Calendar</button>
       </div>
       <div id="salesListContainer"></div>
     </div>
@@ -710,19 +753,23 @@
 
     let books = rawBooks.map(b => ({
       ...b,
+      originGenre: b.originGenre || 'Other',
       volumes: sanitizeVolumes(b)
     }));
 
     let currentMainTab = 'books';
     let currentBookSubTab = 'read';
+    let currentOriginFilter = 'All';
     let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
     let currentTaskFilter = 'All';
+    let currentTaskTagFilter = 'All';
     let currentCareFilter = 'All';
-    let selectedGraphYear = new Date().getFullYear().toString();
+    let selectedAnalyticsScope = '2026';
     let currentEditingCategory = null;
     let currentEditingId = null;
 
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     const monthShorts = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     const milkyPastelBars = [
@@ -758,59 +805,21 @@
       document.getElementById('bPriceLabel').innerText = type === 'total' ? 'Total Price (฿)' : 'Price / Vol (฿)';
     }
 
-    function changeGraphYear(val) {
-      selectedGraphYear = val;
+    function toggleReleaseDateInput() {
+      const state = document.getElementById('bReleaseState').value;
+      document.getElementById('releaseDateWrapper').style.display = (state === 'Confirmed Date') ? 'block' : 'none';
+    }
+
+    function toggleSerialFinishedInput() {
+      const status = document.getElementById('sStatus').value;
+      document.getElementById('serialTotalChapterWrapper').style.display = (status === 'Finished') ? 'block' : 'none';
+    }
+
+    function changeAnalyticsScope(val) {
+      selectedAnalyticsScope = val;
       render();
     }
 
-    function parseTitleVolume(rawTitle) {
-      let title = String(rawTitle || '').trim();
-      let m = title.match(/^(.*?)\s*(\d+)\s*\(\1,\s*#\2\)$/);
-      if (m) return { base: m[1].trim(), vol: parseInt(m[2], 10) };
-      m = title.match(/^(.*?)\s*\(.*?#(\d+)\)$/);
-      if (m) {
-        let b = m[1].trim().replace(/\s*(?:เล่มที่|เล่ม|vol\.?|volume)?\s*\d+$/i, '').trim();
-        return { base: b, vol: parseInt(m[2], 10) };
-      }
-      m = title.match(/^(.*?)\s*(?:เล่มที่|เล่ม|vol\.?|volume)\s*(\d+)(.*)$/i);
-      if (m) {
-        let b = m[1].trim();
-        let vol = parseInt(m[2], 10);
-        let s = m[3].trim();
-        if (s && !/^\(?จบ\)?$/.test(s)) b = (b + ' ' + s).trim();
-        return { base: b, vol };
-      }
-      m = title.match(/^(.*?)\s+(\d+)$/);
-      if (m) return { base: m[1].trim(), vol: parseInt(m[2], 10) };
-      return { base: title, vol: 1 };
-    }
-
-    function parseDateStr(s) {
-      if (!s) return null;
-      let str = String(s).trim();
-      if (str.includes('~')) {
-        let parts = str.split('~');
-        str = parts[1].trim() || parts[0].trim();
-      }
-      let m = str.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
-      if (m) {
-        return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
-      }
-      m = str.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
-      if (m) {
-        return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
-      }
-      return null;
-    }
-
-    function parsePriceStr(p) {
-      if (!p) return '';
-      let s = String(p).replace(/[฿,]/g, '').trim();
-      let num = parseFloat(s);
-      return isNaN(num) ? '' : (Number.isInteger(num) ? String(num) : num.toFixed(2));
-    }
-
-    // Helper: calculate target expiry date given an opened date string and PAO months
     function calculatePaoExpiry(openedDateStr, paoMonths) {
       if (!openedDateStr || !paoMonths) return null;
       const parts = openedDateStr.split('-');
@@ -821,184 +830,6 @@
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
-    }
-
-    function importBookmoryExcel(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = new Uint8Array(e.target.result);
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheet = workbook.Sheets[workbook.SheetNames[0]];
-          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-          if (rows.length < 3) return alert('No records found in Excel.');
-
-          const headers = rows[1];
-          const colTitle = headers.indexOf('Title');
-          const colAuthor = headers.indexOf('Authors');
-          const colStatus = headers.indexOf('Status');
-          const colReadPeriod = headers.indexOf('Read period');
-          const colBuyDate = headers.indexOf('Purchased day');
-          const colPrice = headers.indexOf('Price');
-          const colPlatform = headers.indexOf('Purchased from');
-
-          const excludeRegex = /(third\s*ending|the\s*story\s*of\s*underworld|dreadful\s*night)/i;
-          const bookmoryMap = {};
-
-          for (let i = 2; i < rows.length; i++) {
-            const row = rows[i];
-            if (!row || !row[colTitle]) continue;
-
-            const rawTitle = String(row[colTitle]).trim();
-            const status = String(row[colStatus] || '').trim();
-
-            if (status === 'Reading') continue;
-            if (excludeRegex.test(rawTitle)) continue;
-
-            const parsed = parseTitleVolume(rawTitle);
-            const isFinished = (status === "I've read it all!");
-            const volStatus = isFinished ? 'Finished' : 'Unread';
-            const finDate = isFinished ? parseDateStr(row[colReadPeriod]) : null;
-            const bDate = parseDateStr(row[colBuyDate]);
-            const price = parsePriceStr(row[colPrice]);
-            const author = row[colAuthor] ? String(row[colAuthor]).trim() : '';
-            const platform = (row[colPlatform] && String(row[colPlatform]).trim() !== 'nan') ? String(row[colPlatform]).trim() : 'Ebook';
-
-            if (!bookmoryMap[parsed.base]) {
-              bookmoryMap[parsed.base] = { title: parsed.base, author, platform, vols: {} };
-            }
-
-            bookmoryMap[parsed.base].vols[parsed.vol] = {
-              volNum: parsed.vol,
-              status: volStatus,
-              finishedDate: finDate,
-              buyDate: bDate,
-              price: price
-            };
-          }
-
-          let existingMap = {};
-          books.forEach(b => existingMap[b.title.trim()] = b);
-
-          let newBooksCount = 0;
-          let updatedBooksCount = 0;
-
-          Object.keys(bookmoryMap).forEach(title => {
-            const bData = bookmoryMap[title];
-            const maxVol = Math.max(...Object.keys(bData.vols).map(Number));
-
-            if (existingMap[title]) {
-              const b = existingMap[title];
-              let vMap = {};
-              (b.volumes || []).forEach(v => vMap[v.volNum] = v);
-
-              Object.values(bData.vols).forEach(bv => {
-                if (vMap[bv.volNum]) {
-                  if (!vMap[bv.volNum].price && bv.price) vMap[bv.volNum].price = bv.price;
-                  if (!vMap[bv.volNum].buyDate && bv.buyDate) vMap[bv.volNum].buyDate = bv.buyDate;
-                  if (bv.finishedDate) {
-                    vMap[bv.volNum].finishedDate = bv.finishedDate;
-                    if (!vMap[bv.volNum].readHistory) vMap[bv.volNum].readHistory = [];
-                    if (!vMap[bv.volNum].readHistory.includes(bv.finishedDate)) {
-                      vMap[bv.volNum].readHistory.push(bv.finishedDate);
-                    }
-                    vMap[bv.volNum].readCount = Math.max(1, vMap[bv.volNum].readHistory.length);
-                  }
-                } else {
-                  const hist = bv.finishedDate ? [bv.finishedDate] : [];
-                  b.volumes.push({
-                    volNum: bv.volNum,
-                    owned: bv.status === 'Finished' || !!bv.buyDate,
-                    status: bv.status,
-                    price: bv.price,
-                    buyDate: bv.buyDate,
-                    finishedDate: bv.finishedDate,
-                    readCount: bv.status === 'Finished' ? 1 : 0,
-                    readHistory: hist
-                  });
-                }
-              });
-              b.volumes.sort((x, y) => x.volNum - y.volNum);
-              b.volTotal = Math.max(b.volTotal || 1, b.volumes.length);
-              b.volOwned = b.volumes.filter(v => v.owned).length;
-              updatedBooksCount++;
-            } else {
-              let constructedVols = [];
-              let hasFin = false;
-              let hasOwn = false;
-
-              for (let i = 1; i <= maxVol; i++) {
-                if (bData.vols[i]) {
-                  const v = bData.vols[i];
-                  const isF = (v.status === 'Finished');
-                  if (isF) hasFin = true;
-                  const isO = isF || !!v.buyDate || !!v.price;
-                  if (isO) hasOwn = true;
-                  const hist = v.finishedDate ? [v.finishedDate] : [];
-                  constructedVols.push({
-                    volNum: i,
-                    owned: isO,
-                    status: v.status,
-                    price: v.price,
-                    buyDate: v.buyDate,
-                    finishedDate: v.finishedDate,
-                    readCount: isF ? 1 : 0,
-                    readHistory: hist
-                  });
-                } else {
-                  constructedVols.push({
-                    volNum: i,
-                    owned: false,
-                    status: 'Unread',
-                    price: '',
-                    buyDate: null,
-                    finishedDate: null,
-                    readCount: 0,
-                    readHistory: []
-                  });
-                }
-              }
-
-              const isShelfRead = hasFin || hasOwn;
-              const allFin = constructedVols.every(v => v.status === 'Finished');
-
-              books.unshift({
-                id: String(Date.now() + Math.floor(Math.random() * 100000)),
-                title: bData.title,
-                author: bData.author,
-                volume: '',
-                volOwned: constructedVols.filter(v => v.owned).length,
-                volTotal: maxVol,
-                seriesStatus: allFin ? 'Completed Series' : 'Ongoing',
-                platform: bData.platform,
-                notes: '',
-                type: isShelfRead ? 'read' : 'buy',
-                buyStatus: isShelfRead ? 'Decided to Buy' : 'Considering',
-                digitalStatus: 'Available',
-                release: 'Available',
-                price: '',
-                buyDate: constructedVols[0]?.buyDate || null,
-                readStatus: allFin ? 'Finished' : 'Unread',
-                finishedDate: allFin ? constructedVols[constructedVols.length - 1]?.finishedDate : null,
-                volumes: constructedVols
-              });
-              newBooksCount++;
-            }
-          });
-
-          localStorage.setItem('track_books', JSON.stringify(books));
-          render();
-          alert(`Import successful: ${newBooksCount} new series added, ${updatedBooksCount} existing updated.`);
-        } catch (err) {
-          alert('Error parsing Excel: ' + err.message);
-        }
-      };
-      reader.readAsArrayBuffer(file);
-      event.target.value = '';
     }
 
     function exportData() {
@@ -1074,6 +905,16 @@
       render();
     }
 
+    function filterOriginGenre(origin) {
+      currentOriginFilter = origin;
+      document.getElementById('filterOriginAll').classList.toggle('active', origin === 'All');
+      document.getElementById('filterOriginKorean').classList.toggle('active', origin === 'Korean Translated');
+      document.getElementById('filterOriginDanmei').classList.toggle('active', origin === 'Danmei');
+      document.getElementById('filterOriginThai').classList.toggle('active', origin === 'Thai');
+      document.getElementById('filterOriginOther').classList.toggle('active', origin === 'Other');
+      render();
+    }
+
     function filterOwnedBooks(filter) {
       currentOwnedFilter = filter;
       document.getElementById('filterOwnedAll').classList.toggle('active', filter === 'All');
@@ -1100,10 +941,16 @@
       render();
     }
 
+    function filterTaskByTag(tag) {
+      currentTaskTagFilter = tag;
+      render();
+    }
+
     function filterCareStatus(status) {
       currentCareFilter = status;
       document.getElementById('filterCareAll').classList.toggle('active', status === 'All');
       document.getElementById('filterCareInUse').classList.toggle('active', status === 'InUse');
+      document.getElementById('filterCareLow').classList.toggle('active', status === 'Low');
       document.getElementById('filterCareStock').classList.toggle('active', status === 'Stock');
       document.getElementById('filterCareEmptied').classList.toggle('active', status === 'Emptied');
       render();
@@ -1178,13 +1025,15 @@
         id: Date.now().toString(),
         title,
         author: document.getElementById('bAuthor').value.trim(),
+        originGenre: document.getElementById('bOrigin').value,
         volTotal,
         seriesStatus: document.getElementById('bSeriesStatus').value,
         platform: document.getElementById('bPlatform').value.trim() || 'Ebook',
         notes: document.getElementById('bNotes').value.trim(),
         type: currentBookSubTab,
         buyStatus: document.getElementById('bBuyStatus').value,
-        digitalStatus: document.getElementById('bDigitalStatus').value,
+        releaseState: document.getElementById('bReleaseState').value,
+        targetReleaseDate: document.getElementById('bTargetReleaseDate').value || null,
         price: seriesTotalPrice,
         volumes: volumes
       });
@@ -1194,6 +1043,7 @@
       document.getElementById('bAuthor').value = '';
       document.getElementById('bPriceVal').value = '';
       document.getElementById('bNotes').value = '';
+      document.getElementById('bTargetReleaseDate').value = '';
       render();
     }
 
@@ -1258,20 +1108,23 @@
     function saveSerial() {
       const title = document.getElementById('sTitle').value.trim();
       if (!title) return alert('Enter title');
+      const status = document.getElementById('sStatus').value;
       serials.unshift({
         id: Date.now().toString(),
         title,
         author: document.getElementById('sAuthor').value.trim(),
         format: document.getElementById('sFormat').value,
         chapter: document.getElementById('sChapter').value.trim(),
+        totalChapters: (status === 'Finished') ? document.getElementById('sTotalChapters').value.trim() : '',
         platform: document.getElementById('sPlatform').value.trim(),
-        status: document.getElementById('sStatus').value,
+        status: status,
         notes: document.getElementById('sNotes').value.trim()
       });
       localStorage.setItem('track_serials', JSON.stringify(serials));
       document.getElementById('sTitle').value = '';
       document.getElementById('sAuthor').value = '';
       document.getElementById('sChapter').value = '';
+      document.getElementById('sTotalChapters').value = '';
       document.getElementById('sNotes').value = '';
       render();
     }
@@ -1288,9 +1141,11 @@
       if (!title) return alert('Enter task description');
       const horizon = document.getElementById('tHorizon').value;
       const notes = document.getElementById('tNotes').value.trim();
+      const rawTag = document.getElementById('tTag').value.trim().replace(/^#/, '');
       tasks.unshift({
         id: Date.now().toString(),
         title,
+        tag: rawTag || '',
         notes: notes,
         horizon: horizon,
         dueDate: document.getElementById('tDate').value || null,
@@ -1298,6 +1153,7 @@
       });
       localStorage.setItem('track_tasks', JSON.stringify(tasks));
       document.getElementById('tTitle').value = '';
+      document.getElementById('tTag').value = '';
       document.getElementById('tDate').value = '';
       document.getElementById('tNotes').value = '';
       currentTaskFilter = 'All';
@@ -1343,7 +1199,6 @@
       render();
     }
 
-    // --- Personal Care Bottle Lifespan Actions ---
     function saveCareItem() {
       const name = document.getElementById('cName').value.trim();
       if (!name) return alert('Enter product name');
@@ -1357,13 +1212,20 @@
         dateBought: document.getElementById('cDateBought').value || today,
         dateOpened: document.getElementById('cDateOpened').value || null,
         paoMonths: paoVal,
-        dateFinished: null
+        dateFinished: null,
+        needRestock: false
       });
       localStorage.setItem('track_care', JSON.stringify(careItems));
       document.getElementById('cName').value = '';
       document.getElementById('cDateBought').value = '';
       document.getElementById('cDateOpened').value = '';
       document.getElementById('cPaoMonths').value = '';
+      render();
+    }
+
+    function toggleCareRestock(id) {
+      careItems = careItems.map(c => c.id === id ? { ...c, needRestock: !c.needRestock } : c);
+      localStorage.setItem('track_care', JSON.stringify(careItems));
       render();
     }
 
@@ -1381,7 +1243,8 @@
           return {
             ...c,
             dateOpened: c.dateOpened || today,
-            dateFinished: today
+            dateFinished: today,
+            needRestock: false
           };
         }
         return c;
@@ -1466,11 +1329,20 @@
               <input type="text" id="edit_bAuthor" value="${(b.author || '').replace(/"/g, '&quot;')}" />
             </div>
             <div class="input-group">
-              <label>Store / Platform</label>
-              <input type="text" id="edit_bPlatform" value="${(b.platform || '').replace(/"/g, '&quot;')}" />
+              <label>Origin / Tag</label>
+              <select id="edit_bOrigin">
+                <option value="Korean Translated" ${b.originGenre === 'Korean Translated' ? 'selected' : ''}>Korean Translated</option>
+                <option value="Danmei" ${b.originGenre === 'Danmei' ? 'selected' : ''}>Danmei</option>
+                <option value="Thai" ${b.originGenre === 'Thai' ? 'selected' : ''}>Thai</option>
+                <option value="Other" ${b.originGenre === 'Other' ? 'selected' : ''}>Other</option>
+              </select>
             </div>
           </div>
           <div class="row">
+            <div class="input-group">
+              <label>Store / Platform</label>
+              <input type="text" id="edit_bPlatform" value="${(b.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
             <div class="input-group">
               <label>Series Status</label>
               <select id="edit_bSeriesStatus">
@@ -1479,12 +1351,26 @@
                 <option value="Completed Series" ${b.seriesStatus === 'Completed Series' ? 'selected' : ''}>Completed</option>
               </select>
             </div>
+          </div>
+          <div class="row">
             <div class="input-group">
               <label>Shelf Placement</label>
               <select id="edit_bType">
                 <option value="buy" ${b.type === 'buy' ? 'selected' : ''}>Wishlist</option>
                 <option value="read" ${b.type === 'read' ? 'selected' : ''}>Owned Shelf</option>
               </select>
+            </div>
+            <div class="input-group">
+              <label>Release State</label>
+              <select id="edit_bReleaseState">
+                <option value="Available" ${b.releaseState === 'Available' ? 'selected' : ''}>Available Now</option>
+                <option value="TBA" ${b.releaseState === 'TBA' ? 'selected' : ''}>TBA / Waiting</option>
+                <option value="Confirmed Date" ${b.releaseState === 'Confirmed Date' ? 'selected' : ''}>Confirmed Date</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Target Release Date</label>
+              <input type="date" id="edit_bTargetReleaseDate" value="${b.targetReleaseDate || ''}" />
             </div>
           </div>
 
@@ -1571,17 +1457,28 @@
               <input type="text" id="edit_sChapter" value="${(s.chapter || '').replace(/"/g, '&quot;')}" />
             </div>
           </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Status</label>
+              <select id="edit_sStatus">
+                <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
+                <option value="Season Break" ${s.status === 'Season Break' ? 'selected' : ''}>Season Break</option>
+                <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
+                <option value="Finished" ${s.status === 'Finished' ? 'selected' : ''}>Finished</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Total Final Chapters</label>
+              <input type="text" id="edit_sTotalChapters" value="${s.totalChapters || ''}" placeholder="e.g. 210" />
+            </div>
+          </div>
           <div class="input-group">
             <label>Platform</label>
             <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
           </div>
           <div class="input-group">
-            <label>Status</label>
-            <select id="edit_sStatus">
-              <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
-              <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
-              <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
-            </select>
+            <label>Notes</label>
+            <input type="text" id="edit_sNotes" value="${(s.notes || '').replace(/"/g, '&quot;')}" />
           </div>
         `;
       } else if (category === 'task') {
@@ -1594,6 +1491,10 @@
             <input type="text" id="edit_tTitle" value="${(t.title || '').replace(/"/g, '&quot;')}" />
           </div>
           <div class="row">
+            <div class="input-group">
+              <label>Tag</label>
+              <input type="text" id="edit_tTag" value="${t.tag || ''}" placeholder="e.g. Study, Work" />
+            </div>
             <div class="input-group">
               <label>Horizon</label>
               <select id="edit_tHorizon">
@@ -1609,7 +1510,7 @@
           </div>
           <div class="input-group">
             <label>Notes</label>
-            <input type="text" id="edit_tNotes" value="${(t.notes || '').replace(/"/g, '&quot;')}" placeholder="Context, details, or checklist" />
+            <input type="text" id="edit_tNotes" value="${(t.notes || '').replace(/"/g, '&quot;')}" />
           </div>
         `;
       } else if (category === 'chore') {
@@ -1713,7 +1614,7 @@
             <div class="input-group">
               <label>Month</label>
               <select id="edit_saleMonth">
-                ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => `
+                ${monthNames.map(m => `
                   <option value="${m}" ${s.month === m ? 'selected' : ''}>${m}</option>
                 `).join('')}
               </select>
@@ -1845,9 +1746,12 @@
               ...b,
               title: document.getElementById('edit_bTitle').value.trim() || b.title,
               author: document.getElementById('edit_bAuthor').value.trim(),
+              originGenre: document.getElementById('edit_bOrigin').value,
               platform: document.getElementById('edit_bPlatform').value.trim(),
               seriesStatus: document.getElementById('edit_bSeriesStatus').value,
               type: document.getElementById('edit_bType').value,
+              releaseState: document.getElementById('edit_bReleaseState').value,
+              targetReleaseDate: document.getElementById('edit_bTargetReleaseDate').value || null,
               notes: document.getElementById('edit_bNotes').value.trim(),
               volTotal: Math.max(updatedVols.length, 1),
               volOwned: updatedVols.filter(v => v.owned).length,
@@ -1866,8 +1770,10 @@
               title: document.getElementById('edit_sTitle').value.trim() || s.title,
               author: document.getElementById('edit_sAuthor').value.trim(),
               chapter: document.getElementById('edit_sChapter').value.trim(),
+              status: document.getElementById('edit_sStatus').value,
+              totalChapters: document.getElementById('edit_sTotalChapters').value.trim(),
               platform: document.getElementById('edit_sPlatform').value.trim(),
-              status: document.getElementById('edit_sStatus').value
+              notes: document.getElementById('edit_sNotes').value.trim()
             };
           }
           return s;
@@ -1879,9 +1785,10 @@
             return {
               ...t,
               title: document.getElementById('edit_tTitle').value.trim() || t.title,
-              notes: document.getElementById('edit_tNotes').value.trim(),
+              tag: document.getElementById('edit_tTag').value.trim().replace(/^#/, ''),
               horizon: document.getElementById('edit_tHorizon').value,
-              dueDate: document.getElementById('edit_tDate').value
+              dueDate: document.getElementById('edit_tDate').value,
+              notes: document.getElementById('edit_tNotes').value.trim()
             };
           }
           return t;
@@ -1951,6 +1858,7 @@
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
+      // ==================== 1. ANALYTICS & STATS LOGIC ====================
       let totalVolsReadCount = 0;
       let totalSpendAmount = 0;
       let completedSeriesCount = 0;
@@ -1958,6 +1866,8 @@
 
       const yearlyStats = {};
       const allYearsSet = new Set();
+      allYearsSet.add('2026');
+      allYearsSet.add('2025');
 
       books.forEach(b => {
         let allVolsFinished = (b.volumes && b.volumes.length > 0);
@@ -1983,7 +1893,6 @@
           }
 
           const historyList = (v.readHistory && v.readHistory.length > 0) ? v.readHistory : (v.finishedDate ? [v.finishedDate] : []);
-          
           if (historyList.length > 0) {
             totalVolsReadCount += historyList.length;
             historyList.forEach(fDate => {
@@ -2007,41 +1916,47 @@
         if (allVolsFinished && b.volumes.length > 0) completedSeriesCount += 1;
       });
 
-      const graphYearSelect = document.getElementById('graphYearSelect');
+      // Populate Analytics Scope Selector (Overall, 2026, 2025, etc.)
+      const analyticsSelect = document.getElementById('analyticsScopeSelect');
       const sortedYears = Array.from(allYearsSet).sort((a, b) => b.localeCompare(a));
-      if (sortedYears.length === 0) sortedYears.push(new Date().getFullYear().toString());
-
-      if (graphYearSelect) {
-        if (!selectedGraphYear || !sortedYears.includes(selectedGraphYear)) {
-          selectedGraphYear = sortedYears[0];
-        }
-        graphYearSelect.innerHTML = sortedYears.map(yr => `<option value="${yr}" ${yr === selectedGraphYear ? 'selected' : ''}>${yr}</option>`).join('');
+      if (analyticsSelect) {
+        analyticsSelect.innerHTML = `
+          <option value="all" ${selectedAnalyticsScope === 'all' ? 'selected' : ''}>Overall (All Time)</option>
+          ${sortedYears.map(yr => `<option value="${yr}" ${selectedAnalyticsScope === yr ? 'selected' : ''}>Year ${yr}</option>`).join('')}
+        `;
       }
 
-      const curYearData = yearlyStats[selectedGraphYear] || {};
-      let curYearRead = 0;
-      let curYearSpend = 0;
-      Object.values(curYearData).forEach(m => {
-        curYearRead += (m.read || 0);
-        curYearSpend += (m.spend || 0);
-      });
+      // Calculate Metrics for the Selected Scope
+      let scopeRead = 0;
+      let scopeSpend = 0;
 
-      document.getElementById('statYearLabel').innerText = selectedGraphYear;
-      document.getElementById('statYearSpendLabel').innerText = selectedGraphYear;
-      document.getElementById('statYearVols').innerText = `${curYearRead} vols`;
-      document.getElementById('statYearSpend').innerText = `฿${curYearSpend.toLocaleString()}`;
+      if (selectedAnalyticsScope === 'all') {
+        scopeRead = totalVolsReadCount;
+        scopeSpend = totalSpendAmount;
+        document.getElementById('scopeReadLabel').innerText = 'All-Time Read';
+        document.getElementById('scopeSpendLabel').innerText = 'All-Time Spend';
+      } else {
+        const curYearData = yearlyStats[selectedAnalyticsScope] || {};
+        Object.values(curYearData).forEach(m => {
+          scopeRead += (m.read || 0);
+          scopeSpend += (m.spend || 0);
+        });
+        document.getElementById('scopeReadLabel').innerText = `In ${selectedAnalyticsScope} (Read)`;
+        document.getElementById('scopeSpendLabel').innerText = `In ${selectedAnalyticsScope} (Spend)`;
+      }
 
-      document.getElementById('statTotalVols').innerText = `${totalVolsReadCount} vols`;
-      document.getElementById('statTotalSpend').innerText = `฿${totalSpendAmount.toLocaleString()}`;
+      document.getElementById('statScopeVols').innerText = `${scopeRead} vols`;
+      document.getElementById('statScopeSpend').innerText = `฿${scopeSpend.toLocaleString()}`;
       document.getElementById('statCompleteSeries').innerText = `${completedSeriesCount} series`;
       document.getElementById('statAvgPrice').innerText = `฿${totalPurchasedVolsCount > 0 ? (totalSpendAmount / totalPurchasedVolsCount).toFixed(0) : '0'}`;
 
-      const displayYearText = document.getElementById('displayYearText');
-      if (displayYearText) displayYearText.innerText = selectedGraphYear;
+      const activeChartYear = (selectedAnalyticsScope === 'all') ? '2026' : selectedAnalyticsScope;
+      document.getElementById('displayYearText').innerText = activeChartYear;
 
+      // 12-Month Bar Chart
       const barChartBox = document.getElementById('barChartBox');
       if (barChartBox) {
-        const yearMonths = yearlyStats[selectedGraphYear] || {};
+        const yearMonths = yearlyStats[activeChartYear] || {};
         const monthCounts = monthShorts.map((_, i) => (yearMonths[i] ? yearMonths[i].read : 0));
         const maxVal = Math.max(...monthCounts, 1);
 
@@ -2060,54 +1975,54 @@
         }).join('');
       }
 
+      // Year-by-Year Breakdown
       const detailedGrid = document.getElementById('detailedMonthlyGrid');
       if (detailedGrid) {
-        if (sortedYears.length === 0 || Object.keys(yearlyStats).length === 0) {
-          detailedGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:14px;">No finished volumes or spending logged yet.</div>`;
-        } else {
-          detailedGrid.innerHTML = sortedYears.map(yr => {
-            const months = yearlyStats[yr] || {};
-            let yrRead = 0;
-            let yrSpend = 0;
-            const rowsHtml = [];
+        detailedGrid.innerHTML = sortedYears.map(yr => {
+          const months = yearlyStats[yr] || {};
+          let yrRead = 0;
+          let yrSpend = 0;
+          const rowsHtml = [];
 
-            for (let mIdx = 11; mIdx >= 0; mIdx--) {
-              if (months[mIdx]) {
-                const data = months[mIdx];
-                yrRead += data.read;
-                yrSpend += data.spend;
-                rowsHtml.push(`
-                  <div class="month-row">
-                    <span style="font-weight:600; color:#433e38;">${monthShorts[mIdx]} ${yr}</span>
-                    <div style="display:flex; gap:6px; align-items:center;">
-                      ${data.read > 0 ? `<span class="badge badge-sage">✓ ${data.read} read</span>` : ''}
-                      ${data.spend > 0 ? `<span class="badge badge-rose">฿${data.spend.toLocaleString()}</span>` : ''}
-                    </div>
-                  </div>
-                `);
-              }
-            }
-
-            return `
-              <div class="year-group-box">
-                <div class="year-group-header">
-                  <span>📅 Year ${yr} Total</span>
-                  <div style="display:flex; gap:6px;">
-                    <span class="badge badge-blue">${yrRead} vols</span>
-                    <span class="badge badge-butter">฿${yrSpend.toLocaleString()}</span>
+          for (let mIdx = 11; mIdx >= 0; mIdx--) {
+            if (months[mIdx]) {
+              const data = months[mIdx];
+              yrRead += data.read;
+              yrSpend += data.spend;
+              rowsHtml.push(`
+                <div class="month-row">
+                  <span style="font-weight:600; color:#433e38;">${monthShorts[mIdx]} ${yr}</span>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    ${data.read > 0 ? `<span class="badge badge-sage">✓ ${data.read} read</span>` : ''}
+                    ${data.spend > 0 ? `<span class="badge badge-rose">฿${data.spend.toLocaleString()}</span>` : ''}
                   </div>
                 </div>
-                <div>${rowsHtml.length > 0 ? rowsHtml.join('') : '<div style="padding:8px 12px; font-size:0.72rem; color:var(--text-muted);">No monthly logs</div>'}</div>
+              `);
+            }
+          }
+
+          return `
+            <div class="year-group-box">
+              <div class="year-group-header">
+                <span>📅 Year ${yr} Total</span>
+                <div style="display:flex; gap:6px;">
+                  <span class="badge badge-blue">${yrRead} vols</span>
+                  <span class="badge badge-butter">฿${yrSpend.toLocaleString()}</span>
+                </div>
               </div>
-            `;
-          }).join('');
-        }
+              <div>${rowsHtml.length > 0 ? rowsHtml.join('') : '<div style="padding:8px 12px; font-size:0.72rem; color:var(--text-muted);">No monthly logs recorded</div>'}</div>
+            </div>
+          `;
+        }).join('');
       }
 
+      // ==================== 2. EBOOKS LIST RENDER ====================
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
         const matchesSearch = !search || b.title.toLowerCase().includes(search) || (b.author && b.author.toLowerCase().includes(search));
+        const matchesOrigin = currentOriginFilter === 'All' || (b.originGenre || 'Other') === currentOriginFilter;
+
         let matchesOwnedFilter = true;
         if (currentBookSubTab === 'read' && currentOwnedFilter !== 'All') {
           const hasReading = (b.volumes || []).some(v => v.status === 'Reading');
@@ -2117,11 +2032,11 @@
           else if (currentOwnedFilter === 'Unread') matchesOwnedFilter = hasUnread && !hasReading;
           else if (currentOwnedFilter === 'Finished') matchesOwnedFilter = allFinished;
         }
-        return matchesTab && matchesSearch && matchesOwnedFilter;
+        return matchesTab && matchesSearch && matchesOrigin && matchesOwnedFilter;
       });
 
       if (filteredBooks.length === 0) {
-        bookContainer.innerHTML = `<div class="empty-state">No series found on this shelf.</div>`;
+        bookContainer.innerHTML = `<div class="empty-state">No series found matching these filters.</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
           const isWishlist = (b.type === 'buy');
@@ -2131,6 +2046,17 @@
           const calculatedSpend = (b.volumes || []).filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
           const displayTotalSpend = calculatedSpend > 0 ? calculatedSpend : (parseFloat(b.price) || 0);
 
+          let releaseBadge = '';
+          if (isWishlist) {
+            if (b.releaseState === 'TBA') {
+              releaseBadge = `<span class="badge badge-butter">⏳ TBA Release</span>`;
+            } else if (b.releaseState === 'Confirmed Date') {
+              releaseBadge = `<span class="badge badge-blue">📅 Drops: ${b.targetReleaseDate || 'Confirmed'}</span>`;
+            } else {
+              releaseBadge = `<span class="badge badge-sage">✓ Available Now</span>`;
+            }
+          }
+
           return `
             <div class="item-card">
               <div class="item-header">
@@ -2138,9 +2064,10 @@
                   <div class="item-title">${b.title}</div>
                   ${b.author ? `<div class="item-author">${b.author}</div>` : ''}
                   <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
+                    <span class="badge badge-lavender">${b.originGenre || 'Other'}</span>
                     <span class="badge badge-gray">${b.platform}</span>
+                    ${releaseBadge}
                     ${isWishlist && b.buyStatus ? `<span class="badge badge-peach">${b.buyStatus}</span>` : ''}
-                    ${isWishlist && b.digitalStatus ? `<span class="badge badge-blue">${b.digitalStatus}</span>` : ''}
                     ${!isWishlist && b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Finished</span>' : ''}
                   </div>
                 </div>
@@ -2200,6 +2127,7 @@
         }).join('');
       }
 
+      // ==================== 3. SERIALS RENDER ====================
       const serialContainer = document.getElementById('serialListContainer');
       const filteredSerials = serials.filter(s => {
         const matchesType = currentSerialFilter === 'All' || s.format === currentSerialFilter;
@@ -2209,37 +2137,69 @@
       if (filteredSerials.length === 0) {
         serialContainer.innerHTML = `<div class="empty-state">No serials found.</div>`;
       } else {
-        serialContainer.innerHTML = filteredSerials.map(s => `
-          <div class="item-card">
-            <div class="item-header">
-              <div>
-                <div class="item-title">${s.title}</div>
-                ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
-                <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
-                  <span class="badge badge-lavender">${s.format}</span>
-                  <span class="badge badge-gray">${s.platform || 'Web'}</span>
-                  <span class="badge badge-blue">📍 Ep. ${s.chapter || '1'}</span>
+        serialContainer.innerHTML = filteredSerials.map(s => {
+          let progressTag = `📍 Ep. ${s.chapter || '1'}`;
+          if (s.status === 'Finished' && s.totalChapters) {
+            progressTag = `📍 Ep. ${s.chapter || s.totalChapters} / ${s.totalChapters} (End)`;
+          }
+
+          let statusBadgeClass = 'badge-peach';
+          if (s.status === 'Finished') statusBadgeClass = 'badge-sage';
+          if (s.status === 'Season Break') statusBadgeClass = 'badge-butter';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <div>
+                  <div class="item-title">${s.title}</div>
+                  ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
+                  <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
+                    <span class="badge badge-lavender">${s.format}</span>
+                    <span class="badge badge-gray">${s.platform || 'Web'}</span>
+                    <span class="badge badge-blue">${progressTag}</span>
+                  </div>
                 </div>
+                <span class="badge ${statusBadgeClass}">${s.status}</span>
               </div>
-              <span class="badge badge-peach">${s.status}</span>
+              ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
+              <div class="card-actions">
+                <button class="btn-action btn-edit" onclick="openEditModal('serial', '${s.id}')">✏️ Edit</button>
+                <button class="btn-action btn-delete" onclick="deleteSerial('${s.id}')">Delete</button>
+              </div>
             </div>
-            ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
-            <div class="card-actions">
-              <button class="btn-action btn-edit" onclick="openEditModal('serial', '${s.id}')">✏️ Edit</button>
-              <button class="btn-action btn-delete" onclick="deleteSerial('${s.id}')">Delete</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
+      // ==================== 4. TO-DO TASKS RENDER (TAGGED & GROUPED) ====================
       const taskContainer = document.getElementById('taskListContainer');
+      const tagPillBar = document.getElementById('taskTagPillBar');
+
+      // Dynamically generate clickable tag pills
+      const taskTags = Array.from(new Set(tasks.map(t => (t.tag || '').trim()).filter(Boolean)));
+      if (tagPillBar) {
+        if (taskTags.length > 0) {
+          tagPillBar.style.display = 'flex';
+          tagPillBar.innerHTML = `
+            <div class="shelf-pill ${currentTaskTagFilter === 'All' ? 'active' : ''}" onclick="filterTaskByTag('All')">All Tags</div>
+            ${taskTags.map(tag => `
+              <div class="shelf-pill ${currentTaskTagFilter === tag ? 'active' : ''}" onclick="filterTaskByTag('${tag}')">#${tag}</div>
+            `).join('')}
+          `;
+        } else {
+          tagPillBar.style.display = 'none';
+        }
+      }
+
       const filteredTasks = tasks.filter(t => {
         const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
+        const matchesTag = currentTaskTagFilter === 'All' || (t.tag || '') === currentTaskTagFilter;
         const matchesSearch = !search || t.title.toLowerCase().includes(search) || (t.notes && t.notes.toLowerCase().includes(search));
-        return matchesHorizon && matchesSearch;
+        return matchesHorizon && matchesTag && matchesSearch;
       });
+
       if (filteredTasks.length === 0) {
-        taskContainer.innerHTML = `<div class="empty-state">No tasks in this view.</div>`;
+        taskContainer.innerHTML = `<div class="empty-state">No tasks found in this view.</div>`;
       } else {
         taskContainer.innerHTML = filteredTasks.map(t => `
           <div class="item-card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
@@ -2247,8 +2207,9 @@
               <input type="checkbox" style="width:18px; height:18px; cursor:pointer; margin-top:3px;" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" />
               <div style="flex:1;">
                 <div class="item-title ${t.completed ? 'task-completed' : ''}">${t.title}</div>
-                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:flex; gap:6px; align-items:center;">
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
                   <span class="badge badge-gray">${t.horizon}</span>
+                  ${t.tag ? `<span class="badge badge-lavender" onclick="filterTaskByTag('${t.tag}')" style="cursor:pointer;">#${t.tag}</span>` : ''}
                   ${t.dueDate ? `<span>Due: ${t.dueDate}</span>` : ''}
                 </div>
                 ${t.notes ? `<div class="item-notes" style="margin-top:6px;">${t.notes}</div>` : ''}
@@ -2262,6 +2223,7 @@
         `).join('');
       }
 
+      // ==================== 5. CHORES RENDER ====================
       const choreContainer = document.getElementById('choreListContainer');
       const filteredChores = chores.filter(c => !search || c.name.toLowerCase().includes(search));
       if (filteredChores.length === 0) {
@@ -2295,7 +2257,7 @@
                 </span>
               </div>
               <div class="card-actions">
-                <button class="btn-action btn-backup" onclick="markChoreDone('${c.id}')">✓ Done Today</button>
+                <button class="btn-action btn-own" onclick="markChoreDone('${c.id}')">✓ Done Today</button>
                 <button class="btn-action btn-edit" onclick="openEditModal('chore', '${c.id}')">✏️</button>
                 <button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">✕</button>
               </div>
@@ -2304,9 +2266,22 @@
         }).join('');
       }
 
-      // --- Personal Care Bottle Lifespan Render with PAO Auto-Calculation ---
+      // ==================== 6. PERSONAL CARE & RESTOCK SUMMARY RENDER ====================
       const careContainer = document.getElementById('careListContainer');
       const today = new Date();
+
+      // Top Restock Alert Calculation
+      const lowItems = careItems.filter(c => c.needRestock && !c.dateFinished);
+      const alertBox = document.getElementById('careRestockAlertBox');
+      const alertList = document.getElementById('careRestockList');
+      if (alertBox && alertList) {
+        if (lowItems.length > 0) {
+          alertBox.style.display = 'block';
+          alertList.innerHTML = lowItems.map(item => `<strong>• ${item.name}</strong> (${item.category})`).join('<br>');
+        } else {
+          alertBox.style.display = 'none';
+        }
+      }
 
       const filteredCare = careItems.filter(c => {
         const matchesSearch = !search || c.name.toLowerCase().includes(search) || (c.category && c.category.toLowerCase().includes(search));
@@ -2314,8 +2289,10 @@
         const isEmptied = !!c.dateFinished;
         const isInUse = !!c.dateOpened && !c.dateFinished;
         const isStock = !c.dateOpened && !c.dateFinished;
+        const isLow = c.needRestock && !c.dateFinished;
 
         if (currentCareFilter === 'InUse') matchesStatus = isInUse;
+        else if (currentCareFilter === 'Low') matchesStatus = isLow;
         else if (currentCareFilter === 'Stock') matchesStatus = isStock;
         else if (currentCareFilter === 'Emptied') matchesStatus = isEmptied;
 
@@ -2323,7 +2300,7 @@
       });
 
       if (filteredCare.length === 0) {
-        careContainer.innerHTML = `<div class="empty-state">No care items found in this view.</div>`;
+        careContainer.innerHTML = `<div class="empty-state">No care items found matching this filter.</div>`;
       } else {
         careContainer.innerHTML = filteredCare.map(c => {
           let durationText = '';
@@ -2331,7 +2308,7 @@
           let actionBtn = '';
           let paoBadge = '';
 
-          // Calculate PAO Target Expiry Date if dateOpened & paoMonths are present
+          // PAO Target Expiry Date calculation
           if (c.dateOpened && c.paoMonths) {
             const expDateStr = calculatePaoExpiry(c.dateOpened, c.paoMonths);
             if (expDateStr) {
@@ -2376,6 +2353,7 @@
                   <div class="item-title">${c.name}</div>
                   <div style="margin-top: 4px; display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
                     <span class="badge badge-lavender">${c.category || 'Product'}</span>
+                    ${c.needRestock && !c.dateFinished ? '<span class="badge badge-rose">⚠️ Restock Needed</span>' : ''}
                     ${statusBadge}
                     ${paoBadge}
                   </div>
@@ -2385,6 +2363,11 @@
                 </div>
               </div>
               <div class="card-actions">
+                ${!c.dateFinished ? `
+                  <button class="btn-action ${c.needRestock ? 'btn-warning-action' : ''}" onclick="toggleCareRestock('${c.id}')">
+                    ${c.needRestock ? '✓ Restocked' : '⚠️ Mark Running Low'}
+                  </button>
+                ` : ''}
                 ${actionBtn}
                 <button class="btn-action btn-edit" onclick="openEditModal('care', '${c.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteCare('${c.id}')">✕</button>
@@ -2394,6 +2377,7 @@
         }).join('');
       }
 
+      // ==================== 7. SUBSCRIPTIONS RENDER ====================
       const subsContainer = document.getElementById('subsListContainer');
       const filteredSubs = subscriptions.filter(s => !search || s.name.toLowerCase().includes(search));
       if (filteredSubs.length === 0) {
@@ -2416,7 +2400,26 @@
         `).join('');
       }
 
+      // ==================== 8. SALES FESTS & ANNUAL MATRIX RENDER ====================
       const salesContainer = document.getElementById('salesListContainer');
+      const matrixBox = document.getElementById('salesCalendarMatrix');
+
+      // Build 12-Month Calendar Grid
+      if (matrixBox) {
+        matrixBox.innerHTML = monthNames.map((mName, idx) => {
+          const matchingSales = sales.filter(s => s.month === mName);
+          const hasEvents = matchingSales.length > 0;
+          return `
+            <div class="sales-month-cell ${hasEvents ? 'has-fest' : ''}">
+              <div class="sales-month-name">${monthShorts[idx]}</div>
+              <div style="font-size: 0.68rem; color: ${hasEvents ? '#8c6f2d' : 'var(--text-muted)'};">
+                ${hasEvents ? matchingSales.map(s => s.name).join(', ') : 'No Events'}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
       const filteredSales = sales.filter(s => !search || s.name.toLowerCase().includes(search) || (s.platform && s.platform.toLowerCase().includes(search)));
       if (filteredSales.length === 0) {
         salesContainer.innerHTML = `<div class="empty-state">No sale campaigns logged.</div>`;
