@@ -160,6 +160,32 @@
     .badge-butter { background: var(--pastel-butter); color: var(--pastel-butter-text); }
     .badge-gray { background: #e9ecef; color: #555e6d; }
 
+    /* Volume Progress Hero Pill */
+    .vol-tracker-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #eef2f6;
+      color: #334155;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.76rem;
+      margin-top: 4px;
+    }
+    .vol-rem-highlight {
+      color: #b45309;
+      background: #fef3c7;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+    .vol-done-highlight {
+      color: var(--pastel-sage-text);
+      background: var(--pastel-sage);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
     .chapter-hero {
       display: inline-flex;
       align-items: center;
@@ -179,13 +205,14 @@
     .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; color: var(--text-main); text-decoration: none; }
     .btn-action-primary { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); font-weight: 600; }
     .btn-bought { background: var(--pastel-sage); border-color: #d2e4d2; color: var(--pastel-sage-text); font-weight: 600; }
+    .btn-vol { background: #f1f5f9; border-color: #cbd5e1; color: #334155; font-weight: 600; }
     .btn-edit { background: #ffffff; border-color: #cbd5e1; color: #475569; }
     .btn-cal { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); }
     .btn-link { background: var(--pastel-lavender); border-color: #ded7ef; color: var(--pastel-lavender-text); }
     .btn-delete { color: #b91c1c; border-color: #fed7d7; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
 
-    /* Modal Styling */
+    /* Modal */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -270,22 +297,43 @@
         <h2 id="bookFormTitle">+ Add to Wishlist</h2>
         <div class="row">
           <div class="input-group" style="flex: 2;">
-            <label>Title</label>
-            <input type="text" id="bTitle" placeholder="Title / Series" />
+            <label>Title / Series</label>
+            <input type="text" id="bTitle" placeholder="e.g. Frieren, Omniscient Reader" />
           </div>
           <div class="input-group" style="flex: 1.2;">
             <label>Author</label>
             <input type="text" id="bAuthor" placeholder="Author" />
           </div>
         </div>
+
+        <!-- Volume Quantity & Series Status Row -->
         <div class="row">
-          <div class="input-group">
-            <label>Volume</label>
-            <input type="text" id="bVol" placeholder="Vol." />
+          <div class="input-group" style="flex: 1;">
+            <label>Vols Purchased</label>
+            <input type="number" id="bVolOwned" placeholder="e.g. 0" min="0" value="0" />
           </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Total Released</label>
+            <input type="number" id="bVolTotal" placeholder="e.g. 10" min="0" />
+          </div>
+          <div class="input-group" style="flex: 1.4;">
+            <label>Series Status</label>
+            <select id="bSeriesStatus">
+              <option value="Ongoing">Ongoing Series</option>
+              <option value="Waiting Announcement">Waiting Announcement</option>
+              <option value="Completed Series">Story Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
           <div class="input-group">
             <label>Store / App</label>
             <input type="text" id="bPlatform" placeholder="MEB, Kindle, etc." />
+          </div>
+          <div class="input-group">
+            <label>Volume Note / Detail</label>
+            <input type="text" id="bVol" placeholder="e.g. Vol. 1-4, Special Box" />
           </div>
         </div>
         
@@ -829,11 +877,18 @@
         ? (document.getElementById('bBuyDate').value || new Date().toISOString().split('T')[0]) 
         : null;
 
+      const volOwned = parseInt(document.getElementById('bVolOwned').value, 10) || (isOwnedTab ? 1 : 0);
+      const volTotal = parseInt(document.getElementById('bVolTotal').value, 10) || 0;
+      const seriesStatus = document.getElementById('bSeriesStatus').value;
+
       books.unshift({
         id: Date.now().toString(),
         title,
         author: document.getElementById('bAuthor').value.trim(),
         volume: document.getElementById('bVol').value.trim(),
+        volOwned,
+        volTotal,
+        seriesStatus,
         platform: document.getElementById('bPlatform').value.trim() || 'Ebook',
         notes: document.getElementById('bNotes').value.trim(),
         type: currentBookSubTab,
@@ -850,6 +905,8 @@
       document.getElementById('bTitle').value = '';
       document.getElementById('bAuthor').value = '';
       document.getElementById('bVol').value = '';
+      document.getElementById('bVolOwned').value = isOwnedTab ? '1' : '0';
+      document.getElementById('bVolTotal').value = '';
       document.getElementById('bPlatform').value = '';
       document.getElementById('bNotes').value = '';
       document.getElementById('bPrice').value = '';
@@ -864,13 +921,27 @@
       
       books = books.map(b => {
         if (b.id === id) {
+          const currentOwned = b.volOwned && b.volOwned > 0 ? b.volOwned : (b.volTotal || 1);
           return {
             ...b,
             type: 'read',
             readStatus: 'Unread',
             buyDate: today,
+            volOwned: currentOwned,
             price: promptPrice !== null && promptPrice.trim() !== '' ? promptPrice.trim() : b.price
           };
+        }
+        return b;
+      });
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function incrementBookVolume(id) {
+      books = books.map(b => {
+        if (b.id === id) {
+          const current = parseInt(b.volOwned || 0, 10);
+          return { ...b, volOwned: current + 1 };
         }
         return b;
       });
@@ -1206,11 +1277,11 @@
       if (category === 'book') {
         const b = books.find(x => x.id === id);
         if (!b) return;
-        title.innerText = 'Edit Ebook';
+        title.innerText = 'Edit Ebook / Series';
         const isBuy = b.type === 'buy';
         content.innerHTML = `
           <div class="input-group">
-            <label>Title</label>
+            <label>Title / Series</label>
             <input type="text" id="edit_bTitle" value="${(b.title || '').replace(/"/g, '&quot;')}" />
           </div>
           <div class="row">
@@ -1219,8 +1290,26 @@
               <input type="text" id="edit_bAuthor" value="${(b.author || '').replace(/"/g, '&quot;')}" />
             </div>
             <div class="input-group">
-              <label>Volume</label>
+              <label>Vol Detail / Tag</label>
               <input type="text" id="edit_bVol" value="${(b.volume || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Vols Purchased</label>
+              <input type="number" id="edit_bVolOwned" value="${b.volOwned !== undefined ? b.volOwned : (isBuy ? 0 : 1)}" min="0" />
+            </div>
+            <div class="input-group">
+              <label>Total Released</label>
+              <input type="number" id="edit_bVolTotal" value="${b.volTotal !== undefined ? b.volTotal : ''}" min="0" />
+            </div>
+            <div class="input-group">
+              <label>Series State</label>
+              <select id="edit_bSeriesStatus">
+                <option value="Ongoing" ${b.seriesStatus === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
+                <option value="Waiting Announcement" ${b.seriesStatus === 'Waiting Announcement' ? 'selected' : ''}>Waiting Announce</option>
+                <option value="Completed Series" ${b.seriesStatus === 'Completed Series' ? 'selected' : ''}>Completed</option>
+              </select>
             </div>
           </div>
           <div class="row">
@@ -1265,7 +1354,7 @@
               </div>
             </div>
             <div class="input-group">
-              <label>Progress</label>
+              <label>Reading Progress</label>
               <select id="edit_bReadStatus">
                 <option value="Unread" ${b.readStatus === 'Unread' ? 'selected' : ''}>Unread</option>
                 <option value="Reading" ${b.readStatus === 'Reading' ? 'selected' : ''}>Reading</option>
@@ -1508,6 +1597,9 @@
               title: document.getElementById('edit_bTitle').value.trim() || b.title,
               author: document.getElementById('edit_bAuthor').value.trim(),
               volume: document.getElementById('edit_bVol').value.trim(),
+              volOwned: parseInt(document.getElementById('edit_bVolOwned').value, 10) || 0,
+              volTotal: parseInt(document.getElementById('edit_bVolTotal').value, 10) || 0,
+              seriesStatus: document.getElementById('edit_bSeriesStatus').value,
               platform: document.getElementById('edit_bPlatform').value.trim(),
               price: document.getElementById('edit_bPrice').value.trim(),
               notes: document.getElementById('edit_bNotes').value.trim()
@@ -1717,19 +1809,51 @@
             digitalBadgeHtml = `<span class="badge ${dClass}">${b.digitalStatus}</span>`;
           }
 
+          let seriesStateBadge = '';
+          if (b.seriesStatus === 'Waiting Announcement') {
+            seriesStateBadge = `<span class="badge badge-rose">Waiting Announce</span>`;
+          } else if (b.seriesStatus === 'Completed Series') {
+            seriesStateBadge = `<span class="badge badge-sage">Series Complete</span>`;
+          }
+
           let statusBadgeClass = 'badge-butter';
           if (b.readStatus === 'Reading') statusBadgeClass = 'badge-blue';
           if (b.readStatus === 'Finished') statusBadgeClass = 'badge-sage';
+
+          // Volume calculations
+          const owned = parseInt(b.volOwned !== undefined ? b.volOwned : (isBuy ? 0 : 1), 10);
+          const total = parseInt(b.volTotal || 0, 10);
+          let volumePillHtml = '';
+
+          if (total > 0) {
+            const remaining = Math.max(0, total - owned);
+            volumePillHtml = `
+              <div class="vol-tracker-pill">
+                📚 <strong>${owned} / ${total}</strong> vols
+                ${remaining > 0 ? `<span class="vol-rem-highlight">${remaining} left to buy</span>` : `<span class="vol-done-highlight">Up to date</span>`}
+              </div>
+            `;
+          } else if (owned > 0) {
+            volumePillHtml = `
+              <div class="vol-tracker-pill">
+                📚 <strong>${owned}</strong> vols owned
+              </div>
+            `;
+          }
 
           return `
             <div class="item-card">
               <div class="item-header">
                 <div>
-                  <div class="item-title">${b.title} ${b.volume ? '· ' + b.volume : ''}</div>
+                  <div class="item-title">
+                    ${b.title} ${b.volume ? '· ' + b.volume : ''}
+                  </div>
                   ${b.author ? `<div class="item-author">${b.author}</div>` : ''}
-                  <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
+                  <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap; align-items:center;">
+                    ${seriesStateBadge}
                     ${digitalBadgeHtml}
                   </div>
+                  ${volumePillHtml}
                 </div>
 
                 ${isBuy ? `
@@ -1741,7 +1865,7 @@
                 `}
               </div>
 
-              <div class="item-sub">
+              <div class="item-sub" style="margin-top: 6px;">
                 ${b.platform} ${isBuy ? `· ${b.release}` : ''}
                 ${isBuy && b.price ? `· Est. ฿${b.price}` : ''}
                 ${!isBuy && (b.price || b.buyDate) ? `· 🏷️ ${b.price ? '฿' + b.price : 'Price unset'} ${b.buyDate ? '(' + b.buyDate + ')' : ''}` : ''}
@@ -1759,6 +1883,7 @@
                 ${isBuy ? `
                   <button class="btn-action btn-bought" onclick="markAsBought('${b.id}')">✓ Move to Owned</button>
                 ` : `
+                  <button class="btn-action btn-vol" onclick="incrementBookVolume('${b.id}')">+1 Vol Owned</button>
                   ${b.readStatus !== 'Reading' ? `<button class="btn-action btn-action-primary" onclick="updateBookProgress('${b.id}', 'Reading')">📖 Start</button>` : ''}
                   ${b.readStatus !== 'Finished' ? `<button class="btn-action btn-bought" onclick="updateBookProgress('${b.id}', 'Finished')">✓ Finish</button>` : ''}
                 `}
@@ -1800,9 +1925,7 @@
                   ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
                   <div style="margin-top: 5px; display:flex; gap: 5px; align-items: center; flex-wrap: wrap;">
                     <span class="badge ${formatBadgeClass}">${isManhwa ? 'Manhwa' : 'Novel'}</span>
-                    <span class="chapter-hero">
-                      ${s.chapter}
-                    </span>
+                    <span class="chapter-hero">${s.chapter}</span>
                   </div>
                 </div>
                 <span class="badge ${statusClass}" style="cursor:pointer;" onclick="toggleSerialStatus('${s.id}')">
@@ -2016,7 +2139,6 @@
       }
     }
 
-    // Default dates
     document.getElementById('cOpened').value = new Date().toISOString().split('T')[0];
     document.getElementById('chDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('tDate').value = new Date().toISOString().split('T')[0];
