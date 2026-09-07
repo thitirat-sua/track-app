@@ -75,11 +75,47 @@
     .sub-tab { flex: 1; padding: 7px 10px; text-align: center; border-radius: 20px; font-size: 0.76rem; font-weight: 600; background: #e8ebf0; color: var(--text-muted); cursor: pointer; }
     .sub-tab.active { background: var(--tab-active); color: #ffffff; }
 
+    .shelf-filters { display: flex; gap: 6px; margin: 4px 16px 8px 16px; overflow-x: auto; }
+    .shelf-pill { padding: 4px 10px; border-radius: 14px; font-size: 0.72rem; font-weight: 600; background: #ffffff; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+    .shelf-pill.active { background: var(--tab-active); color: #ffffff; border-color: var(--tab-active); }
+
     .search-wrapper { padding: 8px 16px 4px 16px; }
     .search-input { width: 100%; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); font-size: 0.84rem; background: #ffffff; outline: none; }
     .search-input:focus { border-color: #a0aec0; }
 
     .content-area { padding: 6px 16px 20px 16px; }
+
+    /* Summary Card Styling */
+    .summary-card {
+      background: #ffffff;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .summary-title { font-size: 0.86rem; font-weight: 700; color: #374151; }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .summary-month-box {
+      background: #fafbfc;
+      border: 1px solid #edf0f5;
+      padding: 9px 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .summary-month-name { font-size: 0.78rem; font-weight: 600; color: #475569; }
+    .summary-month-count { font-size: 0.85rem; font-weight: 700; color: var(--pastel-blue-text); background: var(--pastel-blue); padding: 2px 7px; border-radius: 6px; }
 
     .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
     .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #4b5563; }
@@ -96,6 +132,39 @@
     .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
     .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; }
     .item-author { font-size: 0.78rem; color: #717d91; margin-top: 1px; }
+
+    /* Task Item Checkbox Styling */
+    .task-item-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .task-check-circle {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 1.5px solid #94a3b8;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      transition: all 0.15s ease;
+      background: #fff;
+    }
+    .task-check-circle.completed {
+      background: var(--pastel-sage-text);
+      border-color: var(--pastel-sage-text);
+      color: #fff;
+      font-size: 0.72rem;
+    }
+    .task-content { flex: 1; min-width: 0; }
+    .task-text.completed {
+      text-decoration: line-through;
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
 
     .badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
     .badge-rose { background: var(--pastel-rose); color: var(--pastel-rose-text); }
@@ -141,11 +210,13 @@
     </div>
   </header>
 
+  <!-- Navigation with Minimal Emojis -->
   <div class="nav-bar">
     <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">📖</div>
     <div class="nav-tab" id="tabNavSerials" title="Serials & Manhwa" onclick="switchMainTab('serials')">🎨</div>
-    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">🧴</div>
+    <div class="nav-tab" id="tabNavTasks" title="To-Do Tasks" onclick="switchMainTab('tasks')">✅</div>
     <div class="nav-tab" id="tabNavChores" title="House Chores" onclick="switchMainTab('chores')">🧹</div>
+    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">🧴</div>
     <div class="nav-tab" id="tabNavSubs" title="Subscriptions" onclick="switchMainTab('subs')">💳</div>
     <div class="nav-tab" id="tabNavSales" title="Sales Fests" onclick="switchMainTab('sales')">🏷️</div>
   </div>
@@ -154,15 +225,35 @@
     <input type="search" id="globalSearch" class="search-input" placeholder="Search..." oninput="render()" />
   </div>
 
-  <!-- 1. EBOOKS -->
+  <!-- 1. EBOOKS SECTION -->
   <section id="sectionBooks">
     <div class="sub-tabs">
       <div class="sub-tab active" id="subTabBuy" onclick="switchBookSubTab('buy')">Wishlist</div>
-      <div class="sub-tab" id="subTabRead" onclick="switchBookSubTab('read')">Owned</div>
+      <div class="sub-tab" id="subTabRead" onclick="switchBookSubTab('read')">Owned Shelf</div>
     </div>
+
+    <!-- Monthly Summary -->
+    <div id="monthlySummaryWrapper" style="display: none; padding: 0 16px;">
+      <div class="summary-card">
+        <div class="summary-header">
+          <span class="summary-title">📊 Monthly Reading Breakdown</span>
+          <span id="totalFinishedBadge" class="badge badge-sage">0 Finished Total</span>
+        </div>
+        <div id="monthlyGrid" class="summary-grid"></div>
+      </div>
+    </div>
+
+    <!-- Shelf Filters -->
+    <div id="ownedShelfFilters" class="shelf-filters" style="display: none;">
+      <div class="shelf-pill active" id="filterOwnedAll" onclick="filterOwnedBooks('All')">All Owned</div>
+      <div class="shelf-pill" id="filterOwnedReading" onclick="filterOwnedBooks('Reading')">📖 Reading Now</div>
+      <div class="shelf-pill" id="filterOwnedUnread" onclick="filterOwnedBooks('Unread')">⏳ Unread</div>
+      <div class="shelf-pill" id="filterOwnedFinished" onclick="filterOwnedBooks('Finished')">✓ Finished</div>
+    </div>
+
     <div class="content-area">
       <div class="form-card">
-        <h2 id="bookFormTitle">+ Add Ebook</h2>
+        <h2 id="bookFormTitle">+ Add to Wishlist</h2>
         <div class="row">
           <div class="input-group" style="flex: 2;">
             <label>Title</label>
@@ -219,18 +310,24 @@
           </div>
         </div>
         <div id="readingFields" style="display: none;">
-          <div class="input-group">
-            <label>Progress</label>
-            <select id="bReadStatus">
-              <option value="Unread">Unread</option>
-              <option value="Reading">Reading</option>
-              <option value="Finished">Finished</option>
-            </select>
+          <div class="row">
+            <div class="input-group">
+              <label>Reading Status</label>
+              <select id="bReadStatus" onchange="toggleFinishedDateField()">
+                <option value="Unread">Unread (In Backlog)</option>
+                <option value="Reading">Currently Reading</option>
+                <option value="Finished">Finished</option>
+              </select>
+            </div>
+            <div class="input-group" id="finishedDateInputGroup" style="display: none;">
+              <label>Finished Date</label>
+              <input type="date" id="bFinishedDate" />
+            </div>
           </div>
         </div>
         <div class="input-group">
           <label>Notes</label>
-          <input type="text" id="bNotes" placeholder="Price, promo, decision details" />
+          <input type="text" id="bNotes" placeholder="Price, promo, or reading thoughts" />
         </div>
         <button class="btn-submit" onclick="saveBook()">Save</button>
       </div>
@@ -299,7 +396,96 @@
     </div>
   </section>
 
-  <!-- 3. PERSONAL CARE -->
+  <!-- 3. TO-DO TASKS SECTION -->
+  <section id="sectionTasks" style="display: none;">
+    <div class="sub-tabs">
+      <div class="sub-tab active" id="taskFilterToday" onclick="filterTasks('Today')">Today</div>
+      <div class="sub-tab" id="taskFilterWeek" onclick="filterTasks('Week')">This Week</div>
+      <div class="sub-tab" id="taskFilterMonth" onclick="filterTasks('Month')">This Month</div>
+      <div class="sub-tab" id="taskFilterAll" onclick="filterTasks('All')">All Tasks</div>
+    </div>
+
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Task</h2>
+        <div class="input-group">
+          <label>Task Description</label>
+          <input type="text" id="tTitle" placeholder="e.g. Schedule dentist, review manuscript, buy gifts" />
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Time Horizon</label>
+            <select id="tHorizon" onchange="adjustTaskDateDefault()">
+              <option value="Today">Today</option>
+              <option value="Week">This Week</option>
+              <option value="Month">This Month</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Due Date</label>
+            <input type="date" id="tDate" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Priority</label>
+            <select id="tPriority">
+              <option value="Normal">Normal</option>
+              <option value="High">⚠️ Priority / Urgent</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Category / Note</label>
+            <input type="text" id="tNotes" placeholder="e.g. Academic, Personal, Errands" />
+          </div>
+        </div>
+        <button class="btn-submit" onclick="saveTask()">Save Task</button>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; align-items: center; margin: 6px 2px 10px 2px;">
+        <span id="taskCounterText" style="font-size: 0.74rem; font-weight: 600; color: var(--text-muted);">0 tasks</span>
+        <button class="btn-action" style="font-size: 0.7rem; color: var(--text-muted);" onclick="clearCompletedTasks()">Clear Completed</button>
+      </div>
+
+      <div id="taskListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 4. HOUSE CHORES -->
+  <section id="sectionChores" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Recurring Chore</h2>
+        <div class="input-group">
+          <label>Chore Name</label>
+          <input type="text" id="chName" placeholder="e.g. Bedsheets, Clean Bathroom, Delicates" />
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Last Done</label>
+            <input type="date" id="chDate" />
+          </div>
+          <div class="input-group">
+            <label>Repeat Every</label>
+            <select id="chFreq">
+              <option value="7">7 Days</option>
+              <option value="14">14 Days</option>
+              <option value="21">21 Days</option>
+              <option value="30">30 Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <input type="text" id="chNotes" placeholder="Wash cycle or cleaning tips" />
+        </div>
+        <button class="btn-submit" onclick="saveChore()">Save Chore</button>
+      </div>
+      <div id="choreListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 5. PERSONAL CARE -->
   <section id="sectionCare" style="display: none;">
     <div class="content-area">
       <div class="form-card">
@@ -339,47 +525,13 @@
             <input type="date" id="cFinished" />
           </div>
         </div>
-        <button class="btn-submit" onclick="saveCareItem()">Save</button>
+        <button class="btn-submit" onclick="saveCareItem()">Save Item</button>
       </div>
       <div id="careListContainer"></div>
     </div>
   </section>
 
-  <!-- 4. HOUSE CHORES -->
-  <section id="sectionChores" style="display: none;">
-    <div class="content-area">
-      <div class="form-card">
-        <h2>+ Add Chore</h2>
-        <div class="input-group">
-          <label>Chore Name</label>
-          <input type="text" id="chName" placeholder="e.g. Bedsheets, Bathroom, Delicates" />
-        </div>
-        <div class="row">
-          <div class="input-group">
-            <label>Last Done</label>
-            <input type="date" id="chDate" />
-          </div>
-          <div class="input-group">
-            <label>Repeat Every</label>
-            <select id="chFreq">
-              <option value="7">7 Days</option>
-              <option value="14">14 Days</option>
-              <option value="21">21 Days</option>
-              <option value="30">30 Days</option>
-            </select>
-          </div>
-        </div>
-        <div class="input-group">
-          <label>Notes</label>
-          <input type="text" id="chNotes" placeholder="Wash cycle or cleaning tips" />
-        </div>
-        <button class="btn-submit" onclick="saveChore()">Save</button>
-      </div>
-      <div id="choreListContainer"></div>
-    </div>
-  </section>
-
-  <!-- 5. SUBSCRIPTIONS -->
+  <!-- 6. SUBSCRIPTIONS -->
   <section id="sectionSubs" style="display: none;">
     <div class="content-area">
       <div class="form-card">
@@ -409,13 +561,13 @@
           <label>Notes</label>
           <input type="text" id="subNotes" placeholder="Cancel instructions / links" />
         </div>
-        <button class="btn-submit" onclick="saveSubscription()">Save</button>
+        <button class="btn-submit" onclick="saveSubscription()">Save Subscription</button>
       </div>
       <div id="subsListContainer"></div>
     </div>
   </section>
 
-  <!-- 6. SALES FESTS -->
+  <!-- 7. SALES FESTS -->
   <section id="sectionSales" style="display: none;">
     <div class="content-area">
       <div class="form-card">
@@ -455,7 +607,7 @@
           <label>Strategy</label>
           <input type="text" id="sNotes" placeholder="Reminder for next year" />
         </div>
-        <button class="btn-submit" onclick="saveSaleEvent()">Save</button>
+        <button class="btn-submit" onclick="saveSaleEvent()">Save Sale Pattern</button>
       </div>
       <div id="salesListContainer"></div>
     </div>
@@ -464,19 +616,22 @@
   <script>
     let books = JSON.parse(localStorage.getItem('track_books') || '[]');
     let serials = JSON.parse(localStorage.getItem('track_serials') || '[]');
-    let careItems = JSON.parse(localStorage.getItem('track_care') || '[]');
+    let tasks = JSON.parse(localStorage.getItem('track_tasks') || '[]');
     let chores = JSON.parse(localStorage.getItem('track_chores') || '[]');
+    let careItems = JSON.parse(localStorage.getItem('track_care') || '[]');
     let subscriptions = JSON.parse(localStorage.getItem('track_subs') || '[]');
     let sales = JSON.parse(localStorage.getItem('track_sales') || '[]');
     
     let currentMainTab = 'books';
     let currentBookSubTab = 'buy';
+    let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
+    let currentTaskFilter = 'Today';
 
     const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     function exportData() {
-      const data = { books, serials, careItems, chores, subscriptions, sales, exportDate: new Date().toISOString() };
+      const data = { books, serials, tasks, chores, careItems, subscriptions, sales, exportDate: new Date().toISOString() };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -496,15 +651,17 @@
           if (confirm('Restore backup and overwrite current entries?')) {
             books = parsed.books || [];
             serials = parsed.serials || [];
-            careItems = parsed.careItems || [];
+            tasks = parsed.tasks || [];
             chores = parsed.chores || [];
+            careItems = parsed.careItems || [];
             subscriptions = parsed.subscriptions || [];
             sales = parsed.sales || [];
             
             localStorage.setItem('track_books', JSON.stringify(books));
             localStorage.setItem('track_serials', JSON.stringify(serials));
-            localStorage.setItem('track_care', JSON.stringify(careItems));
+            localStorage.setItem('track_tasks', JSON.stringify(tasks));
             localStorage.setItem('track_chores', JSON.stringify(chores));
+            localStorage.setItem('track_care', JSON.stringify(careItems));
             localStorage.setItem('track_subs', JSON.stringify(subscriptions));
             localStorage.setItem('track_sales', JSON.stringify(sales));
             render();
@@ -518,7 +675,7 @@
 
     function switchMainTab(tab) {
       currentMainTab = tab;
-      const tabs = ['books', 'serials', 'care', 'chores', 'subs', 'sales'];
+      const tabs = ['books', 'serials', 'tasks', 'chores', 'care', 'subs', 'sales'];
       tabs.forEach(t => {
         const navEl = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
         const secEl = document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1));
@@ -534,7 +691,26 @@
       document.getElementById('subTabRead').classList.toggle('active', sub === 'read');
       document.getElementById('buyingFields').style.display = sub === 'buy' ? 'block' : 'none';
       document.getElementById('readingFields').style.display = sub === 'read' ? 'block' : 'none';
-      document.getElementById('bookFormTitle').innerText = sub === 'buy' ? '+ Add to Wishlist' : '+ Add to Owned';
+      document.getElementById('ownedShelfFilters').style.display = sub === 'read' ? 'flex' : 'none';
+      document.getElementById('monthlySummaryWrapper').style.display = sub === 'read' ? 'block' : 'none';
+      document.getElementById('bookFormTitle').innerText = sub === 'buy' ? '+ Add to Wishlist' : '+ Add Directly to Owned Shelf';
+      render();
+    }
+
+    function toggleFinishedDateField() {
+      const isFinished = document.getElementById('bReadStatus').value === 'Finished';
+      document.getElementById('finishedDateInputGroup').style.display = isFinished ? 'block' : 'none';
+      if (isFinished && !document.getElementById('bFinishedDate').value) {
+        document.getElementById('bFinishedDate').value = new Date().toISOString().split('T')[0];
+      }
+    }
+
+    function filterOwnedBooks(filter) {
+      currentOwnedFilter = filter;
+      document.getElementById('filterOwnedAll').classList.toggle('active', filter === 'All');
+      document.getElementById('filterOwnedReading').classList.toggle('active', filter === 'Reading');
+      document.getElementById('filterOwnedUnread').classList.toggle('active', filter === 'Unread');
+      document.getElementById('filterOwnedFinished').classList.toggle('active', filter === 'Finished');
       render();
     }
 
@@ -546,11 +722,29 @@
       render();
     }
 
+    function filterTasks(horizon) {
+      currentTaskFilter = horizon;
+      document.getElementById('taskFilterToday').classList.toggle('active', horizon === 'Today');
+      document.getElementById('taskFilterWeek').classList.toggle('active', horizon === 'Week');
+      document.getElementById('taskFilterMonth').classList.toggle('active', horizon === 'Month');
+      document.getElementById('taskFilterAll').classList.toggle('active', horizon === 'All');
+      render();
+    }
+
+    function adjustTaskDateDefault() {
+      const horiz = document.getElementById('tHorizon').value;
+      const today = new Date();
+      if (horiz === 'Today') {
+        document.getElementById('tDate').value = today.toISOString().split('T')[0];
+      }
+    }
+
     function toggleDateInput() {
       const type = document.getElementById('bReleaseType').value;
       document.getElementById('releaseDateGroup').style.display = (type === 'Date') ? 'block' : 'none';
     }
 
+    // Books Logic
     function saveBook() {
       const title = document.getElementById('bTitle').value.trim();
       if (!title) return alert('Enter title');
@@ -560,6 +754,12 @@
       else if (releaseType === 'Date') {
         const d = document.getElementById('bReleaseDate').value;
         releaseDisplay = d || 'Unset';
+      }
+
+      const readStatus = currentBookSubTab === 'read' ? document.getElementById('bReadStatus').value : 'Unread';
+      let finishedDate = null;
+      if (readStatus === 'Finished') {
+        finishedDate = document.getElementById('bFinishedDate').value || new Date().toISOString().split('T')[0];
       }
 
       books.unshift({
@@ -573,7 +773,8 @@
         buyStatus: document.getElementById('bBuyStatus').value,
         digitalStatus: document.getElementById('bDigitalStatus').value,
         release: releaseDisplay,
-        readStatus: document.getElementById('bReadStatus').value
+        readStatus,
+        finishedDate
       });
       localStorage.setItem('track_books', JSON.stringify(books));
       document.getElementById('bTitle').value = '';
@@ -590,12 +791,52 @@
       render();
     }
 
+    function updateBookProgress(id, status) {
+      const today = new Date().toISOString().split('T')[0];
+      books = books.map(b => {
+        if (b.id === id) {
+          const update = { ...b, readStatus: status };
+          if (status === 'Finished' && !b.finishedDate) update.finishedDate = today;
+          return update;
+        }
+        return b;
+      });
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function editFinishedDate(id, currentVal) {
+      const newDate = prompt('When did you finish this book? (YYYY-MM-DD)', currentVal || new Date().toISOString().split('T')[0]);
+      if (!newDate) return;
+      books = books.map(b => b.id === id ? { ...b, finishedDate: newDate.trim(), readStatus: 'Finished' } : b);
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function cycleReadStatus(id) {
+      const today = new Date().toISOString().split('T')[0];
+      books = books.map(b => {
+        if (b.id === id) {
+          let next = 'Reading';
+          let fDate = b.finishedDate;
+          if (b.readStatus === 'Unread') next = 'Reading';
+          else if (b.readStatus === 'Reading') { next = 'Finished'; fDate = fDate || today; }
+          else next = 'Unread';
+          return { ...b, readStatus: next, finishedDate: fDate };
+        }
+        return b;
+      });
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
     function deleteBook(id) {
       books = books.filter(b => b.id !== id);
       localStorage.setItem('track_books', JSON.stringify(books));
       render();
     }
 
+    // Serials
     function saveSerial() {
       const title = document.getElementById('sTitle').value.trim();
       if (!title) return alert('Enter title');
@@ -679,6 +920,85 @@
       render();
     }
 
+    // Tasks Logic
+    function saveTask() {
+      const title = document.getElementById('tTitle').value.trim();
+      if (!title) return alert('Enter task description');
+
+      const horizon = document.getElementById('tHorizon').value;
+      let dueDate = document.getElementById('tDate').value;
+      if (!dueDate && horizon === 'Today') {
+        dueDate = new Date().toISOString().split('T')[0];
+      }
+
+      tasks.unshift({
+        id: Date.now().toString(),
+        title,
+        horizon,
+        dueDate: dueDate || '',
+        priority: document.getElementById('tPriority').value,
+        notes: document.getElementById('tNotes').value.trim(),
+        completed: false
+      });
+
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      document.getElementById('tTitle').value = '';
+      document.getElementById('tNotes').value = '';
+      render();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function clearCompletedTasks() {
+      if (!confirm('Clear all completed tasks?')) return;
+      tasks = tasks.filter(t => !t.completed);
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    // Chores
+    function saveChore() {
+      const name = document.getElementById('chName').value.trim();
+      const date = document.getElementById('chDate').value;
+      if (!name || !date) return alert('Enter chore and date');
+
+      chores.unshift({
+        id: Date.now().toString(),
+        name,
+        lastDone: date,
+        frequency: parseInt(document.getElementById('chFreq').value, 10),
+        notes: document.getElementById('chNotes').value.trim()
+      });
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      document.getElementById('chName').value = '';
+      document.getElementById('chNotes').value = '';
+      render();
+    }
+
+    function resetChoreToday(id) {
+      const today = new Date().toISOString().split('T')[0];
+      chores = chores.map(c => c.id === id ? { ...c, lastDone: today } : c);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    function deleteChore(id) {
+      chores = chores.filter(c => c.id !== id);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    // Care
     function saveCareItem() {
       const name = document.getElementById('cName').value.trim();
       if (!name) return alert('Enter product name');
@@ -712,37 +1032,7 @@
       render();
     }
 
-    function saveChore() {
-      const name = document.getElementById('chName').value.trim();
-      const date = document.getElementById('chDate').value;
-      if (!name || !date) return alert('Enter chore and date');
-
-      chores.unshift({
-        id: Date.now().toString(),
-        name,
-        lastDone: date,
-        frequency: parseInt(document.getElementById('chFreq').value, 10),
-        notes: document.getElementById('chNotes').value.trim()
-      });
-      localStorage.setItem('track_chores', JSON.stringify(chores));
-      document.getElementById('chName').value = '';
-      document.getElementById('chNotes').value = '';
-      render();
-    }
-
-    function resetChoreToday(id) {
-      const today = new Date().toISOString().split('T')[0];
-      chores = chores.map(c => c.id === id ? { ...c, lastDone: today } : c);
-      localStorage.setItem('track_chores', JSON.stringify(chores));
-      render();
-    }
-
-    function deleteChore(id) {
-      chores = chores.filter(c => c.id !== id);
-      localStorage.setItem('track_chores', JSON.stringify(chores));
-      render();
-    }
-
+    // Subscriptions
     function saveSubscription() {
       const name = document.getElementById('subName').value.trim();
       const date = document.getElementById('subDate').value;
@@ -788,6 +1078,7 @@
       document.body.removeChild(link);
     }
 
+    // Sales Fests
     function saveSaleEvent() {
       const name = document.getElementById('sName').value.trim();
       if (!name) return alert('Enter campaign name');
@@ -828,8 +1119,43 @@
       return finished ? `Lasted ${diffDays}d` : `${diffDays}d in use`;
     }
 
+    // Main Render Function
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
+
+      // Monthly Summary (Books)
+      const finishedBooks = books.filter(b => b.type === 'read' && b.readStatus === 'Finished');
+      const totalFinishedBadge = document.getElementById('totalFinishedBadge');
+      if (totalFinishedBadge) totalFinishedBadge.innerText = `${finishedBooks.length} Total Finished`;
+
+      const monthlyCounts = {};
+      finishedBooks.forEach(b => {
+        let mKey = 'No Date Logged';
+        if (b.finishedDate) {
+          const parts = b.finishedDate.split('-');
+          if (parts.length >= 2) {
+            const year = parts[0];
+            const monthName = new Date(b.finishedDate + 'T00:00:00').toLocaleString('default', { month: 'short' });
+            mKey = `${monthName} ${year}`;
+          }
+        }
+        monthlyCounts[mKey] = (monthlyCounts[mKey] || 0) + 1;
+      });
+
+      const mGrid = document.getElementById('monthlyGrid');
+      if (mGrid) {
+        const monthKeys = Object.keys(monthlyCounts);
+        if (monthKeys.length === 0) {
+          mGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); grid-column: 1/-1;">No completed books logged with dates yet.</div>`;
+        } else {
+          mGrid.innerHTML = monthKeys.map(k => `
+            <div class="summary-month-box">
+              <span class="summary-month-name">${k}</span>
+              <span class="summary-month-count">${monthlyCounts[k]} ${monthlyCounts[k] === 1 ? 'book' : 'books'}</span>
+            </div>
+          `).join('');
+        }
+      }
 
       // Books
       const bookContainer = document.getElementById('bookListContainer');
@@ -839,15 +1165,20 @@
           b.title.toLowerCase().includes(search) || 
           (b.author && b.author.toLowerCase().includes(search)) ||
           b.platform.toLowerCase().includes(search);
-        return matchesTab && matchesSearch;
+        
+        let matchesOwnedFilter = true;
+        if (currentBookSubTab === 'read' && currentOwnedFilter !== 'All') {
+          matchesOwnedFilter = (b.readStatus === currentOwnedFilter);
+        }
+
+        return matchesTab && matchesSearch && matchesOwnedFilter;
       });
 
       if (filteredBooks.length === 0) {
-        bookContainer.innerHTML = `<div class="empty-state">No entries.</div>`;
+        bookContainer.innerHTML = `<div class="empty-state">No ebooks matching this shelf.</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
           const isBuy = b.type === 'buy';
-          let statusBadge = isBuy ? (b.buyStatus === 'Decided to Buy' ? 'badge-sage' : 'badge-butter') : 'badge-sage';
 
           let digitalBadgeHtml = '';
           if (isBuy && b.digitalStatus && b.digitalStatus !== 'Available') {
@@ -857,6 +1188,10 @@
             if (b.digitalStatus === 'Awaiting Translation') dClass = 'badge-lavender';
             digitalBadgeHtml = `<span class="badge ${dClass}">${b.digitalStatus}</span>`;
           }
+
+          let statusBadgeClass = 'badge-butter';
+          if (b.readStatus === 'Reading') statusBadgeClass = 'badge-blue';
+          if (b.readStatus === 'Finished') statusBadgeClass = 'badge-sage';
 
           return `
             <div class="item-card">
@@ -868,14 +1203,30 @@
                     ${digitalBadgeHtml}
                   </div>
                 </div>
-                <span class="badge ${statusBadge}">${isBuy ? b.buyStatus : b.readStatus}</span>
+
+                ${isBuy ? `
+                  <span class="badge ${b.buyStatus === 'Decided to Buy' ? 'badge-sage' : 'badge-butter'}">${b.buyStatus}</span>
+                ` : `
+                  <span class="badge ${statusBadgeClass}" style="cursor:pointer;" onclick="cycleReadStatus('${b.id}')" title="Click to cycle status">
+                    ${b.readStatus === 'Reading' ? '📖 ' : ''}${b.readStatus || 'Unread'} ⟳
+                  </span>
+                `}
               </div>
+
               <div class="item-sub">
                 ${b.platform} ${isBuy ? `· ${b.release}` : ''}
+                ${!isBuy && b.finishedDate ? `· Finished: <strong style="cursor:pointer; text-decoration:underline;" onclick="editFinishedDate('${b.id}', '${b.finishedDate}')">${b.finishedDate} ✏️</strong>` : ''}
               </div>
+
               ${b.notes ? `<div class="item-notes">${b.notes}</div>` : ''}
+
               <div class="card-actions">
-                ${isBuy ? `<button class="btn-action btn-bought" onclick="markAsBought('${b.id}')">✓ Owned</button>` : ''}
+                ${isBuy ? `
+                  <button class="btn-action btn-bought" onclick="markAsBought('${b.id}')">✓ Move to Owned</button>
+                ` : `
+                  ${b.readStatus !== 'Reading' ? `<button class="btn-action btn-action-primary" onclick="updateBookProgress('${b.id}', 'Reading')">📖 Start</button>` : ''}
+                  ${b.readStatus !== 'Finished' ? `<button class="btn-action btn-bought" onclick="updateBookProgress('${b.id}', 'Finished')">✓ Finish</button>` : ''}
+                `}
                 <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
               </div>
             </div>
@@ -936,33 +1287,42 @@
         }).join('');
       }
 
-      // Care
-      const careContainer = document.getElementById('careListContainer');
-      const filteredCare = careItems.filter(s => !search || s.name.toLowerCase().includes(search) || s.store.toLowerCase().includes(search));
-      if (filteredCare.length === 0) {
-        careContainer.innerHTML = `<div class="empty-state">No care items.</div>`;
-      } else {
-        careContainer.innerHTML = filteredCare.map(s => {
-          const duration = calculateDays(s.opened, s.finished);
-          let catBadge = 'badge-butter';
-          if (s.category === 'Haircare') catBadge = 'badge-lavender';
-          if (s.category === 'Body & Bath') catBadge = 'badge-blue';
+      // To-Do Tasks
+      const taskContainer = document.getElementById('taskListContainer');
+      const filteredTasks = tasks.filter(t => {
+        const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
+        const matchesSearch = !search || t.title.toLowerCase().includes(search) || (t.notes && t.notes.toLowerCase().includes(search));
+        return matchesHorizon && matchesSearch;
+      });
 
+      const openCount = filteredTasks.filter(t => !t.completed).length;
+      const counterEl = document.getElementById('taskCounterText');
+      if (counterEl) counterEl.innerText = `${openCount} pending (${filteredTasks.length} total)`;
+
+      if (filteredTasks.length === 0) {
+        taskContainer.innerHTML = `<div class="empty-state">No tasks in this view. Add one above!</div>`;
+      } else {
+        taskContainer.innerHTML = filteredTasks.map(t => {
           return `
-            <div class="item-card">
-              <div class="item-header">
-                <span class="item-title">${s.name}</span>
-                <div>
-                  <span class="badge ${catBadge}">${s.category || 'Care'}</span>
-                  <span class="badge ${s.finished ? 'badge-gray' : 'badge-sage'}">${s.finished ? 'Empty' : 'In Use'}</span>
-                </div>
+            <div class="item-card task-item-card">
+              <div class="task-check-circle ${t.completed ? 'completed' : ''}" onclick="toggleTask('${t.id}')">
+                ${t.completed ? '✓' : ''}
               </div>
-              <div class="item-sub">${s.store} ${s.price ? `· ${s.price}` : ''}</div>
-              <div class="item-sub">Opened ${s.opened || 'N/A'} ${s.finished ? `· Finished ${s.finished}` : ''}</div>
-              <div class="item-notes">⏳ ${duration}</div>
-              <div class="card-actions">
-                ${!s.finished ? `<button class="btn-action btn-bought" onclick="markCareFinished('${s.id}')">Mark Empty</button>` : ''}
-                <button class="btn-action btn-delete" onclick="deleteCareItem('${s.id}')">Delete</button>
+              <div class="task-content">
+                <div class="item-header" style="margin-bottom: 3px;">
+                  <span class="item-title task-text ${t.completed ? 'completed' : ''}">${t.title}</span>
+                  <div>
+                    ${t.priority === 'High' ? '<span class="badge badge-rose">Priority</span>' : ''}
+                    <span class="badge badge-gray">${t.horizon}</span>
+                  </div>
+                </div>
+                <div class="item-sub">
+                  ${t.dueDate ? `📅 Due: <strong>${t.dueDate}</strong>` : ''}
+                  ${t.notes ? ` ${t.dueDate ? '·' : ''} 🏷️ ${t.notes}` : ''}
+                </div>
+                <div class="card-actions" style="margin-top: 4px;">
+                  <button class="btn-action btn-delete" onclick="deleteTask('${t.id}')">Delete</button>
+                </div>
               </div>
             </div>
           `;
@@ -1008,6 +1368,39 @@
               <div class="card-actions">
                 <button class="btn-action btn-bought" onclick="resetChoreToday('${c.id}')">✓ Done Today</button>
                 <button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Care
+      const careContainer = document.getElementById('careListContainer');
+      const filteredCare = careItems.filter(s => !search || s.name.toLowerCase().includes(search) || s.store.toLowerCase().includes(search));
+      if (filteredCare.length === 0) {
+        careContainer.innerHTML = `<div class="empty-state">No care items.</div>`;
+      } else {
+        careContainer.innerHTML = filteredCare.map(s => {
+          const duration = calculateDays(s.opened, s.finished);
+          let catBadge = 'badge-butter';
+          if (s.category === 'Haircare') catBadge = 'badge-lavender';
+          if (s.category === 'Body & Bath') catBadge = 'badge-blue';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-title">${s.name}</span>
+                <div>
+                  <span class="badge ${catBadge}">${s.category || 'Care'}</span>
+                  <span class="badge ${s.finished ? 'badge-gray' : 'badge-sage'}">${s.finished ? 'Empty' : 'In Use'}</span>
+                </div>
+              </div>
+              <div class="item-sub">${s.store} ${s.price ? `· ${s.price}` : ''}</div>
+              <div class="item-sub">Opened ${s.opened || 'N/A'} ${s.finished ? `· Finished ${s.finished}` : ''}</div>
+              <div class="item-notes">⏳ ${duration}</div>
+              <div class="card-actions">
+                ${!s.finished ? `<button class="btn-action btn-bought" onclick="markCareFinished('${s.id}')">Mark Empty</button>` : ''}
+                <button class="btn-action btn-delete" onclick="deleteCareItem('${s.id}')">Delete</button>
               </div>
             </div>
           `;
@@ -1081,8 +1474,10 @@
       }
     }
 
+    // Default dates on startup
     document.getElementById('cOpened').value = new Date().toISOString().split('T')[0];
     document.getElementById('chDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('tDate').value = new Date().toISOString().split('T')[0];
     render();
   </script>
 </body>
