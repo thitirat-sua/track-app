@@ -179,10 +179,41 @@
     .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; color: var(--text-main); text-decoration: none; }
     .btn-action-primary { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); font-weight: 600; }
     .btn-bought { background: var(--pastel-sage); border-color: #d2e4d2; color: var(--pastel-sage-text); font-weight: 600; }
+    .btn-edit { background: #ffffff; border-color: #cbd5e1; color: #475569; }
     .btn-cal { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); }
     .btn-link { background: var(--pastel-lavender); border-color: #ded7ef; color: var(--pastel-lavender-text); }
     .btn-delete { color: #b91c1c; border-color: #fed7d7; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .modal-box {
+      background: #ffffff;
+      border-radius: var(--radius);
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .modal-title { font-size: 0.95rem; font-weight: 700; color: #374151; }
+    .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
   </style>
 </head>
 <body>
@@ -217,7 +248,6 @@
       <div class="sub-tab" id="subTabRead" onclick="switchBookSubTab('read')">Owned Shelf</div>
     </div>
 
-    <!-- Monthly Summary -->
     <div id="monthlySummaryWrapper" style="display: none; padding: 0 16px;">
       <div class="summary-card">
         <div class="summary-header">
@@ -228,7 +258,6 @@
       </div>
     </div>
 
-    <!-- Shelf Filters -->
     <div id="ownedShelfFilters" class="shelf-filters" style="display: none;">
       <div class="shelf-pill active" id="filterOwnedAll" onclick="filterOwnedBooks('All')">All Owned</div>
       <div class="shelf-pill" id="filterOwnedReading" onclick="filterOwnedBooks('Reading')">📖 Reading Now</div>
@@ -615,6 +644,18 @@
     </div>
   </section>
 
+  <!-- EDIT MODAL -->
+  <div id="editModalOverlay" class="modal-overlay" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <span class="modal-title" id="editModalTitle">Edit Item</span>
+        <button class="modal-close" onclick="closeEditModal()">✕</button>
+      </div>
+      <div id="editModalContent"></div>
+      <button class="btn-submit" style="margin-top: 12px;" onclick="saveItemEdit()">Save Changes</button>
+    </div>
+  </div>
+
   <script>
     let books = JSON.parse(localStorage.getItem('track_books') || '[]');
     let serials = JSON.parse(localStorage.getItem('track_serials') || '[]');
@@ -630,6 +671,9 @@
     let currentSerialFilter = 'All';
     let currentTaskFilter = 'Today';
 
+    let currentEditingCategory = null;
+    let currentEditingId = null;
+
     const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
     function exportData() {
@@ -643,56 +687,49 @@
       URL.revokeObjectURL(url);
     }
 
-function importData(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    try {
-      const parsed = JSON.parse(e.target.result);
-      
-      const choice = confirm(
-        "Click 'OK' to MERGE (combine new data with your current data).\n\n" +
-        "Click 'Cancel' if you did this by mistake."
-      );
-      if (!choice) return;
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          const choice = confirm("Click 'OK' to MERGE (combine new data with current data).\n\nClick 'Cancel' to abort.");
+          if (!choice) return;
 
-      // Helper function to merge by item ID so duplicates aren't created
-      const mergeArrays = (currentList, incomingList) => {
-        if (!incomingList || !Array.isArray(incomingList)) return currentList;
-        const map = new Map();
-        currentList.forEach(item => map.set(item.id, item));
-        incomingList.forEach(item => map.set(item.id, item)); // Incoming updates or adds
-        return Array.from(map.values());
+          const mergeArrays = (currentList, incomingList) => {
+            if (!incomingList || !Array.isArray(incomingList)) return currentList;
+            const map = new Map();
+            currentList.forEach(item => map.set(item.id, item));
+            incomingList.forEach(item => map.set(item.id, item));
+            return Array.from(map.values());
+          };
+
+          books = mergeArrays(books, parsed.books);
+          serials = mergeArrays(serials, parsed.serials);
+          tasks = mergeArrays(tasks, parsed.tasks);
+          chores = mergeArrays(chores, parsed.chores);
+          careItems = mergeArrays(careItems, parsed.careItems);
+          subscriptions = mergeArrays(subscriptions, parsed.subscriptions);
+          sales = mergeArrays(sales, parsed.sales);
+
+          localStorage.setItem('track_books', JSON.stringify(books));
+          localStorage.setItem('track_serials', JSON.stringify(serials));
+          localStorage.setItem('track_tasks', JSON.stringify(tasks));
+          localStorage.setItem('track_chores', JSON.stringify(chores));
+          localStorage.setItem('track_care', JSON.stringify(careItems));
+          localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+          localStorage.setItem('track_sales', JSON.stringify(sales));
+
+          render();
+          alert('Data merged successfully! Nothing was overwritten or deleted.');
+        } catch (err) {
+          alert('Invalid file format.');
+        }
       };
-
-      // Safely merge every category
-      books = mergeArrays(books, parsed.books);
-      serials = mergeArrays(serials, parsed.serials);
-      tasks = mergeArrays(tasks, parsed.tasks);
-      chores = mergeArrays(chores, parsed.chores);
-      careItems = mergeArrays(careItems, parsed.careItems);
-      subscriptions = mergeArrays(subscriptions, parsed.subscriptions);
-      sales = mergeArrays(sales, parsed.sales);
-
-      // Save merged result to local storage
-      localStorage.setItem('track_books', JSON.stringify(books));
-      localStorage.setItem('track_serials', JSON.stringify(serials));
-      localStorage.setItem('track_tasks', JSON.stringify(tasks));
-      localStorage.setItem('track_chores', JSON.stringify(chores));
-      localStorage.setItem('track_care', JSON.stringify(careItems));
-      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
-      localStorage.setItem('track_sales', JSON.stringify(sales));
-
-      render();
-      alert('Data merged successfully! Nothing was deleted.');
-    } catch (err) {
-      alert('Invalid backup file format.');
+      reader.readAsText(file);
+      event.target.value = '';
     }
-  };
-  reader.readAsText(file);
-  event.target.value = ''; // Reset input so you can re-import the same file if needed
-}
 
     function switchMainTab(tab) {
       currentMainTab = tab;
@@ -855,34 +892,6 @@ function importData(event) {
       render();
     }
 
-    function editFinishedDate(id, currentVal) {
-      const newDate = prompt('When did you finish this book? (YYYY-MM-DD)', currentVal || new Date().toISOString().split('T')[0]);
-      if (!newDate) return;
-      books = books.map(b => b.id === id ? { ...b, finishedDate: newDate.trim(), readStatus: 'Finished' } : b);
-      localStorage.setItem('track_books', JSON.stringify(books));
-      render();
-    }
-
-    function editBuyDetails(id) {
-      const book = books.find(b => b.id === id);
-      if (!book) return;
-      const newPrice = prompt('Update price paid:', book.price || '');
-      const newDate = prompt('Update purchase date (YYYY-MM-DD):', book.buyDate || new Date().toISOString().split('T')[0]);
-      
-      books = books.map(b => {
-        if (b.id === id) {
-          return {
-            ...b,
-            price: newPrice !== null ? newPrice.trim() : b.price,
-            buyDate: newDate !== null ? newDate.trim() : b.buyDate
-          };
-        }
-        return b;
-      });
-      localStorage.setItem('track_books', JSON.stringify(books));
-      render();
-    }
-
     function cycleReadStatus(id) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -901,6 +910,7 @@ function importData(event) {
     }
 
     function deleteBook(id) {
+      if (!confirm('Delete this book?')) return;
       books = books.filter(b => b.id !== id);
       localStorage.setItem('track_books', JSON.stringify(books));
       render();
@@ -959,15 +969,6 @@ function importData(event) {
       render();
     }
 
-    function editSerialChapterManually(id, currentVal) {
-      const newCh = prompt('Update chapter:', currentVal);
-      if (newCh === null || newCh.trim() === '') return;
-      const today = new Date().toISOString().split('T')[0];
-      serials = serials.map(w => w.id === id ? { ...w, chapter: newCh.trim(), lastChecked: today } : w);
-      localStorage.setItem('track_serials', JSON.stringify(serials));
-      render();
-    }
-
     function toggleSerialStatus(id) {
       serials = serials.map(w => {
         if (w.id === id) {
@@ -985,6 +986,7 @@ function importData(event) {
     }
 
     function deleteSerial(id) {
+      if (!confirm('Delete this serial?')) return;
       serials = serials.filter(w => w.id !== id);
       localStorage.setItem('track_serials', JSON.stringify(serials));
       render();
@@ -1063,6 +1065,7 @@ function importData(event) {
     }
 
     function deleteChore(id) {
+      if (!confirm('Delete this chore?')) return;
       chores = chores.filter(c => c.id !== id);
       localStorage.setItem('track_chores', JSON.stringify(chores));
       render();
@@ -1090,6 +1093,7 @@ function importData(event) {
     }
 
     function deleteCareItem(id) {
+      if (!confirm('Delete this care item?')) return;
       careItems = careItems.filter(s => s.id !== id);
       localStorage.setItem('track_care', JSON.stringify(careItems));
       render();
@@ -1124,6 +1128,7 @@ function importData(event) {
     }
 
     function deleteSubscription(id) {
+      if (!confirm('Delete this subscription?')) return;
       subscriptions = subscriptions.filter(s => s.id !== id);
       localStorage.setItem('track_subs', JSON.stringify(subscriptions));
       render();
@@ -1176,6 +1181,7 @@ function importData(event) {
     }
 
     function deleteSaleEvent(id) {
+      if (!confirm('Delete this sale fest?')) return;
       sales = sales.filter(s => s.id !== id);
       localStorage.setItem('track_sales', JSON.stringify(sales));
       render();
@@ -1189,18 +1195,449 @@ function importData(event) {
       return finished ? `Lasted ${diffDays}d` : `${diffDays}d in use`;
     }
 
-    // Main Render Function
+    // ==================== EDIT MODAL SYSTEM ====================
+    function openEditModal(category, id) {
+      currentEditingCategory = category;
+      currentEditingId = id;
+      const modal = document.getElementById('editModalOverlay');
+      const content = document.getElementById('editModalContent');
+      const title = document.getElementById('editModalTitle');
+
+      if (category === 'book') {
+        const b = books.find(x => x.id === id);
+        if (!b) return;
+        title.innerText = 'Edit Ebook';
+        const isBuy = b.type === 'buy';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Title</label>
+            <input type="text" id="edit_bTitle" value="${(b.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Author</label>
+              <input type="text" id="edit_bAuthor" value="${(b.author || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Volume</label>
+              <input type="text" id="edit_bVol" value="${(b.volume || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Store / App</label>
+              <input type="text" id="edit_bPlatform" value="${(b.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Price</label>
+              <input type="text" id="edit_bPrice" value="${(b.price || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          ${isBuy ? `
+            <div class="row">
+              <div class="input-group">
+                <label>Decision</label>
+                <select id="edit_bBuyStatus">
+                  <option value="Decided to Buy" ${b.buyStatus === 'Decided to Buy' ? 'selected' : ''}>Decided</option>
+                  <option value="Wait for Fest" ${b.buyStatus === 'Wait for Fest' ? 'selected' : ''}>Wait for Sale</option>
+                  <option value="Considering" ${b.buyStatus === 'Considering' ? 'selected' : ''}>Considering</option>
+                </select>
+              </div>
+              <div class="input-group">
+                <label>Digital Rights</label>
+                <select id="edit_bDigitalStatus">
+                  <option value="Available" ${b.digitalStatus === 'Available' ? 'selected' : ''}>Available</option>
+                  <option value="Paper Only" ${b.digitalStatus === 'Paper Only' ? 'selected' : ''}>Paper Only</option>
+                  <option value="In Negotiation" ${b.digitalStatus === 'In Negotiation' ? 'selected' : ''}>Negotiation</option>
+                  <option value="Awaiting Translation" ${b.digitalStatus === 'Awaiting Translation' ? 'selected' : ''}>Translating</option>
+                </select>
+              </div>
+            </div>
+          ` : `
+            <div class="row">
+              <div class="input-group">
+                <label>Date Bought</label>
+                <input type="date" id="edit_bBuyDate" value="${b.buyDate || ''}" />
+              </div>
+              <div class="input-group">
+                <label>Date Finished</label>
+                <input type="date" id="edit_bFinishedDate" value="${b.finishedDate || ''}" />
+              </div>
+            </div>
+            <div class="input-group">
+              <label>Progress</label>
+              <select id="edit_bReadStatus">
+                <option value="Unread" ${b.readStatus === 'Unread' ? 'selected' : ''}>Unread</option>
+                <option value="Reading" ${b.readStatus === 'Reading' ? 'selected' : ''}>Reading</option>
+                <option value="Finished" ${b.readStatus === 'Finished' ? 'selected' : ''}>Finished</option>
+              </select>
+            </div>
+          `}
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_bNotes" value="${(b.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      } else if (category === 'serial') {
+        const s = serials.find(x => x.id === id);
+        if (!s) return;
+        title.innerText = 'Edit Serial / Manhwa';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Title</label>
+            <input type="text" id="edit_sTitle" value="${(s.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Author</label>
+              <input type="text" id="edit_sAuthor" value="${(s.author || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Chapter / Ep.</label>
+              <input type="text" id="edit_sChapter" value="${(s.chapter || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Platform</label>
+              <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Status</label>
+              <select id="edit_sStatus">
+                <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
+                <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
+                <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Link</label>
+            <input type="url" id="edit_sLink" value="${(s.link || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_sNotes" value="${(s.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      } else if (category === 'task') {
+        const t = tasks.find(x => x.id === id);
+        if (!t) return;
+        title.innerText = 'Edit Task';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Task Description</label>
+            <input type="text" id="edit_tTitle" value="${(t.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Horizon</label>
+              <select id="edit_tHorizon">
+                <option value="Today" ${t.horizon === 'Today' ? 'selected' : ''}>Today</option>
+                <option value="Week" ${t.horizon === 'Week' ? 'selected' : ''}>This Week</option>
+                <option value="Month" ${t.horizon === 'Month' ? 'selected' : ''}>This Month</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Due Date</label>
+              <input type="date" id="edit_tDate" value="${t.dueDate || ''}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Priority</label>
+              <select id="edit_tPriority">
+                <option value="Normal" ${t.priority === 'Normal' ? 'selected' : ''}>Normal</option>
+                <option value="High" ${t.priority === 'High' ? 'selected' : ''}>High</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Notes</label>
+              <input type="text" id="edit_tNotes" value="${(t.notes || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+        `;
+      } else if (category === 'chore') {
+        const ch = chores.find(x => x.id === id);
+        if (!ch) return;
+        title.innerText = 'Edit Chore';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Chore Name</label>
+            <input type="text" id="edit_chName" value="${(ch.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Last Done Date</label>
+              <input type="date" id="edit_chDate" value="${ch.lastDone || ''}" />
+            </div>
+            <div class="input-group">
+              <label>Repeat Every</label>
+              <select id="edit_chFreq">
+                <option value="7" ${ch.frequency === 7 ? 'selected' : ''}>7 Days</option>
+                <option value="14" ${ch.frequency === 14 ? 'selected' : ''}>14 Days</option>
+                <option value="21" ${ch.frequency === 21 ? 'selected' : ''}>21 Days</option>
+                <option value="30" ${ch.frequency === 30 ? 'selected' : ''}>30 Days</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_chNotes" value="${(ch.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      } else if (category === 'care') {
+        const c = careItems.find(x => x.id === id);
+        if (!c) return;
+        title.innerText = 'Edit Care Item';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Product Name</label>
+            <input type="text" id="edit_cName" value="${(c.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Category</label>
+              <select id="edit_cCategory">
+                <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
+                <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
+                <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
+                <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Store</label>
+              <input type="text" id="edit_cStore" value="${(c.store || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Price</label>
+              <input type="text" id="edit_cPrice" value="${(c.price || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Opened Date</label>
+              <input type="date" id="edit_cOpened" value="${c.opened || ''}" />
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Finished Date</label>
+            <input type="date" id="edit_cFinished" value="${c.finished || ''}" />
+          </div>
+        `;
+      } else if (category === 'sub') {
+        const s = subscriptions.find(x => x.id === id);
+        if (!s) return;
+        title.innerText = 'Edit Subscription';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Service Name</label>
+            <input type="text" id="edit_subName" value="${(s.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Cost</label>
+              <input type="text" id="edit_subCost" value="${(s.cost || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Intent</label>
+              <select id="edit_subIntent">
+                <option value="Must Cancel" ${s.intent === 'Must Cancel' ? 'selected' : ''}>Must Cancel</option>
+                <option value="Keep Active" ${s.intent === 'Keep Active' ? 'selected' : ''}>Keep Active</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Renewal Date</label>
+            <input type="date" id="edit_subDate" value="${s.date || ''}" />
+          </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_subNotes" value="${(s.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      } else if (category === 'sale') {
+        const sa = sales.find(x => x.id === id);
+        if (!sa) return;
+        title.innerText = 'Edit Sale Fest';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Campaign Name</label>
+            <input type="text" id="edit_sName" value="${(sa.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Platform</label>
+              <input type="text" id="edit_sPlatform" value="${(sa.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Month</label>
+              <select id="edit_sMonth">
+                ${monthOrder.map(m => `<option value="${m}" ${sa.month === m ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Deal Pattern</label>
+            <input type="text" id="edit_sDeal" value="${(sa.deal || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="input-group">
+            <label>Strategy / Notes</label>
+            <input type="text" id="edit_sNotes" value="${(sa.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModalOverlay').style.display = 'none';
+      currentEditingCategory = null;
+      currentEditingId = null;
+    }
+
+    function saveItemEdit() {
+      if (!currentEditingCategory || !currentEditingId) return;
+
+      if (currentEditingCategory === 'book') {
+        books = books.map(b => {
+          if (b.id === currentEditingId) {
+            const updated = {
+              ...b,
+              title: document.getElementById('edit_bTitle').value.trim() || b.title,
+              author: document.getElementById('edit_bAuthor').value.trim(),
+              volume: document.getElementById('edit_bVol').value.trim(),
+              platform: document.getElementById('edit_bPlatform').value.trim(),
+              price: document.getElementById('edit_bPrice').value.trim(),
+              notes: document.getElementById('edit_bNotes').value.trim()
+            };
+            if (b.type === 'buy') {
+              updated.buyStatus = document.getElementById('edit_bBuyStatus').value;
+              updated.digitalStatus = document.getElementById('edit_bDigitalStatus').value;
+            } else {
+              updated.buyDate = document.getElementById('edit_bBuyDate').value;
+              updated.finishedDate = document.getElementById('edit_bFinishedDate').value;
+              updated.readStatus = document.getElementById('edit_bReadStatus').value;
+            }
+            return updated;
+          }
+          return b;
+        });
+        localStorage.setItem('track_books', JSON.stringify(books));
+      } else if (currentEditingCategory === 'serial') {
+        serials = serials.map(s => {
+          if (s.id === currentEditingId) {
+            return {
+              ...s,
+              title: document.getElementById('edit_sTitle').value.trim() || s.title,
+              author: document.getElementById('edit_sAuthor').value.trim(),
+              chapter: document.getElementById('edit_sChapter').value.trim(),
+              platform: document.getElementById('edit_sPlatform').value.trim(),
+              status: document.getElementById('edit_sStatus').value,
+              link: document.getElementById('edit_sLink').value.trim(),
+              notes: document.getElementById('edit_sNotes').value.trim(),
+              lastChecked: new Date().toISOString().split('T')[0]
+            };
+          }
+          return s;
+        });
+        localStorage.setItem('track_serials', JSON.stringify(serials));
+      } else if (currentEditingCategory === 'task') {
+        tasks = tasks.map(t => {
+          if (t.id === currentEditingId) {
+            return {
+              ...t,
+              title: document.getElementById('edit_tTitle').value.trim() || t.title,
+              horizon: document.getElementById('edit_tHorizon').value,
+              dueDate: document.getElementById('edit_tDate').value,
+              priority: document.getElementById('edit_tPriority').value,
+              notes: document.getElementById('edit_tNotes').value.trim()
+            };
+          }
+          return t;
+        });
+        localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      } else if (currentEditingCategory === 'chore') {
+        chores = chores.map(ch => {
+          if (ch.id === currentEditingId) {
+            return {
+              ...ch,
+              name: document.getElementById('edit_chName').value.trim() || ch.name,
+              lastDone: document.getElementById('edit_chDate').value,
+              frequency: parseInt(document.getElementById('edit_chFreq').value, 10),
+              notes: document.getElementById('edit_chNotes').value.trim()
+            };
+          }
+          return ch;
+        });
+        localStorage.setItem('track_chores', JSON.stringify(chores));
+      } else if (currentEditingCategory === 'care') {
+        careItems = careItems.map(c => {
+          if (c.id === currentEditingId) {
+            return {
+              ...c,
+              name: document.getElementById('edit_cName').value.trim() || c.name,
+              category: document.getElementById('edit_cCategory').value,
+              store: document.getElementById('edit_cStore').value.trim(),
+              price: document.getElementById('edit_cPrice').value.trim(),
+              opened: document.getElementById('edit_cOpened').value,
+              finished: document.getElementById('edit_cFinished').value
+            };
+          }
+          return c;
+        });
+        localStorage.setItem('track_care', JSON.stringify(careItems));
+      } else if (currentEditingCategory === 'sub') {
+        subscriptions = subscriptions.map(s => {
+          if (s.id === currentEditingId) {
+            return {
+              ...s,
+              name: document.getElementById('edit_subName').value.trim() || s.name,
+              cost: document.getElementById('edit_subCost').value.trim(),
+              intent: document.getElementById('edit_subIntent').value,
+              date: document.getElementById('edit_subDate').value,
+              notes: document.getElementById('edit_subNotes').value.trim()
+            };
+          }
+          return s;
+        });
+        localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      } else if (currentEditingCategory === 'sale') {
+        sales = sales.map(sa => {
+          if (sa.id === currentEditingId) {
+            return {
+              ...sa,
+              name: document.getElementById('edit_sName').value.trim() || sa.name,
+              platform: document.getElementById('edit_sPlatform').value.trim(),
+              month: document.getElementById('edit_sMonth').value,
+              deal: document.getElementById('edit_sDeal').value.trim(),
+              notes: document.getElementById('edit_sNotes').value.trim()
+            };
+          }
+          return sa;
+        });
+        sales.sort((a, b) => {
+          const getBaseMonth = m => m.split(' ')[0];
+          return monthOrder.indexOf(getBaseMonth(a.month)) - monthOrder.indexOf(getBaseMonth(b.month));
+        });
+        localStorage.setItem('track_sales', JSON.stringify(sales));
+      }
+
+      closeEditModal();
+      render();
+    }
+
+    // ==================== MAIN RENDER ====================
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
-      // Monthly Summary (Books & Spending)
+      // Monthly Summary
       const finishedBooks = books.filter(b => b.type === 'read' && b.readStatus === 'Finished');
       const totalFinishedBadge = document.getElementById('totalFinishedBadge');
       if (totalFinishedBadge) totalFinishedBadge.innerText = `${finishedBooks.length} Total Finished`;
 
       const monthlyData = {};
-      
-      // Calculate read counts
       finishedBooks.forEach(b => {
         let mKey = 'No Date Logged';
         if (b.finishedDate) {
@@ -1215,7 +1652,6 @@ function importData(event) {
         monthlyData[mKey].readCount += 1;
       });
 
-      // Calculate spend by purchase date
       books.filter(b => b.type === 'read' && b.buyDate).forEach(b => {
         const parts = b.buyDate.split('-');
         if (parts.length >= 2) {
@@ -1249,7 +1685,7 @@ function importData(event) {
         }
       }
 
-      // Books
+      // Books List
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
@@ -1308,12 +1744,12 @@ function importData(event) {
               <div class="item-sub">
                 ${b.platform} ${isBuy ? `· ${b.release}` : ''}
                 ${isBuy && b.price ? `· Est. ฿${b.price}` : ''}
-                ${!isBuy && (b.price || b.buyDate) ? `· <span style="cursor:pointer;" onclick="editBuyDetails('${b.id}')" title="Edit price or purchase date">🏷️ ${b.price ? '฿' + b.price : 'Price unset'} ${b.buyDate ? '(' + b.buyDate + ')' : ''} ✏️</span>` : ''}
+                ${!isBuy && (b.price || b.buyDate) ? `· 🏷️ ${b.price ? '฿' + b.price : 'Price unset'} ${b.buyDate ? '(' + b.buyDate + ')' : ''}` : ''}
               </div>
 
               ${!isBuy && b.finishedDate ? `
                 <div class="item-sub">
-                  Finished on: <strong style="cursor:pointer; text-decoration:underline;" onclick="editFinishedDate('${b.id}', '${b.finishedDate}')">${b.finishedDate} ✏️</strong>
+                  Finished on: <strong>${b.finishedDate}</strong>
                 </div>
               ` : ''}
 
@@ -1326,6 +1762,7 @@ function importData(event) {
                   ${b.readStatus !== 'Reading' ? `<button class="btn-action btn-action-primary" onclick="updateBookProgress('${b.id}', 'Reading')">📖 Start</button>` : ''}
                   ${b.readStatus !== 'Finished' ? `<button class="btn-action btn-bought" onclick="updateBookProgress('${b.id}', 'Finished')">✓ Finish</button>` : ''}
                 `}
+                <button class="btn-action btn-edit" onclick="openEditModal('book', '${b.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
               </div>
             </div>
@@ -1363,8 +1800,8 @@ function importData(event) {
                   ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
                   <div style="margin-top: 5px; display:flex; gap: 5px; align-items: center; flex-wrap: wrap;">
                     <span class="badge ${formatBadgeClass}">${isManhwa ? 'Manhwa' : 'Novel'}</span>
-                    <span class="chapter-hero" onclick="editSerialChapterManually('${s.id}', '${s.chapter.replace(/'/g, "\\'")}')" style="cursor:pointer;" title="Click to edit">
-                      ${s.chapter} ✏️
+                    <span class="chapter-hero">
+                      ${s.chapter}
                     </span>
                   </div>
                 </div>
@@ -1379,6 +1816,7 @@ function importData(event) {
               <div class="card-actions">
                 <button class="btn-action btn-action-primary" onclick="incrementSerialChapter('${s.id}')">+1</button>
                 ${s.link ? `<a href="${s.link}" target="_blank" class="btn-action btn-link">Open</a>` : ''}
+                <button class="btn-action btn-edit" onclick="openEditModal('serial', '${s.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteSerial('${s.id}')">Delete</button>
               </div>
             </div>
@@ -1386,7 +1824,7 @@ function importData(event) {
         }).join('');
       }
 
-      // To-Do Tasks
+      // Tasks
       const taskContainer = document.getElementById('taskListContainer');
       const filteredTasks = tasks.filter(t => {
         const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
@@ -1420,6 +1858,7 @@ function importData(event) {
                   ${t.notes ? ` ${t.dueDate ? '·' : ''} 🏷️ ${t.notes}` : ''}
                 </div>
                 <div class="card-actions" style="margin-top: 4px;">
+                  <button class="btn-action btn-edit" onclick="openEditModal('task', '${t.id}')">✏️ Edit</button>
                   <button class="btn-action btn-delete" onclick="deleteTask('${t.id}')">Delete</button>
                 </div>
               </div>
@@ -1466,6 +1905,7 @@ function importData(event) {
               ${c.notes ? `<div class="item-notes">${c.notes}</div>` : ''}
               <div class="card-actions">
                 <button class="btn-action btn-bought" onclick="resetChoreToday('${c.id}')">✓ Done Today</button>
+                <button class="btn-action btn-edit" onclick="openEditModal('chore', '${c.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">Delete</button>
               </div>
             </div>
@@ -1499,6 +1939,7 @@ function importData(event) {
               <div class="item-notes">⏳ ${duration}</div>
               <div class="card-actions">
                 ${!s.finished ? `<button class="btn-action btn-bought" onclick="markCareFinished('${s.id}')">Mark Empty</button>` : ''}
+                <button class="btn-action btn-edit" onclick="openEditModal('care', '${s.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteCareItem('${s.id}')">Delete</button>
               </div>
             </div>
@@ -1540,6 +1981,7 @@ function importData(event) {
               ${sub.notes ? `<div class="item-notes">${sub.notes}</div>` : ''}
               <div class="card-actions">
                 <button class="btn-action btn-cal" onclick="downloadCalendarReminder('${sub.name.replace(/'/g, "\\'")}', '${sub.date}')">Alert</button>
+                <button class="btn-action btn-edit" onclick="openEditModal('sub', '${sub.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteSubscription('${sub.id}')">Delete</button>
               </div>
             </div>
@@ -1565,6 +2007,7 @@ function importData(event) {
               </div>
               ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
               <div class="card-actions">
+                <button class="btn-action btn-edit" onclick="openEditModal('sale', '${s.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteSaleEvent('${s.id}')">Delete</button>
               </div>
             </div>
