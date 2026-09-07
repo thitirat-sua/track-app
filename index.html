@@ -6,7 +6,7 @@
   <title>TrackApp</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <!-- ไลบรารีอ่านไฟล์ Excel ในเบราว์เซอร์ -->
+  <!-- ไลบรารีอ่านไฟล์ Excel ภายในเครื่อง -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
@@ -15,6 +15,7 @@
       --text-main: #2b303a;
       --text-muted: #8c93a0;
       --border: #e6e9ee;
+
       --pastel-sage: #e8efe8;
       --pastel-sage-text: #415e45;
       --pastel-rose: #f9e8e9;
@@ -25,6 +26,7 @@
       --pastel-lavender-text: #59487c;
       --pastel-butter: #faf2dc;
       --pastel-butter-text: #786127;
+
       --tab-active: #4a5260;
       --radius: 12px;
     }
@@ -168,9 +170,9 @@
     .btn-delete { color: #b91c1c; border-color: #fed7d7; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
 
-    /* Modal */
+    /* Modal Styling */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 440px; max-height: 90vh; overflow-y: auto; padding: 16px; }
+    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; padding: 16px; }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
     .modal-title { font-size: 0.95rem; font-weight: 700; color: #374151; }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
@@ -186,7 +188,7 @@
   <header>
     <h1>TrackApp</h1>
     <div class="header-actions">
-      <!-- ปุ่มนำเข้า Excel ตรง -->
+      <!-- ปุ่มนำเข้า Excel จากเครื่องโดยตรง -->
       <button class="btn-backup btn-import-xlsx" onclick="document.getElementById('importXlsxInput').click()">📥 Import Bookmory.xlsx</button>
       <input type="file" id="importXlsxInput" style="display:none;" onchange="importBookmoryExcel(event)" accept=".xlsx, .xls" />
       
@@ -586,7 +588,7 @@
     });
 
     let currentMainTab = 'books';
-    let currentBookSubTab = 'read'; // เริ่มต้นที่ Owned Shelf ทันที
+    let currentBookSubTab = 'read';
     let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
     let currentTaskFilter = 'Today';
@@ -595,7 +597,6 @@
 
     const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-    // ฟังก์ชันแปลงชื่อและเล่ม
     function parseTitleVolume(rawTitle) {
       let title = String(rawTitle).trim();
       let m = title.match(/^(.*?)\s*(\d+)\s*\(\1,\s*#\2\)$/);
@@ -641,7 +642,7 @@
       return isNaN(num) ? '' : (Number.isInteger(num) ? String(num) : num.toFixed(2));
     }
 
-    // ฟังก์ชันอ่านไฟล์ Excel โดยตรง 100%
+    // ฟังก์ชันนำเข้า Bookmory.xlsx
     function importBookmoryExcel(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -659,7 +660,6 @@
             return;
           }
 
-          // แถวที่ 2 คือ Header
           const headers = rows[1];
           const colTitle = headers.indexOf('Title');
           const colAuthor = headers.indexOf('Authors');
@@ -679,10 +679,7 @@
             const rawTitle = String(row[colTitle]).trim();
             const status = String(row[colStatus] || '').trim();
 
-            // 1. ตัดเล่มที่กำลังอ่าน (Reading) ออกทั้งหมด
             if (status === 'Reading') continue;
-
-            // 2. ตัด 3 เรื่อง manhwa/web novel
             if (excludeRegex.test(rawTitle)) continue;
 
             const parsed = parseTitleVolume(rawTitle);
@@ -712,7 +709,6 @@
             };
           }
 
-          // รวมเข้ากับ books เดิม
           let existingMap = {};
           books.forEach(b => existingMap[b.title.trim()] = b);
 
@@ -724,7 +720,6 @@
             const maxVol = Math.max(...Object.keys(bData.vols).map(Number));
 
             if (existingMap[title]) {
-              // เสริมข้อมูล
               const b = existingMap[title];
               let vMap = {};
               b.volumes.forEach(v => vMap[v.volNum] = v);
@@ -750,7 +745,6 @@
               b.volOwned = b.volumes.filter(v => v.owned).length;
               updatedBooksCount++;
             } else {
-              // เพิ่มซีรีส์ใหม่
               let constructedVols = [];
               let hasFin = false;
               let hasOwn = false;
@@ -848,9 +842,20 @@
             return Array.from(map.values());
           };
           books = mergeArrays(books, parsed.books);
+          serials = mergeArrays(serials, parsed.serials);
           tasks = mergeArrays(tasks, parsed.tasks);
+          chores = mergeArrays(chores, parsed.chores);
+          careItems = mergeArrays(careItems, parsed.careItems);
+          subscriptions = mergeArrays(subscriptions, parsed.subscriptions);
+          sales = mergeArrays(sales, parsed.sales);
+
           localStorage.setItem('track_books', JSON.stringify(books));
+          localStorage.setItem('track_serials', JSON.stringify(serials));
           localStorage.setItem('track_tasks', JSON.stringify(tasks));
+          localStorage.setItem('track_chores', JSON.stringify(chores));
+          localStorage.setItem('track_care', JSON.stringify(careItems));
+          localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+          localStorage.setItem('track_sales', JSON.stringify(sales));
           render();
           alert('รวมข้อมูลสำเร็จเรียบร้อย!');
         } catch (err) {
@@ -892,6 +897,23 @@
       render();
     }
 
+    function filterSerials(filter) {
+      currentSerialFilter = filter;
+      document.getElementById('serialFilterAll').classList.toggle('active', filter === 'All');
+      document.getElementById('serialFilterManhwa').classList.toggle('active', filter === 'Manhwa / Webtoon');
+      document.getElementById('serialFilterNovel').classList.toggle('active', filter === 'Web Novel');
+      render();
+    }
+
+    function filterTasks(horizon) {
+      currentTaskFilter = horizon;
+      document.getElementById('taskFilterToday').classList.toggle('active', horizon === 'Today');
+      document.getElementById('taskFilterWeek').classList.toggle('active', horizon === 'Week');
+      document.getElementById('taskFilterMonth').classList.toggle('active', horizon === 'Month');
+      document.getElementById('taskFilterAll').classList.toggle('active', horizon === 'All');
+      render();
+    }
+
     function toggleVolStatus(bookId, volNum) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -922,10 +944,320 @@
       render();
     }
 
+    // ==================== EDIT MODAL SYSTEM ====================
+    function openEditModal(category, id) {
+      currentEditingCategory = category;
+      currentEditingId = id;
+      const modal = document.getElementById('editModalOverlay');
+      const content = document.getElementById('editModalContent');
+      const title = document.getElementById('editModalTitle');
+
+      if (category === 'book') {
+        const b = books.find(x => x.id === id);
+        if (!b) return;
+        title.innerText = 'Edit Series & Volumes';
+        const isBuy = b.type === 'buy';
+
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Title / Series</label>
+            <input type="text" id="edit_bTitle" value="${(b.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Author</label>
+              <input type="text" id="edit_bAuthor" value="${(b.author || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Store / Platform</label>
+              <input type="text" id="edit_bPlatform" value="${(b.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Series Status</label>
+              <select id="edit_bSeriesStatus">
+                <option value="Ongoing" ${b.seriesStatus === 'Ongoing' ? 'selected' : ''}>Ongoing</option>
+                <option value="Waiting Announcement" ${b.seriesStatus === 'Waiting Announcement' ? 'selected' : ''}>Waiting Announce</option>
+                <option value="Completed Series" ${b.seriesStatus === 'Completed Series' ? 'selected' : ''}>Completed</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Shelf Placement</label>
+              <select id="edit_bType">
+                <option value="buy" ${b.type === 'buy' ? 'selected' : ''}>Wishlist</option>
+                <option value="read" ${b.type === 'read' ? 'selected' : ''}>Owned Shelf</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_bNotes" value="${(b.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+
+          <div style="margin-top: 14px;">
+            <label style="font-size:0.75rem; font-weight:700; color:#334155;">Volume Details (Price & Status)</label>
+            <table class="vol-edit-table">
+              <thead>
+                <tr>
+                  <th style="width: 32px;">Vol</th>
+                  <th style="width: 50px;">Owned?</th>
+                  <th>Status</th>
+                  <th style="width: 65px;">Price (฿)</th>
+                  <th>Finished Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${b.volumes.map(v => `
+                  <tr>
+                    <td><strong>V${v.volNum}</strong></td>
+                    <td style="text-align:center;">
+                      <input type="checkbox" id="vol_owned_${v.volNum}" ${v.owned ? 'checked' : ''} />
+                    </td>
+                    <td>
+                      <select id="vol_status_${v.volNum}">
+                        <option value="Unread" ${v.status === 'Unread' ? 'selected' : ''}>Unread</option>
+                        <option value="Reading" ${v.status === 'Reading' ? 'selected' : ''}>Reading</option>
+                        <option value="Finished" ${v.status === 'Finished' ? 'selected' : ''}>Finished</option>
+                      </select>
+                    </td>
+                    <td>
+                      <input type="number" id="vol_price_${v.volNum}" value="${v.price || ''}" placeholder="฿" />
+                    </td>
+                    <td>
+                      <input type="date" id="vol_date_${v.volNum}" value="${v.finishedDate || ''}" />
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else if (category === 'serial') {
+        const s = serials.find(x => x.id === id);
+        if (!s) return;
+        title.innerText = 'Edit Serial / Manhwa';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Title</label>
+            <input type="text" id="edit_sTitle" value="${(s.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Author</label>
+              <input type="text" id="edit_sAuthor" value="${(s.author || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Chapter / Ep.</label>
+              <input type="text" id="edit_sChapter" value="${(s.chapter || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Platform</label>
+              <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Status</label>
+              <select id="edit_sStatus">
+                <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
+                <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
+                <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_sNotes" value="${(s.notes || '').replace(/"/g, '&quot;')}" />
+          </div>
+        `;
+      } else if (category === 'task') {
+        const t = tasks.find(x => x.id === id);
+        if (!t) return;
+        title.innerText = 'Edit Task';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Task Description</label>
+            <input type="text" id="edit_tTitle" value="${(t.title || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Horizon</label>
+              <select id="edit_tHorizon">
+                <option value="Today" ${t.horizon === 'Today' ? 'selected' : ''}>Today</option>
+                <option value="Week" ${t.horizon === 'Week' ? 'selected' : ''}>This Week</option>
+                <option value="Month" ${t.horizon === 'Month' ? 'selected' : ''}>This Month</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Due Date</label>
+              <input type="date" id="edit_tDate" value="${t.dueDate || ''}" />
+            </div>
+          </div>
+        `;
+      } else if (category === 'chore') {
+        const ch = chores.find(x => x.id === id);
+        if (!ch) return;
+        title.innerText = 'Edit Chore';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Chore Name</label>
+            <input type="text" id="edit_chName" value="${(ch.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Last Done</label>
+              <input type="date" id="edit_chDate" value="${ch.lastDone || ''}" />
+            </div>
+            <div class="input-group">
+              <label>Repeat Every</label>
+              <select id="edit_chFreq">
+                <option value="7" ${ch.frequency === 7 ? 'selected' : ''}>7 Days</option>
+                <option value="14" ${ch.frequency === 14 ? 'selected' : ''}>14 Days</option>
+                <option value="21" ${ch.frequency === 21 ? 'selected' : ''}>21 Days</option>
+                <option value="30" ${ch.frequency === 30 ? 'selected' : ''}>30 Days</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (category === 'care') {
+        const c = careItems.find(x => x.id === id);
+        if (!c) return;
+        title.innerText = 'Edit Care Item';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Product</label>
+            <input type="text" id="edit_cName" value="${(c.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Category</label>
+              <select id="edit_cCategory">
+                <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
+                <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
+                <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
+                <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Price</label>
+              <input type="text" id="edit_cPrice" value="${(c.price || '').replace(/"/g, '&quot;')}" />
+            </div>
+          </div>
+        `;
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModalOverlay').style.display = 'none';
+      currentEditingCategory = null;
+      currentEditingId = null;
+    }
+
+    function saveItemEdit() {
+      if (!currentEditingCategory || !currentEditingId) return;
+
+      if (currentEditingCategory === 'book') {
+        books = books.map(b => {
+          if (b.id === currentEditingId) {
+            const updatedVols = b.volumes.map(v => {
+              const ownedBox = document.getElementById(`vol_owned_${v.volNum}`);
+              const statusSelect = document.getElementById(`vol_status_${v.volNum}`);
+              const priceInput = document.getElementById(`vol_price_${v.volNum}`);
+              const dateInput = document.getElementById(`vol_date_${v.volNum}`);
+
+              return {
+                ...v,
+                owned: ownedBox ? ownedBox.checked : v.owned,
+                status: statusSelect ? statusSelect.value : v.status,
+                price: priceInput ? priceInput.value.trim() : v.price,
+                finishedDate: dateInput ? dateInput.value : v.finishedDate
+              };
+            });
+
+            return {
+              ...b,
+              title: document.getElementById('edit_bTitle').value.trim() || b.title,
+              author: document.getElementById('edit_bAuthor').value.trim(),
+              platform: document.getElementById('edit_bPlatform').value.trim(),
+              seriesStatus: document.getElementById('edit_bSeriesStatus').value,
+              type: document.getElementById('edit_bType').value,
+              notes: document.getElementById('edit_bNotes').value.trim(),
+              volOwned: updatedVols.filter(v => v.owned).length,
+              volumes: updatedVols
+            };
+          }
+          return b;
+        });
+        localStorage.setItem('track_books', JSON.stringify(books));
+      } else if (currentEditingCategory === 'serial') {
+        serials = serials.map(s => {
+          if (s.id === currentEditingId) {
+            return {
+              ...s,
+              title: document.getElementById('edit_sTitle').value.trim() || s.title,
+              author: document.getElementById('edit_sAuthor').value.trim(),
+              chapter: document.getElementById('edit_sChapter').value.trim(),
+              platform: document.getElementById('edit_sPlatform').value.trim(),
+              status: document.getElementById('edit_sStatus').value,
+              notes: document.getElementById('edit_sNotes').value.trim()
+            };
+          }
+          return s;
+        });
+        localStorage.setItem('track_serials', JSON.stringify(serials));
+      } else if (currentEditingCategory === 'task') {
+        tasks = tasks.map(t => {
+          if (t.id === currentEditingId) {
+            return {
+              ...t,
+              title: document.getElementById('edit_tTitle').value.trim() || t.title,
+              horizon: document.getElementById('edit_tHorizon').value,
+              dueDate: document.getElementById('edit_tDate').value
+            };
+          }
+          return t;
+        });
+        localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      } else if (currentEditingCategory === 'chore') {
+        chores = chores.map(ch => {
+          if (ch.id === currentEditingId) {
+            return {
+              ...ch,
+              name: document.getElementById('edit_chName').value.trim() || ch.name,
+              lastDone: document.getElementById('edit_chDate').value,
+              frequency: parseInt(document.getElementById('edit_chFreq').value, 10)
+            };
+          }
+          return ch;
+        });
+        localStorage.setItem('track_chores', JSON.stringify(chores));
+      } else if (currentEditingCategory === 'care') {
+        careItems = careItems.map(c => {
+          if (c.id === currentEditingId) {
+            return {
+              ...c,
+              name: document.getElementById('edit_cName').value.trim() || c.name,
+              category: document.getElementById('edit_cCategory').value,
+              price: document.getElementById('edit_cPrice').value.trim()
+            };
+          }
+          return c;
+        });
+        localStorage.setItem('track_care', JSON.stringify(careItems));
+      }
+
+      closeEditModal();
+      render();
+    }
+
+    // ==================== MAIN RENDER ====================
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
-      // คำนวณสถิติ
+      // สรุปสถิติ
       let totalVolsReadCount = 0;
       let totalSpendAmount = 0;
       let completedSeriesCount = 0;
@@ -963,7 +1295,7 @@
       document.getElementById('statCompleteSeries').innerText = `${completedSeriesCount} series`;
       document.getElementById('statAvgPrice').innerText = `฿${totalPurchasedVolsCount > 0 ? (totalSpendAmount / totalPurchasedVolsCount).toFixed(0) : '0'}`;
 
-      // เรนเดอร์กราฟ
+      // กราฟ
       const barChartBox = document.getElementById('barChartBox');
       const monthKeys = Object.keys(monthlyVolsMap);
       if (monthKeys.length === 0) {
@@ -984,7 +1316,7 @@
         }).join('');
       }
 
-      // แสดงรายการหนังสือ
+      // Books List
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
@@ -1044,11 +1376,54 @@
                 </div>
               </div>
               <div class="card-actions">
+                <button class="btn-action btn-edit" onclick="openEditModal('book', '${b.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
               </div>
             </div>
           `;
         }).join('');
+      }
+
+      // Serials
+      const serialContainer = document.getElementById('serialListContainer');
+      const filteredSerials = serials.filter(s => !search || s.title.toLowerCase().includes(search));
+      if (filteredSerials.length === 0) {
+        serialContainer.innerHTML = `<div class="empty-state">No serials.</div>`;
+      } else {
+        serialContainer.innerHTML = filteredSerials.map(s => `
+          <div class="item-card">
+            <div class="item-header">
+              <div>
+                <div class="item-title">${s.title}</div>
+                <span class="badge badge-lavender">${s.format}</span>
+                <span class="badge badge-blue">📍 ${s.chapter}</span>
+              </div>
+              <span class="badge badge-butter">${s.status}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-action btn-edit" onclick="openEditModal('serial', '${s.id}')">✏️ Edit</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Tasks
+      const taskContainer = document.getElementById('taskListContainer');
+      const filteredTasks = tasks.filter(t => !search || t.title.toLowerCase().includes(search));
+      if (filteredTasks.length === 0) {
+        taskContainer.innerHTML = `<div class="empty-state">No tasks.</div>`;
+      } else {
+        taskContainer.innerHTML = filteredTasks.map(t => `
+          <div class="item-card">
+            <div class="item-header">
+              <span class="item-title">${t.title}</span>
+              <span class="badge badge-gray">${t.horizon}</span>
+            </div>
+            <div class="card-actions">
+              <button class="btn-action btn-edit" onclick="openEditModal('task', '${t.id}')">✏️ Edit</button>
+            </div>
+          </div>
+        `).join('');
       }
     }
 
