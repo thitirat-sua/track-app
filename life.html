@@ -273,7 +273,7 @@
     </div>
   </section>
 
-  <!-- 2. GROCERY & SHOPPING LIST SECTION -->
+  <!-- 2. GROCERY SECTION -->
   <section id="sectionGrocery" style="display: none;">
     <div class="shelf-filters">
       <div class="shelf-pill active" id="filterGroceryAll" onclick="filterGroceryCategory('All')">All Items</div>
@@ -313,7 +313,7 @@
     </div>
   </section>
 
-  <!-- 3. HEALTH TRACKER (VACCINATIONS & DOCTOR APPOINTMENTS) -->
+  <!-- 3. HEALTH TRACKER -->
   <section id="sectionHealth" style="display: none;">
     <div class="shelf-filters">
       <div class="shelf-pill active" id="filterHealthAll" onclick="filterHealthType('All')">All Records</div>
@@ -387,7 +387,7 @@
     </div>
   </section>
 
-  <!-- 5. PERSONAL CARE -->
+  <!-- 5. PERSONAL CARE (WITH PRICE MEMO) -->
   <section id="sectionCare" style="display: none;">
     <div class="content-area" style="padding-bottom: 0;">
       <div id="careRestockAlertBox" style="display: none;" class="alert-card">
@@ -424,16 +424,22 @@
         </div>
         <div class="row">
           <div class="input-group" style="flex: 1;">
+            <label>Price (฿)</label>
+            <input type="number" id="cPrice" placeholder="e.g. 450" min="0" />
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>PAO (Months)</label>
+            <input type="number" id="cPaoMonths" placeholder="e.g. 6 or 12" min="1" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group" style="flex: 1;">
             <label>Date Bought</label>
             <input type="date" id="cDateBought" />
           </div>
           <div class="input-group" style="flex: 1;">
-            <label>Date Opened</label>
+            <label>Date Opened (Optional)</label>
             <input type="date" id="cDateOpened" />
-          </div>
-          <div class="input-group" style="flex: 0.9;">
-            <label>PAO (Months)</label>
-            <input type="number" id="cPaoMonths" placeholder="e.g. 6 or 12" min="1" />
           </div>
         </div>
         <button class="btn-submit" onclick="saveCareItem()">Save Bottle to Care Tracker</button>
@@ -774,11 +780,13 @@
       if (!name) return alert('Enter product name');
       const today = new Date().toISOString().split('T')[0];
       const paoVal = parseInt(document.getElementById('cPaoMonths').value, 10) || null;
+      const priceVal = parseFloat(document.getElementById('cPrice').value) || 0;
 
       careItems.unshift({
         id: Date.now().toString(),
         name,
         category: document.getElementById('cCategory').value,
+        price: priceVal > 0 ? String(priceVal) : '',
         dateBought: document.getElementById('cDateBought').value || today,
         dateOpened: document.getElementById('cDateOpened').value || null,
         paoMonths: paoVal,
@@ -787,6 +795,7 @@
       });
       localStorage.setItem('track_care', JSON.stringify(careItems));
       document.getElementById('cName').value = '';
+      document.getElementById('cPrice').value = '';
       document.getElementById('cDateBought').value = '';
       document.getElementById('cDateOpened').value = '';
       document.getElementById('cPaoMonths').value = '';
@@ -988,6 +997,12 @@
               </select>
             </div>
             <div class="input-group" style="flex: 1;">
+              <label>Price (฿)</label>
+              <input type="number" id="edit_cPrice" value="${c.price || ''}" min="0" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group" style="flex: 1;">
               <label>PAO (Months)</label>
               <input type="number" id="edit_cPaoMonths" value="${c.paoMonths || ''}" min="1" />
             </div>
@@ -1078,10 +1093,12 @@
           } : c);
           localStorage.setItem('track_chores', JSON.stringify(chores));
         } else if (currentEditingCategory === 'care') {
+          const pVal = parseFloat(document.getElementById('edit_cPrice').value) || 0;
           careItems = careItems.map(c => c.id === currentEditingId ? {
             ...c,
             name: document.getElementById('edit_cName').value.trim() || c.name,
             category: document.getElementById('edit_cCategory').value,
+            price: pVal > 0 ? String(pVal) : '',
             paoMonths: parseInt(document.getElementById('edit_cPaoMonths').value, 10) || null,
             dateBought: document.getElementById('edit_cDateBought').value || c.dateBought,
             dateOpened: document.getElementById('edit_cDateOpened').value || null,
@@ -1281,7 +1298,7 @@
           }).join('');
         }
 
-        // 5. Personal Care Render
+        // 5. Personal Care Render (With Price)
         const careContainer = document.getElementById('careListContainer');
         const lowItems = careItems.filter(c => c.needRestock && !c.dateFinished);
         const alertBox = document.getElementById('careRestockAlertBox');
@@ -1365,6 +1382,7 @@
                     <div class="item-title">${c.name}</div>
                     <div style="margin-top: 4px; display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
                       <span class="badge badge-lavender">${c.category || 'Product'}</span>
+                      ${c.price ? `<span class="badge badge-rose">฿${c.price}</span>` : ''}
                       ${c.needRestock && !c.dateFinished ? '<span class="badge badge-rose">⚠️ Restock Needed</span>' : ''}
                       ${statusBadge}
                       ${paoBadge}
