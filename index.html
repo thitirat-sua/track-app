@@ -6,181 +6,197 @@
   <title>TrackApp</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <!-- ไลบรารีอ่านไฟล์ Excel ภายในเครื่อง -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    :root {
-      --bg-main: #f4f5f7;
-      --card-bg: #ffffff;
-      --text-main: #2b303a;
-      --text-muted: #8c93a0;
-      --border: #e6e9ee;
-
-      --pastel-sage: #e8efe8;
-      --pastel-sage-text: #415e45;
-      --pastel-rose: #f9e8e9;
-      --pastel-rose-text: #82474f;
-      --pastel-blue: #e8f0f8;
-      --pastel-blue-text: #3c5d79;
-      --pastel-lavender: #eeeaf7;
-      --pastel-lavender-text: #59487c;
-      --pastel-butter: #faf2dc;
-      --pastel-butter-text: #786127;
-
-      --tab-active: #4a5260;
-      --radius: 12px;
+    @font-face {
+      font-family: 'CloudLoop';
+      src: url('./CloudLoop-Regular.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    :root {
+      /* Warm Milk & Whipped Cream Base */
+      --bg-main: #fcfbf9;
+      --card-bg: #ffffff;
+      --text-main: #4a453e;
+      --text-muted: #a69f94;
+      --border: #f4efe6;
+      --border-card: #f0eae1;
+
+      /* Genuine Milky Pastel Accents */
+      --milk-sage: #e8f3ea;
+      --milk-sage-border: #d4e8d8;
+      --milk-sage-text: #4e7355;
+
+      --milk-rose: #faeaec;
+      --milk-rose-border: #f3d4d7;
+      --milk-rose-text: #94535b;
+
+      --milk-blue: #eaf1f8;
+      --milk-blue-border: #d2e2f1;
+      --milk-blue-text: #496b8c;
+
+      --milk-lavender: #f2eefa;
+      --milk-lavender-border: #ded5f2;
+      --milk-lavender-text: #6d5b8e;
+
+      --milk-butter: #fdf6e7;
+      --milk-butter-border: #fae9c4;
+      --milk-butter-text: #8c7137;
+
+      --milk-peach: #faeee7;
+      --milk-peach-border: #f5dad0;
+      --milk-peach-text: #96604a;
+
+      --tab-inactive: #b8b0a5;
+      --radius: 14px;
+      --app-font: 'CloudLoop', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--app-font); }
     body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
     
     header { 
       background: #ffffff; 
-      padding: 12px 16px; 
-      border-bottom: 1px solid var(--border); 
+      padding: 12px 18px; 
+      border-bottom: 1px solid var(--border-card); 
       position: sticky; 
       top: 0; 
-      z-index: 10;
+      z-index: 20;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.2px; color: #374151; }
-    .header-actions { display: flex; gap: 6px; }
-    .btn-backup { font-size: 0.72rem; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--border); background: #fbfcfd; cursor: pointer; color: var(--text-main); }
-    .btn-import-xlsx { background: var(--pastel-sage); border-color: #bcd4bc; color: var(--pastel-sage-text); font-weight: 600; }
+    header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.2px; color: #575047; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-backup { font-size: 0.74rem; padding: 5px 10px; border-radius: 9px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); transition: all 0.15s; }
+    .btn-backup:hover { background: #faf8f5; }
+    .btn-import-xlsx { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
 
+    /* Minimal Line Art Nav */
     .nav-bar { 
       display: flex; 
       background: #ffffff; 
-      border-bottom: 1px solid var(--border); 
+      border-bottom: 1px solid var(--border-card); 
       justify-content: space-around;
-      padding: 0 4px;
+      padding: 4px 6px;
       overflow-x: auto;
     }
     .nav-tab { 
       flex: 1; 
       min-width: 44px;
-      text-align: center; 
-      padding: 11px 0; 
-      font-size: 1.2rem; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0; 
       cursor: pointer; 
       border-bottom: 2.5px solid transparent; 
       transition: all 0.15s ease;
-      opacity: 0.45;
+      color: var(--tab-inactive);
     }
+    .nav-tab svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.8; fill: none; stroke-linecap: round; stroke-linejoin: round; }
     .nav-tab.active { 
-      opacity: 1; 
-      border-bottom-color: var(--tab-active); 
-      background: #fbfcfd; 
-      transform: translateY(-1px);
+      color: var(--milk-lavender-text); 
+      border-bottom-color: var(--milk-lavender-text); 
+      background: #faf8fd;
     }
 
     .sub-tabs { display: flex; gap: 8px; margin: 12px 16px 8px 16px; }
-    .sub-tab { flex: 1; padding: 7px 10px; text-align: center; border-radius: 20px; font-size: 0.76rem; font-weight: 600; background: #e8ebf0; color: var(--text-muted); cursor: pointer; }
-    .sub-tab.active { background: var(--tab-active); color: #ffffff; }
+    .sub-tab { flex: 1; padding: 8px 12px; text-align: center; border-radius: 20px; font-size: 0.78rem; font-weight: 600; background: #f3efe8; color: var(--text-muted); cursor: pointer; transition: all 0.15s; }
+    .sub-tab.active { background: var(--milk-lavender); color: var(--milk-lavender-text); border: 1px solid var(--milk-lavender-border); }
 
     .shelf-filters { display: flex; gap: 6px; margin: 4px 16px 8px 16px; overflow-x: auto; }
-    .shelf-pill { padding: 4px 10px; border-radius: 14px; font-size: 0.72rem; font-weight: 600; background: #ffffff; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
-    .shelf-pill.active { background: var(--tab-active); color: #ffffff; border-color: var(--tab-active); }
+    .shelf-pill { padding: 5px 12px; border-radius: 16px; font-size: 0.74rem; font-weight: 500; background: #ffffff; border: 1px solid var(--border-card); color: var(--text-muted); cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+    .shelf-pill.active { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); font-weight: 600; }
 
     .search-wrapper { padding: 8px 16px 4px 16px; }
-    .search-input { width: 100%; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); font-size: 0.84rem; background: #ffffff; outline: none; }
-    .search-input:focus { border-color: #a0aec0; }
+    .search-input { width: 100%; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.84rem; background: #ffffff; color: var(--text-main); outline: none; }
+    .search-input:focus { border-color: #d6cbbf; }
 
-    .content-area { padding: 6px 16px 20px 16px; }
+    .content-area { padding: 8px 16px 20px 16px; }
 
-    /* Summary Dashboard */
-    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .metric-box { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; }
-    .metric-label { font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
-    .metric-val { font-size: 1.25rem; font-weight: 700; color: #1e293b; }
+    /* Milky Pastel Metrics */
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .metric-box { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 13px; }
+    .metric-box.highlight-lavender { background: var(--milk-lavender); border-color: var(--milk-lavender-border); }
+    .metric-box.highlight-blue { background: var(--milk-blue); border-color: var(--milk-blue-border); }
+    .metric-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+    .metric-val { font-size: 1.25rem; font-weight: 700; color: #4a453e; }
 
-    .chart-card { background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
-    .chart-title { font-size: 0.86rem; font-weight: 700; color: #374151; margin-bottom: 12px; }
-    .bar-chart-container { display: flex; align-items: flex-end; gap: 8px; height: 160px; padding-top: 24px; border-bottom: 1px solid var(--border); overflow-x: auto; }
-    .chart-column { min-width: 48px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
-    .chart-bar { width: 100%; max-width: 24px; background: var(--pastel-blue-text); border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
-    .chart-bar-label { position: absolute; top: -18px; width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700; color: #475569; }
-    .chart-x-axis { font-size: 0.64rem; color: var(--text-muted); margin-top: 6px; text-align: center; white-space: nowrap; }
+    .chart-card { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+    .chart-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .chart-title { font-size: 0.86rem; font-weight: 700; color: #575047; }
+    .year-select { font-size: 0.76rem; font-weight: 600; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #fcfbf9; color: var(--text-main); outline: none; }
+    
+    /* Milky Frosted Chart Bars */
+    .bar-chart-container { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: 24px; border-bottom: 1px solid var(--border-card); overflow-x: auto; }
+    .chart-column { min-width: 24px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+    .chart-bar { width: 100%; max-width: 22px; border-radius: 6px 6px 0 0; min-height: 2px; position: relative; transition: height 0.25s ease; }
+    .chart-bar-label { position: absolute; top: -17px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 700; color: #736b61; }
+    .chart-x-axis { font-size: 0.64rem; color: var(--text-muted); margin-top: 6px; text-align: center; }
 
-    .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
-    .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #4b5563; }
+    .year-group-box { margin-bottom: 12px; border: 1px solid var(--border-card); border-radius: 11px; overflow: hidden; background: #ffffff; }
+    .year-group-header { background: #faf7f2; padding: 9px 13px; font-size: 0.82rem; font-weight: 700; color: #575047; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-card); }
+    .month-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 13px; border-bottom: 1px solid #fcfbf9; font-size: 0.78rem; }
+    .month-row:last-child { border-bottom: none; }
+
+    /* Forms */
+    .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border-card); margin-bottom: 14px; }
+    .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #575047; }
     .input-group { margin-bottom: 10px; }
     .input-group label { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
-    .input-group input, .input-group select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.84rem; outline: none; background: #fafbfc; color: var(--text-main); }
-    .input-group input:focus, .input-group select:focus { border-color: #94a3b8; background: #fff; }
+    .input-group input, .input-group select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.84rem; outline: none; background: #fdfdfc; color: var(--text-main); }
+    .input-group input:focus, .input-group select:focus { border-color: #d6cbbf; background: #fff; }
     .row { display: flex; gap: 8px; }
     .row .input-group { flex: 1; }
-    
-    .btn-submit { width: 100%; padding: 9px; background: var(--tab-active); color: #ffffff; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; font-size: 0.84rem; margin-top: 2px; }
+    .btn-submit { width: 100%; padding: 10px; background: var(--milk-lavender); color: var(--milk-lavender-text); font-weight: 600; border-radius: 9px; border: 1px solid var(--milk-lavender-border); cursor: pointer; font-size: 0.84rem; margin-top: 2px; }
 
-    .item-card { background: var(--card-bg); border-radius: var(--radius); padding: 13px; border: 1px solid var(--border); margin-bottom: 10px; }
+    /* Cards */
+    .item-card { background: var(--card-bg); border-radius: var(--radius); padding: 13px; border: 1px solid var(--border-card); margin-bottom: 10px; }
     .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
-    .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; }
-    .item-author { font-size: 0.78rem; color: #717d91; margin-top: 1px; }
+    .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; color: #3d3831; }
+    .item-title.task-completed { text-decoration: line-through; opacity: 0.45; }
+    .item-author { font-size: 0.78rem; color: #8a8276; margin-top: 1px; }
 
-    .badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
-    .badge-rose { background: var(--pastel-rose); color: var(--pastel-rose-text); }
-    .badge-sage { background: var(--pastel-sage); color: var(--pastel-sage-text); }
-    .badge-blue { background: var(--pastel-blue); color: var(--pastel-blue-text); }
-    .badge-lavender { background: var(--pastel-lavender); color: var(--pastel-lavender-text); }
-    .badge-butter { background: var(--pastel-butter); color: var(--pastel-butter-text); }
-    .badge-gray { background: #e9ecef; color: #555e6d; }
+    /* Frosted Badges */
+    .badge { font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 8px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+    .badge-rose { background: var(--milk-rose); color: var(--milk-rose-text); border-color: var(--milk-rose-border); }
+    .badge-sage { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
+    .badge-blue { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
+    .badge-lavender { background: var(--milk-lavender); color: var(--milk-lavender-text); border-color: var(--milk-lavender-border); }
+    .badge-butter { background: var(--milk-butter); color: var(--milk-butter-text); border-color: var(--milk-butter-border); }
+    .badge-peach { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
+    .badge-gray { background: #f5f2eb; color: #7a7266; border-color: #eae5dc; }
 
-    .volumes-container {
-      background: #fafbfc;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
-      margin: 8px 0 4px 0;
-    }
-    .volumes-header {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 6px;
-    }
+    .volumes-container { background: #faf8f5; border: 1px solid var(--border-card); border-radius: 10px; padding: 9px 11px; margin: 8px 0 4px 0; }
+    .volumes-header { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
     .volume-chips-row { display: flex; gap: 5px; flex-wrap: wrap; }
-    .vol-chip {
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 0.74rem;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-    }
-    .vol-chip.vol-unread { background: #f1f5f9; color: #64748b; border-color: #cbd5e1; }
-    .vol-chip.vol-reading { background: var(--pastel-blue); color: var(--pastel-blue-text); border-color: #bcd4ea; }
-    .vol-chip.vol-finished { background: var(--pastel-sage); color: var(--pastel-sage-text); border-color: #b8dcb8; }
+    .vol-chip { padding: 4px 10px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-card); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .vol-chip.vol-unread { background: #ffffff; color: #9c9489; border-color: #ece6dc; }
+    .vol-chip.vol-reading { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
+    .vol-chip.vol-finished { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
 
     .item-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 5px; }
-    .item-notes { font-size: 0.78rem; background: #f8fafc; padding: 6px 9px; border-radius: 7px; border-left: 2px solid #cbd5e1; margin-top: 6px; color: #475569; }
+    .item-notes { font-size: 0.78rem; background: #faf8f5; padding: 6px 9px; border-radius: 8px; border-left: 2px solid #d4cdc3; margin-top: 6px; color: #575047; }
     
     .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
-    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; color: var(--text-main); text-decoration: none; }
-    .btn-action-primary { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); font-weight: 600; }
-    .btn-bought { background: var(--pastel-sage); border-color: #d2e4d2; color: var(--pastel-sage-text); font-weight: 600; }
-    .btn-edit { background: #ffffff; border-color: #cbd5e1; color: #475569; }
-    .btn-delete { color: #b91c1c; border-color: #fed7d7; }
+    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); }
+    .btn-edit { background: #ffffff; border-color: #e5dfd5; color: #575047; }
+    .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
 
-    /* Modal Styling */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; }
-    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 460px; max-height: 90vh; overflow-y: auto; padding: 16px; }
+    /* Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(50,45,40,0.25); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(1.5px); }
+    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 16px; border: 1px solid var(--border-card); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-title { font-size: 0.95rem; font-weight: 700; color: #374151; }
+    .modal-title { font-size: 0.95rem; font-weight: 700; color: #4a453e; }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
 
     .vol-edit-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.78rem; }
-    .vol-edit-table th, .vol-edit-table td { border: 1px solid var(--border); padding: 6px; text-align: left; }
-    .vol-edit-table th { background: #f8fafc; font-weight: 600; color: var(--text-muted); }
-    .vol-edit-table input, .vol-edit-table select { width: 100%; padding: 4px; font-size: 0.76rem; border: 1px solid var(--border); border-radius: 4px; }
+    .vol-edit-table th, .vol-edit-table td { border: 1px solid var(--border-card); padding: 6px; text-align: left; }
+    .vol-edit-table th { background: #faf7f2; font-weight: 600; color: var(--text-muted); }
+    .vol-edit-table input, .vol-edit-table select { width: 100%; padding: 4px; font-size: 0.76rem; border: 1px solid var(--border-card); border-radius: 4px; background: #fff; }
   </style>
 </head>
 <body>
@@ -188,7 +204,6 @@
   <header>
     <h1>TrackApp</h1>
     <div class="header-actions">
-      <!-- ปุ่มนำเข้า Excel จากเครื่องโดยตรง -->
       <button class="btn-backup btn-import-xlsx" onclick="document.getElementById('importXlsxInput').click()">📥 Import Bookmory.xlsx</button>
       <input type="file" id="importXlsxInput" style="display:none;" onchange="importBookmoryExcel(event)" accept=".xlsx, .xls" />
       
@@ -198,15 +213,32 @@
     </div>
   </header>
 
+  <!-- Minimal Line Art Nav Tabs -->
   <div class="nav-bar">
-    <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">📖</div>
-    <div class="nav-tab" id="tabNavStats" title="Reading & Spend Stats" onclick="switchMainTab('stats')">📊</div>
-    <div class="nav-tab" id="tabNavSerials" title="Serials & Manhwa" onclick="switchMainTab('serials')">🎨</div>
-    <div class="nav-tab" id="tabNavTasks" title="To-Do Tasks" onclick="switchMainTab('tasks')">✅</div>
-    <div class="nav-tab" id="tabNavChores" title="House Chores" onclick="switchMainTab('chores')">🧹</div>
-    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">🧴</div>
-    <div class="nav-tab" id="tabNavSubs" title="Subscriptions" onclick="switchMainTab('subs')">💳</div>
-    <div class="nav-tab" id="tabNavSales" title="Sales Fests" onclick="switchMainTab('sales')">🏷️</div>
+    <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+    </div>
+    <div class="nav-tab" id="tabNavStats" title="Reading & Spend Stats" onclick="switchMainTab('stats')">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+    </div>
+    <div class="nav-tab" id="tabNavSerials" title="Serials & Manhwa" onclick="switchMainTab('serials')">
+      <svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+    <div class="nav-tab" id="tabNavTasks" title="To-Do Tasks" onclick="switchMainTab('tasks')">
+      <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+    </div>
+    <div class="nav-tab" id="tabNavChores" title="House Chores" onclick="switchMainTab('chores')">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+    </div>
+    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">
+      <svg viewBox="0 0 24 24"><path d="M12 2v6"></path><path d="M16.5 10.5a5 5 0 0 1 .5 2.5 5 5 0 0 1-10 0 5 5 0 0 1 .5-2.5c.8-1.5 2.5-3.5 4.5-5.5 2 2 3.7 4 4.5 5.5z"></path></svg>
+    </div>
+    <div class="nav-tab" id="tabNavSubs" title="Subscriptions" onclick="switchMainTab('subs')">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+    </div>
+    <div class="nav-tab" id="tabNavSales" title="Sales Fests" onclick="switchMainTab('sales')">
+      <svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg>
+    </div>
   </div>
 
   <div class="search-wrapper">
@@ -261,13 +293,20 @@
         </div>
 
         <div class="row">
-          <div class="input-group">
-            <label>Default Price / Vol</label>
-            <input type="number" id="bPricePerVol" placeholder="e.g. 219" />
+          <div class="input-group" style="flex: 1.2;">
+            <label>Price Type</label>
+            <select id="bPriceType" onchange="togglePriceInputLabel()">
+              <option value="total">Whole Series Total (฿)</option>
+              <option value="perVol">Per Volume (฿)</option>
+            </select>
           </div>
-          <div class="input-group">
+          <div class="input-group" style="flex: 1.2;">
+            <label id="bPriceLabel">Total Price (฿)</label>
+            <input type="number" id="bPriceVal" placeholder="e.g. 1355" />
+          </div>
+          <div class="input-group" style="flex: 1;">
             <label>Store / Platform</label>
-            <input type="text" id="bPlatform" placeholder="MEB, Kindle, etc." />
+            <input type="text" id="bPlatform" placeholder="MEB, Naiin" />
           </div>
         </div>
         
@@ -295,7 +334,7 @@
 
         <div class="input-group">
           <label>Notes</label>
-          <input type="text" id="bNotes" placeholder="Promo coins, notes, or volume details" />
+          <input type="text" id="bNotes" placeholder="Promo coins, notes, or detail tags" />
         </div>
         <button class="btn-submit" onclick="saveBook()">Save Series</button>
       </div>
@@ -306,13 +345,26 @@
   <!-- 2. SUMMARY / STATS SECTION -->
   <section id="sectionStats" style="display: none;">
     <div class="content-area">
+      <!-- Year Highlights -->
+      <div class="metric-grid">
+        <div class="metric-box highlight-lavender">
+          <div class="metric-label">In <span id="statYearLabel">2026</span> (Read)</div>
+          <div class="metric-val" id="statYearVols">0 vols</div>
+        </div>
+        <div class="metric-box highlight-blue">
+          <div class="metric-label">In <span id="statYearSpendLabel">2026</span> (Spend)</div>
+          <div class="metric-val" id="statYearSpend">฿0</div>
+        </div>
+      </div>
+
+      <!-- All Time Stats -->
       <div class="metric-grid">
         <div class="metric-box">
-          <div class="metric-label">Volumes Finished</div>
+          <div class="metric-label">All-Time Finished</div>
           <div class="metric-val" id="statTotalVols">0</div>
         </div>
         <div class="metric-box">
-          <div class="metric-label">Total Spend (฿)</div>
+          <div class="metric-label">All-Time Spend</div>
           <div class="metric-val" id="statTotalSpend">฿0</div>
         </div>
         <div class="metric-box">
@@ -325,14 +377,19 @@
         </div>
       </div>
 
+      <!-- Graph Card with Year Selector -->
       <div class="chart-card">
-        <div class="chart-title">📊 Volumes Finished per Month</div>
+        <div class="chart-header-row">
+          <div class="chart-title">📊 Volumes Finished in <span id="displayYearText">2026</span></div>
+          <select id="graphYearSelect" class="year-select" onchange="changeGraphYear(this.value)"></select>
+        </div>
         <div class="bar-chart-container" id="barChartBox"></div>
       </div>
 
+      <!-- Breakdown Grouped by Year -->
       <div class="chart-card">
-        <div class="chart-title">🗓️ Monthly Breakdown</div>
-        <div id="detailedMonthlyGrid" style="display:flex; flex-direction:column; gap:8px;"></div>
+        <div class="chart-title" style="margin-bottom:12px;">🗓️ Breakdown by Year & Month</div>
+        <div id="detailedMonthlyGrid"></div>
       </div>
     </div>
   </section>
@@ -592,8 +649,37 @@
     let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
     let currentTaskFilter = 'Today';
+    let selectedGraphYear = new Date().getFullYear().toString();
     let currentEditingCategory = null;
     let currentEditingId = null;
+
+    const monthShorts = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    // Milky Frosted Pastel Palette for Chart Bars
+    const milkyPastelBars = [
+      { fill: "#d9ede0", border: "#b8d9c2" }, /* Matcha Cream */
+      { fill: "#fce3e7", border: "#f2bcc5" }, /* Strawberry Milk */
+      { fill: "#e5edf8", border: "#c2d6ed" }, /* Powdery Sky */
+      { fill: "#faedd8", border: "#eed1a2" }, /* Whipped Butter */
+      { fill: "#ede7fa", border: "#d4c8ef" }, /* Lavender Mist */
+      { fill: "#fae8de", border: "#ecc7b3" }, /* Peach Foam */
+      { fill: "#d7eee5", border: "#b2dccb" }, /* Mint Milk */
+      { fill: "#fbe4ec", border: "#f2bcca" }, /* Soft Rose */
+      { fill: "#e2ecf7", border: "#bcd4ec" }, /* Cloud Blue */
+      { fill: "#fbf0d8", border: "#eed8a3" }, /* Custard Cream */
+      { fill: "#eae2f8", border: "#cfbeed" }, /* Lilac Fog */
+      { fill: "#faeae1", border: "#ebc9b8" }  /* Sweet Apricot */
+    ];
+
+    function togglePriceInputLabel() {
+      const type = document.getElementById('bPriceType').value;
+      document.getElementById('bPriceLabel').innerText = type === 'total' ? 'Total Price (฿)' : 'Price / Vol (฿)';
+    }
+
+    function changeGraphYear(val) {
+      selectedGraphYear = val;
+      render();
+    }
 
     function parseTitleVolume(rawTitle) {
       let title = String(rawTitle).trim();
@@ -640,7 +726,6 @@
       return isNaN(num) ? '' : (Number.isInteger(num) ? String(num) : num.toFixed(2));
     }
 
-    // ฟังก์ชันนำเข้า Bookmory.xlsx
     function importBookmoryExcel(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -653,10 +738,7 @@
           const sheet = workbook.Sheets[workbook.SheetNames[0]];
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-          if (rows.length < 3) {
-            alert('ไฟล์ไม่มีข้อมูล');
-            return;
-          }
+          if (rows.length < 3) return alert('No records found in Excel.');
 
           const headers = rows[1];
           const colTitle = headers.indexOf('Title');
@@ -690,12 +772,7 @@
             const platform = (row[colPlatform] && String(row[colPlatform]).trim() !== 'nan') ? String(row[colPlatform]).trim() : 'Ebook';
 
             if (!bookmoryMap[parsed.base]) {
-              bookmoryMap[parsed.base] = {
-                title: parsed.base,
-                author: author,
-                platform: platform,
-                vols: {}
-              };
+              bookmoryMap[parsed.base] = { title: parsed.base, author, platform, vols: {} };
             }
 
             bookmoryMap[parsed.base].vols[parsed.vol] = {
@@ -803,10 +880,9 @@
 
           localStorage.setItem('track_books', JSON.stringify(books));
           render();
-          alert(`🎉 นำเข้าสำเร็จ!\n- ซีรีส์ใหม่: ${newBooksCount} เรื่อง\n- อัปเดตข้อมูลเดิม: ${updatedBooksCount} เรื่อง\nตัดเล่มที่กำลังอ่านและ Manhwa ออกเรียบร้อยครับ`);
+          alert(`Import successful: ${newBooksCount} new series added, ${updatedBooksCount} existing updated.`);
         } catch (err) {
-          console.error(err);
-          alert('เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel: ' + err.message);
+          alert('Error parsing Excel: ' + err.message);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -831,7 +907,7 @@
       reader.onload = function(e) {
         try {
           const parsed = JSON.parse(e.target.result);
-          if (!confirm("กด 'OK' เพื่อรวมข้อมูล (Merge) ปลอดภัยไม่ลบของเดิม")) return;
+          if (!confirm("Click 'OK' to merge without deleting local changes.")) return;
           const mergeArrays = (cur, inc) => {
             if (!inc || !Array.isArray(inc)) return cur;
             const map = new Map();
@@ -855,9 +931,9 @@
           localStorage.setItem('track_subs', JSON.stringify(subscriptions));
           localStorage.setItem('track_sales', JSON.stringify(sales));
           render();
-          alert('รวมข้อมูลสำเร็จเรียบร้อย!');
+          alert('Merged successfully.');
         } catch (err) {
-          alert('รูปแบบไฟล์ JSON ไม่ถูกต้อง');
+          alert('Invalid JSON file.');
         }
       };
       reader.readAsText(file);
@@ -914,12 +990,27 @@
 
     function saveBook() {
       const title = document.getElementById('bTitle').value.trim();
-      if (!title) return alert('กรุณาใส่ชื่อเรื่อง');
+      if (!title) return alert('Enter series title');
+
       const isOwnedTab = currentBookSubTab === 'read';
       const volTotal = Math.max(1, parseInt(document.getElementById('bVolTotal').value, 10) || 1);
       const volOwned = parseInt(document.getElementById('bVolOwned').value, 10) || (isOwnedTab ? volTotal : 0);
-      const pricePerVol = document.getElementById('bPricePerVol').value.trim();
+      const priceType = document.getElementById('bPriceType').value;
+      const rawPrice = parseFloat(document.getElementById('bPriceVal').value.trim()) || 0;
       const today = new Date().toISOString().split('T')[0];
+
+      let perVolPrice = '';
+      let seriesTotalPrice = '';
+
+      if (rawPrice > 0) {
+        if (priceType === 'total') {
+          seriesTotalPrice = String(rawPrice);
+          perVolPrice = volOwned > 0 ? (rawPrice / volOwned).toFixed(0) : '';
+        } else {
+          perVolPrice = String(rawPrice);
+          seriesTotalPrice = String(rawPrice * volOwned);
+        }
+      }
 
       const volumes = [];
       for (let i = 1; i <= volTotal; i++) {
@@ -928,7 +1019,7 @@
           volNum: i,
           owned: owned,
           status: owned ? (isOwnedTab ? 'Finished' : 'Unread') : 'Unread',
-          price: owned && pricePerVol ? pricePerVol : '',
+          price: owned ? perVolPrice : '',
           buyDate: owned ? today : null,
           finishedDate: (owned && isOwnedTab) ? today : null
         });
@@ -945,12 +1036,14 @@
         type: currentBookSubTab,
         buyStatus: document.getElementById('bBuyStatus').value,
         digitalStatus: document.getElementById('bDigitalStatus').value,
+        price: seriesTotalPrice,
         volumes: volumes
       });
 
       localStorage.setItem('track_books', JSON.stringify(books));
       document.getElementById('bTitle').value = '';
       document.getElementById('bAuthor').value = '';
+      document.getElementById('bPriceVal').value = '';
       document.getElementById('bNotes').value = '';
       render();
     }
@@ -979,9 +1072,154 @@
     }
 
     function deleteBook(id) {
-      if (!confirm('ต้องการลบซีรีส์นี้หรือไม่?')) return;
+      if (!confirm('Delete this series?')) return;
       books = books.filter(b => b.id !== id);
       localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function saveSerial() {
+      const title = document.getElementById('sTitle').value.trim();
+      if (!title) return alert('Enter title');
+      serials.unshift({
+        id: Date.now().toString(),
+        title,
+        author: document.getElementById('sAuthor').value.trim(),
+        format: document.getElementById('sFormat').value,
+        chapter: document.getElementById('sChapter').value.trim(),
+        platform: document.getElementById('sPlatform').value.trim(),
+        status: document.getElementById('sStatus').value,
+        notes: document.getElementById('sNotes').value.trim()
+      });
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      document.getElementById('sTitle').value = '';
+      document.getElementById('sAuthor').value = '';
+      document.getElementById('sChapter').value = '';
+      document.getElementById('sNotes').value = '';
+      render();
+    }
+
+    function deleteSerial(id) {
+      if (!confirm('Delete this serial?')) return;
+      serials = serials.filter(s => s.id !== id);
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      render();
+    }
+
+    function saveTask() {
+      const title = document.getElementById('tTitle').value.trim();
+      if (!title) return alert('Enter task description');
+      tasks.unshift({
+        id: Date.now().toString(),
+        title,
+        horizon: document.getElementById('tHorizon').value,
+        dueDate: document.getElementById('tDate').value || null,
+        completed: false
+      });
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      document.getElementById('tTitle').value = '';
+      document.getElementById('tDate').value = '';
+      render();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(t => t.id !== id);
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      render();
+    }
+
+    function saveChore() {
+      const name = document.getElementById('chName').value.trim();
+      if (!name) return alert('Enter chore name');
+      chores.unshift({
+        id: Date.now().toString(),
+        name,
+        lastDone: document.getElementById('chDate').value || new Date().toISOString().split('T')[0],
+        frequency: parseInt(document.getElementById('chFreq').value, 10) || 7
+      });
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      document.getElementById('chName').value = '';
+      render();
+    }
+
+    function markChoreDone(id) {
+      const today = new Date().toISOString().split('T')[0];
+      chores = chores.map(c => c.id === id ? { ...c, lastDone: today } : c);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    function deleteChore(id) {
+      chores = chores.filter(c => c.id !== id);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    function saveCareItem() {
+      const name = document.getElementById('cName').value.trim();
+      if (!name) return alert('Enter product name');
+      careItems.unshift({
+        id: Date.now().toString(),
+        name,
+        category: document.getElementById('cCategory').value,
+        price: ''
+      });
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      document.getElementById('cName').value = '';
+      render();
+    }
+
+    function deleteCare(id) {
+      careItems = careItems.filter(c => c.id !== id);
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      render();
+    }
+
+    function saveSubscription() {
+      const name = document.getElementById('subName').value.trim();
+      if (!name) return alert('Enter service name');
+      subscriptions.unshift({
+        id: Date.now().toString(),
+        name,
+        cost: document.getElementById('subCost').value.trim(),
+        renewalDate: document.getElementById('subDate').value || null
+      });
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      document.getElementById('subName').value = '';
+      document.getElementById('subCost').value = '';
+      render();
+    }
+
+    function deleteSub(id) {
+      subscriptions = subscriptions.filter(s => s.id !== id);
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      render();
+    }
+
+    function saveSaleEvent() {
+      const name = document.getElementById('sName').value.trim();
+      if (!name) return alert('Enter campaign name');
+      sales.unshift({
+        id: Date.now().toString(),
+        name,
+        platform: document.getElementById('sPlatform').value.trim(),
+        month: document.getElementById('sMonth').value
+      });
+      localStorage.setItem('track_sales', JSON.stringify(sales));
+      document.getElementById('sName').value = '';
+      document.getElementById('sPlatform').value = '';
+      render();
+    }
+
+    function deleteSale(id) {
+      sales = sales.filter(s => s.id !== id);
+      localStorage.setItem('track_sales', JSON.stringify(sales));
       render();
     }
 
@@ -997,6 +1235,8 @@
         const b = books.find(x => x.id === id);
         if (!b) return;
         title.innerText = 'Edit Series & Volumes';
+
+        const seriesSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
 
         content.innerHTML = `
           <div class="input-group">
@@ -1030,20 +1270,29 @@
               </select>
             </div>
           </div>
+
+          <div class="row" style="background:#faf8f5; padding:8px; border-radius:8px; border:1px solid var(--border-card); margin-bottom:10px;">
+            <div class="input-group" style="margin-bottom:0;">
+              <label>Set Total Series Price (฿)</label>
+              <input type="number" id="edit_bTotalDistribute" placeholder="${seriesSpend || 'e.g. 1200'}" />
+            </div>
+            <button type="button" class="btn-action" style="align-self:flex-end; padding:8px 10px; background:#fff;" onclick="applyTotalSeriesPrice()">Distribute Across Vols</button>
+          </div>
+
           <div class="input-group">
             <label>Notes</label>
             <input type="text" id="edit_bNotes" value="${(b.notes || '').replace(/"/g, '&quot;')}" />
           </div>
 
           <div style="margin-top: 14px;">
-            <label style="font-size:0.75rem; font-weight:700; color:#334155;">Volume Details (Price & Status)</label>
+            <label style="font-size:0.75rem; font-weight:700; color:#575047;">Volume Details</label>
             <table class="vol-edit-table">
               <thead>
                 <tr>
-                  <th style="width: 32px;">Vol</th>
-                  <th style="width: 50px;">Owned?</th>
+                  <th style="width: 30px;">Vol</th>
+                  <th style="width: 48px;">Owned?</th>
                   <th>Status</th>
-                  <th style="width: 65px;">Price (฿)</th>
+                  <th style="width: 68px;">Price (฿)</th>
                   <th>Finished Date</th>
                 </tr>
               </thead>
@@ -1062,7 +1311,7 @@
                       </select>
                     </td>
                     <td>
-                      <input type="number" id="vol_price_${v.volNum}" value="${v.price || ''}" placeholder="฿" />
+                      <input type="number" class="vol-price-input" id="vol_price_${v.volNum}" value="${v.price || ''}" placeholder="฿" />
                     </td>
                     <td>
                       <input type="date" id="vol_date_${v.volNum}" value="${v.finishedDate || ''}" />
@@ -1121,8 +1370,78 @@
             </div>
           </div>
         `;
+      } else if (category === 'chore') {
+        const ch = chores.find(x => x.id === id);
+        if (!ch) return;
+        title.innerText = 'Edit Chore';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Chore Name</label>
+            <input type="text" id="edit_chName" value="${(ch.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Last Done</label>
+              <input type="date" id="edit_chDate" value="${ch.lastDone || ''}" />
+            </div>
+            <div class="input-group">
+              <label>Repeat Frequency</label>
+              <select id="edit_chFreq">
+                <option value="7" ${ch.frequency === 7 ? 'selected' : ''}>7 Days</option>
+                <option value="14" ${ch.frequency === 14 ? 'selected' : ''}>14 Days</option>
+                <option value="21" ${ch.frequency === 21 ? 'selected' : ''}>21 Days</option>
+                <option value="30" ${ch.frequency === 30 ? 'selected' : ''}>30 Days</option>
+              </select>
+            </div>
+          </div>
+        `;
+      } else if (category === 'care') {
+        const c = careItems.find(x => x.id === id);
+        if (!c) return;
+        title.innerText = 'Edit Care Item';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Product Name</label>
+            <input type="text" id="edit_cName" value="${(c.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="input-group">
+            <label>Category</label>
+            <select id="edit_cCategory">
+              <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
+              <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
+              <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
+              <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
+            </select>
+          </div>
+        `;
       }
       modal.style.display = 'flex';
+    }
+
+    function applyTotalSeriesPrice() {
+      const val = parseFloat(document.getElementById('edit_bTotalDistribute').value);
+      if (isNaN(val) || val <= 0) return alert('Please enter a valid total amount.');
+
+      const b = books.find(x => x.id === currentEditingId);
+      if (!b) return;
+
+      const ownedInputs = b.volumes.map(v => ({
+        volNum: v.volNum,
+        checkbox: document.getElementById(`vol_owned_${v.volNum}`),
+        priceInput: document.getElementById(`vol_price_${v.volNum}`)
+      })).filter(x => x.checkbox && x.checkbox.checked);
+
+      const count = ownedInputs.length || b.volumes.length;
+      const perVol = (val / count).toFixed(0);
+
+      if (ownedInputs.length > 0) {
+        ownedInputs.forEach(x => x.priceInput.value = perVol);
+      } else {
+        b.volumes.forEach(v => {
+          const el = document.getElementById(`vol_price_${v.volNum}`);
+          if (el) el.value = perVol;
+        });
+      }
     }
 
     function closeEditModal() {
@@ -1152,6 +1471,8 @@
               };
             });
 
+            const totalSpend = updatedVols.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+
             return {
               ...b,
               title: document.getElementById('edit_bTitle').value.trim() || b.title,
@@ -1161,6 +1482,7 @@
               type: document.getElementById('edit_bType').value,
               notes: document.getElementById('edit_bNotes').value.trim(),
               volOwned: updatedVols.filter(v => v.owned).length,
+              price: totalSpend > 0 ? String(totalSpend) : b.price,
               volumes: updatedVols
             };
           }
@@ -1194,6 +1516,31 @@
           return t;
         });
         localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      } else if (currentEditingCategory === 'chore') {
+        chores = chores.map(c => {
+          if (c.id === currentEditingId) {
+            return {
+              ...c,
+              name: document.getElementById('edit_chName').value.trim() || c.name,
+              lastDone: document.getElementById('edit_chDate').value,
+              frequency: parseInt(document.getElementById('edit_chFreq').value, 10) || 7
+            };
+          }
+          return c;
+        });
+        localStorage.setItem('track_chores', JSON.stringify(chores));
+      } else if (currentEditingCategory === 'care') {
+        careItems = careItems.map(c => {
+          if (c.id === currentEditingId) {
+            return {
+              ...c,
+              name: document.getElementById('edit_cName').value.trim() || c.name,
+              category: document.getElementById('edit_cCategory').value
+            };
+          }
+          return c;
+        });
+        localStorage.setItem('track_care', JSON.stringify(careItems));
       }
 
       closeEditModal();
@@ -1208,27 +1555,29 @@
       let totalSpendAmount = 0;
       let completedSeriesCount = 0;
       let totalPurchasedVolsCount = 0;
-      const monthlyData = {};
+
+      const yearlyStats = {};
+      const allYearsSet = new Set();
 
       books.forEach(b => {
         let allVolsFinished = b.volumes.length > 0;
         b.volumes.forEach(v => {
+          const p = parseFloat(v.price) || 0;
           if (v.owned) {
             totalPurchasedVolsCount += 1;
-            const priceNum = parseFloat(v.price) || 0;
-            totalSpendAmount += priceNum;
+            totalSpendAmount += p;
 
-            // คำนวณยอดใช้จ่ายรายเดือนตาม buyDate หรือ finishedDate
             const targetDate = v.buyDate || v.finishedDate;
-            if (targetDate && priceNum > 0) {
+            if (targetDate && p > 0) {
               const parts = targetDate.split('-');
               if (parts.length >= 2) {
-                const y = parts[0];
-                const mIndex = parseInt(parts[1], 10) - 1;
-                const mKey = new Date(y, mIndex, 1).toLocaleString('default', { month: 'short', year: 'numeric' });
-                const sortKey = `${y}-${parts[1]}`;
-                if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0, sortKey };
-                monthlyData[mKey].spend += priceNum;
+                const yr = parts[0];
+                const mIdx = parseInt(parts[1], 10) - 1;
+                allYearsSet.add(yr);
+
+                if (!yearlyStats[yr]) yearlyStats[yr] = {};
+                if (!yearlyStats[yr][mIdx]) yearlyStats[yr][mIdx] = { read: 0, spend: 0 };
+                yearlyStats[yr][mIdx].spend += p;
               }
             }
           }
@@ -1238,12 +1587,13 @@
             if (v.finishedDate) {
               const parts = v.finishedDate.split('-');
               if (parts.length >= 2) {
-                const y = parts[0];
-                const mIndex = parseInt(parts[1], 10) - 1;
-                const mKey = new Date(y, mIndex, 1).toLocaleString('default', { month: 'short', year: 'numeric' });
-                const sortKey = `${y}-${parts[1]}`;
-                if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0, sortKey };
-                monthlyData[mKey].readCount += 1;
+                const yr = parts[0];
+                const mIdx = parseInt(parts[1], 10) - 1;
+                allYearsSet.add(yr);
+
+                if (!yearlyStats[yr]) yearlyStats[yr] = {};
+                if (!yearlyStats[yr][mIdx]) yearlyStats[yr][mIdx] = { read: 0, spend: 0 };
+                yearlyStats[yr][mIdx].read += 1;
               }
             }
           } else {
@@ -1253,61 +1603,109 @@
         if (allVolsFinished && b.volumes.length > 0) completedSeriesCount += 1;
       });
 
+      // Populate Graph Year Selector
+      const graphYearSelect = document.getElementById('graphYearSelect');
+      const sortedYears = Array.from(allYearsSet).sort((a, b) => b.localeCompare(a));
+      if (sortedYears.length === 0) sortedYears.push(new Date().getFullYear().toString());
+
+      if (graphYearSelect) {
+        if (!selectedGraphYear || !sortedYears.includes(selectedGraphYear)) {
+          selectedGraphYear = sortedYears[0];
+        }
+        graphYearSelect.innerHTML = sortedYears.map(yr => `<option value="${yr}" ${yr === selectedGraphYear ? 'selected' : ''}>${yr}</option>`).join('');
+      }
+
+      // Year-to-Date Metrics for Selected Year
+      const curYearData = yearlyStats[selectedGraphYear] || {};
+      let curYearRead = 0;
+      let curYearSpend = 0;
+      Object.values(curYearData).forEach(m => {
+        curYearRead += (m.read || 0);
+        curYearSpend += (m.spend || 0);
+      });
+
+      document.getElementById('statYearLabel').innerText = selectedGraphYear;
+      document.getElementById('statYearSpendLabel').innerText = selectedGraphYear;
+      document.getElementById('statYearVols').innerText = `${curYearRead} vols`;
+      document.getElementById('statYearSpend').innerText = `฿${curYearSpend.toLocaleString()}`;
+
+      // All-Time Metrics
       document.getElementById('statTotalVols').innerText = `${totalVolsReadCount} vols`;
       document.getElementById('statTotalSpend').innerText = `฿${totalSpendAmount.toLocaleString()}`;
       document.getElementById('statCompleteSeries').innerText = `${completedSeriesCount} series`;
       document.getElementById('statAvgPrice').innerText = `฿${totalPurchasedVolsCount > 0 ? (totalSpendAmount / totalPurchasedVolsCount).toFixed(0) : '0'}`;
 
-      // จัดเรียงเดือน
-      const sortedMonthKeys = Object.keys(monthlyData).sort((a, b) => {
-        return monthlyData[b].sortKey.localeCompare(monthlyData[a].sortKey);
-      });
+      const displayYearText = document.getElementById('displayYearText');
+      if (displayYearText) displayYearText.innerText = selectedGraphYear;
 
-      // กราฟแท่ง
+      // 1. Current Year Bar Chart with Milky Frosted Pastels
       const barChartBox = document.getElementById('barChartBox');
       if (barChartBox) {
-        if (sortedMonthKeys.length === 0) {
-          barChartBox.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); width:100%; text-align:center; padding-bottom:30px;">ไม่มีข้อมูลสถิติรายเดือน</div>`;
-        } else {
-          const chartKeys = [...sortedMonthKeys].reverse();
-          const maxCount = Math.max(...chartKeys.map(k => monthlyData[k].readCount), 1);
-          barChartBox.innerHTML = chartKeys.map(k => {
-            const count = monthlyData[k].readCount;
-            const heightPercent = Math.max(8, (count / maxCount) * 100);
-            return `
-              <div class="chart-column">
-                <div class="chart-bar" style="height: ${heightPercent}%;">
-                  <span class="chart-bar-label">${count}</span>
-                </div>
-                <div class="chart-x-axis">${k}</div>
+        const yearMonths = yearlyStats[selectedGraphYear] || {};
+        const monthCounts = monthShorts.map((_, i) => (yearMonths[i] ? yearMonths[i].read : 0));
+        const maxVal = Math.max(...monthCounts, 1);
+
+        barChartBox.innerHTML = monthShorts.map((mName, i) => {
+          const count = monthCounts[i];
+          const heightPercent = count > 0 ? Math.max(10, (count / maxVal) * 100) : 0;
+          const barStyle = milkyPastelBars[i % milkyPastelBars.length];
+          return `
+            <div class="chart-column">
+              <div class="chart-bar" style="height: ${heightPercent}%; background: ${barStyle.fill}; border: 1px solid ${barStyle.border}; border-bottom: none;">
+                ${count > 0 ? `<span class="chart-bar-label">${count}</span>` : ''}
               </div>
-            `;
-          }).join('');
-        }
+              <div class="chart-x-axis">${mName}</div>
+            </div>
+          `;
+        }).join('');
       }
 
-      // กล่อง Monthly Breakdown
+      // 2. Breakdown Separated by Year
       const detailedGrid = document.getElementById('detailedMonthlyGrid');
       if (detailedGrid) {
-        if (sortedMonthKeys.length === 0) {
-          detailedGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:12px;">ยังไม่มีประวัติการอ่านหรือยอดซื้อรายเดือน</div>`;
+        if (sortedYears.length === 0 || Object.keys(yearlyStats).length === 0) {
+          detailedGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:14px;">No finished volumes or spending logged yet.</div>`;
         } else {
-          detailedGrid.innerHTML = sortedMonthKeys.map(k => {
-            const m = monthlyData[k];
+          detailedGrid.innerHTML = sortedYears.map(yr => {
+            const months = yearlyStats[yr] || {};
+            let yrRead = 0;
+            let yrSpend = 0;
+            const rowsHtml = [];
+
+            for (let mIdx = 11; mIdx >= 0; mIdx--) {
+              if (months[mIdx]) {
+                const data = months[mIdx];
+                yrRead += data.read;
+                yrSpend += data.spend;
+                rowsHtml.push(`
+                  <div class="month-row">
+                    <span style="font-weight:600; color:#4a453e;">${monthShorts[mIdx]} ${yr}</span>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                      ${data.read > 0 ? `<span class="badge badge-sage">✓ ${data.read} read</span>` : ''}
+                      ${data.spend > 0 ? `<span class="badge badge-rose">฿${data.spend.toLocaleString()}</span>` : ''}
+                    </div>
+                  </div>
+                `);
+              }
+            }
+
             return `
-              <div style="background:#fafbfc; border:1px solid #edf0f5; padding:9px 12px; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:0.82rem; font-weight:600; color:#334155;">${k}</span>
-                <div style="display:flex; gap:6px; align-items:center;">
-                  ${m.readCount > 0 ? `<span class="badge badge-sage">✓ ${m.readCount} เล่ม</span>` : ''}
-                  ${m.spend > 0 ? `<span class="badge badge-rose">฿${m.spend.toLocaleString()}</span>` : ''}
+              <div class="year-group-box">
+                <div class="year-group-header">
+                  <span>📅 Year ${yr} Total</span>
+                  <div style="display:flex; gap:6px;">
+                    <span class="badge badge-blue">${yrRead} vols</span>
+                    <span class="badge badge-butter">฿${yrSpend.toLocaleString()}</span>
+                  </div>
                 </div>
+                <div>${rowsHtml.length > 0 ? rowsHtml.join('') : '<div style="padding:8px 12px; font-size:0.72rem; color:var(--text-muted);">No monthly logs</div>'}</div>
               </div>
             `;
           }).join('');
         }
       }
 
-      // แสดงรายการหนังสือ
+      // 3. Books Shelf
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
@@ -1325,12 +1723,14 @@
       });
 
       if (filteredBooks.length === 0) {
-        bookContainer.innerHTML = `<div class="empty-state">ไม่มีหนังสือบนชั้นนี้</div>`;
+        bookContainer.innerHTML = `<div class="empty-state">No series found on this shelf.</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
           const ownedCount = b.volumes.filter(v => v.owned).length;
           const finishedCount = b.volumes.filter(v => v.status === 'Finished').length;
-          const seriesSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+          
+          const calculatedSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+          const displayTotalSpend = calculatedSpend > 0 ? calculatedSpend : (parseFloat(b.price) || 0);
 
           return `
             <div class="item-card">
@@ -1340,15 +1740,16 @@
                   ${b.author ? `<div class="item-author">${b.author}</div>` : ''}
                   <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
                     <span class="badge badge-gray">${b.platform}</span>
-                    ${b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Complete</span>' : ''}
+                    ${b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Finished</span>' : ''}
                   </div>
                 </div>
                 <span class="badge badge-blue">📚 ${ownedCount}/${b.volumes.length} Owned</span>
               </div>
+
               <div class="volumes-container">
                 <div class="volumes-header">
                   <span>VOLUMES (${finishedCount}/${b.volumes.length} read)</span>
-                  <span>${seriesSpend > 0 ? `฿${seriesSpend.toLocaleString()}` : ''}</span>
+                  <span>${displayTotalSpend > 0 ? `Total: ฿${displayTotalSpend.toLocaleString()}` : ''}</span>
                 </div>
                 <div class="volume-chips-row">
                   ${b.volumes.map(v => {
@@ -1357,14 +1758,16 @@
                     if (v.status === 'Reading') { chipClass = 'vol-reading'; icon = '📖'; }
                     if (v.status === 'Finished') { chipClass = 'vol-finished'; icon = '✓'; }
                     return `
-                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="คลิกเพื่อเปลี่ยนสถานะ">
+                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="Click to toggle status">
                         <span>${icon} V${v.volNum}</span>
-                        ${v.price ? `<span style="opacity:0.8; font-size:0.65rem;">฿${v.price}</span>` : ''}
                       </div>
                     `;
                   }).join('')}
                 </div>
               </div>
+
+              ${b.notes ? `<div class="item-notes">${b.notes}</div>` : ''}
+
               <div class="card-actions">
                 <button class="btn-action btn-edit" onclick="openEditModal('book', '${b.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
@@ -1374,44 +1777,164 @@
         }).join('');
       }
 
-      // Serials
+      // 4. Serials
       const serialContainer = document.getElementById('serialListContainer');
-      const filteredSerials = serials.filter(s => !search || s.title.toLowerCase().includes(search));
+      const filteredSerials = serials.filter(s => {
+        const matchesType = currentSerialFilter === 'All' || s.format === currentSerialFilter;
+        const matchesSearch = !search || s.title.toLowerCase().includes(search) || (s.author && s.author.toLowerCase().includes(search));
+        return matchesType && matchesSearch;
+      });
       if (filteredSerials.length === 0) {
-        serialContainer.innerHTML = `<div class="empty-state">No serials.</div>`;
+        serialContainer.innerHTML = `<div class="empty-state">No serials found.</div>`;
       } else {
         serialContainer.innerHTML = filteredSerials.map(s => `
           <div class="item-card">
             <div class="item-header">
               <div>
                 <div class="item-title">${s.title}</div>
-                <span class="badge badge-lavender">${s.format}</span>
-                <span class="badge badge-blue">📍 ${s.chapter}</span>
+                ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
+                <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
+                  <span class="badge badge-lavender">${s.format}</span>
+                  <span class="badge badge-gray">${s.platform || 'Web'}</span>
+                  <span class="badge badge-blue">📍 Ep. ${s.chapter || '1'}</span>
+                </div>
               </div>
-              <span class="badge badge-butter">${s.status}</span>
+              <span class="badge badge-peach">${s.status}</span>
             </div>
+            ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
             <div class="card-actions">
               <button class="btn-action btn-edit" onclick="openEditModal('serial', '${s.id}')">✏️ Edit</button>
+              <button class="btn-action btn-delete" onclick="deleteSerial('${s.id}')">Delete</button>
             </div>
           </div>
         `).join('');
       }
 
-      // Tasks
+      // 5. Tasks (with Complete Toggle)
       const taskContainer = document.getElementById('taskListContainer');
-      const filteredTasks = tasks.filter(t => !search || t.title.toLowerCase().includes(search));
+      const filteredTasks = tasks.filter(t => {
+        const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
+        const matchesSearch = !search || t.title.toLowerCase().includes(search);
+        return matchesHorizon && matchesSearch;
+      });
       if (filteredTasks.length === 0) {
-        taskContainer.innerHTML = `<div class="empty-state">No tasks.</div>`;
+        taskContainer.innerHTML = `<div class="empty-state">No tasks in this view.</div>`;
       } else {
         taskContainer.innerHTML = filteredTasks.map(t => `
-          <div class="item-card">
-            <div class="item-header">
-              <span class="item-title">${t.title}</span>
-              <span class="badge badge-gray">${t.horizon}</span>
+          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" />
+              <div>
+                <div class="item-title ${t.completed ? 'task-completed' : ''}">${t.title}</div>
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+                  <span class="badge badge-gray">${t.horizon}</span>
+                  ${t.dueDate ? `<span>Due: ${t.dueDate}</span>` : ''}
+                </div>
+              </div>
             </div>
-            <div class="card-actions">
-              <button class="btn-action btn-edit" onclick="openEditModal('task', '${t.id}')">✏️ Edit</button>
+            <div class="card-actions" style="margin-top:0;">
+              <button class="btn-action btn-edit" onclick="openEditModal('task', '${t.id}')">✏️</button>
+              <button class="btn-action btn-delete" onclick="deleteTask('${t.id}')">✕</button>
             </div>
+          </div>
+        `).join('');
+      }
+
+      // 6. Chores
+      const choreContainer = document.getElementById('choreListContainer');
+      const filteredChores = chores.filter(c => !search || c.name.toLowerCase().includes(search));
+      if (filteredChores.length === 0) {
+        choreContainer.innerHTML = `<div class="empty-state">No chores logged.</div>`;
+      } else {
+        const today = new Date();
+        choreContainer.innerHTML = filteredChores.map(c => {
+          const lastDate = new Date(c.lastDone);
+          const nextDue = new Date(lastDate);
+          nextDue.setDate(lastDate.getDate() + c.frequency);
+          const daysLeft = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
+          const isOverdue = daysLeft < 0;
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <div>
+                  <div class="item-title">${c.name}</div>
+                  <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">
+                    Last: ${c.lastDone} (Every ${c.frequency}d)
+                  </div>
+                </div>
+                <span class="badge ${isOverdue ? 'badge-rose' : 'badge-sage'}">
+                  ${isOverdue ? `Overdue ${Math.abs(daysLeft)}d` : `In ${daysLeft}d`}
+                </span>
+              </div>
+              <div class="card-actions">
+                <button class="btn-action btn-backup" onclick="markChoreDone('${c.id}')">✓ Done Today</button>
+                <button class="btn-action btn-edit" onclick="openEditModal('chore', '${c.id}')">✏️</button>
+                <button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">✕</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // 7. Personal Care
+      const careContainer = document.getElementById('careListContainer');
+      const filteredCare = careItems.filter(c => !search || c.name.toLowerCase().includes(search));
+      if (filteredCare.length === 0) {
+        careContainer.innerHTML = `<div class="empty-state">No personal care products logged.</div>`;
+      } else {
+        careContainer.innerHTML = filteredCare.map(c => `
+          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="item-title">${c.name}</div>
+              <span class="badge badge-lavender" style="margin-top:3px;">${c.category}</span>
+            </div>
+            <div class="card-actions" style="margin-top:0;">
+              <button class="btn-action btn-edit" onclick="openEditModal('care', '${c.id}')">✏️</button>
+              <button class="btn-action btn-delete" onclick="deleteCare('${c.id}')">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 8. Subscriptions
+      const subsContainer = document.getElementById('subsListContainer');
+      const filteredSubs = subscriptions.filter(s => !search || s.name.toLowerCase().includes(search));
+      if (filteredSubs.length === 0) {
+        subsContainer.innerHTML = `<div class="empty-state">No subscriptions tracked.</div>`;
+      } else {
+        subsContainer.innerHTML = filteredSubs.map(s => `
+          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="item-title">${s.name}</div>
+              <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                ${s.renewalDate ? `Renews: ${s.renewalDate}` : ''}
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              ${s.cost ? `<span class="badge badge-rose">฿${s.cost}</span>` : ''}
+              <button class="btn-action btn-delete" onclick="deleteSub('${s.id}')">✕</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 9. Sales Fests
+      const salesContainer = document.getElementById('salesListContainer');
+      const filteredSales = sales.filter(s => !search || s.name.toLowerCase().includes(search) || s.platform.toLowerCase().includes(search));
+      if (filteredSales.length === 0) {
+        salesContainer.innerHTML = `<div class="empty-state">No sale campaigns logged.</div>`;
+      } else {
+        salesContainer.innerHTML = filteredSales.map(s => `
+          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div class="item-title">${s.name}</div>
+              <div style="margin-top:3px; display:flex; gap:4px;">
+                <span class="badge badge-butter">🗓️ ${s.month}</span>
+                ${s.platform ? `<span class="badge badge-gray">${s.platform}</span>` : ''}
+              </div>
+            </div>
+            <button class="btn-action btn-delete" onclick="deleteSale('${s.id}')">✕</button>
           </div>
         `).join('');
       }
