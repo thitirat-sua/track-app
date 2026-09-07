@@ -6,25 +6,21 @@
   <title>TrackApp</title>
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
-    @font-face {
-      font-family: 'CloudLoop';
-      src: url('./CloudLoop-Regular.otf') format('opentype');
-      font-weight: normal;
-      font-style: normal;
-    }
-
     :root {
-      /* Warm Milk & Whipped Cream Base */
       --bg-main: #fcfbf9;
       --card-bg: #ffffff;
-      --text-main: #4a453e;
-      --text-muted: #a69f94;
+      --text-main: #3e3832;
+      --text-muted: #9c9488;
       --border: #f4efe6;
-      --border-card: #f0eae1;
+      --border-card: #eee8de;
 
-      /* Genuine Milky Pastel Accents */
       --milk-sage: #e8f3ea;
       --milk-sage-border: #d4e8d8;
       --milk-sage-text: #4e7355;
@@ -49,17 +45,17 @@
       --milk-peach-border: #f5dad0;
       --milk-peach-text: #96604a;
 
-      --tab-inactive: #b8b0a5;
+      --tab-inactive: #b5ada2;
       --radius: 14px;
-      --app-font: 'CloudLoop', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --app-font: -apple-system, BlinkMacSystemFont, "Sukhumvit Set", "Sarabun", "Inter", sans-serif;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--app-font); }
-    body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--app-font); letter-spacing: -0.01em; }
+    body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 75px; -webkit-font-smoothing: antialiased; }
     
     header { 
       background: #ffffff; 
-      padding: 12px 18px; 
+      padding: 13px 18px; 
       border-bottom: 1px solid var(--border-card); 
       position: sticky; 
       top: 0; 
@@ -68,13 +64,12 @@
       justify-content: space-between;
       align-items: center;
     }
-    header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.2px; color: #575047; }
+    header h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.3px; color: #4e473f; }
     .header-actions { display: flex; gap: 8px; align-items: center; }
-    .btn-backup { font-size: 0.74rem; padding: 5px 10px; border-radius: 9px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); transition: all 0.15s; }
+    .btn-backup { font-size: 0.74rem; padding: 6px 11px; border-radius: 9px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); transition: all 0.15s; font-weight: 500; }
     .btn-backup:hover { background: #faf8f5; }
     .btn-import-xlsx { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
 
-    /* Minimal Line Art Nav */
     .nav-bar { 
       display: flex; 
       background: #ffffff; 
@@ -111,39 +106,36 @@
     .shelf-pill.active { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); font-weight: 600; }
 
     .search-wrapper { padding: 8px 16px 4px 16px; }
-    .search-input { width: 100%; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.84rem; background: #ffffff; color: var(--text-main); outline: none; }
+    .search-input { width: 100%; padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 0.84rem; background: #ffffff; color: var(--text-main); outline: none; }
     .search-input:focus { border-color: #d6cbbf; }
 
     .content-area { padding: 8px 16px 20px 16px; }
 
-    /* Milky Pastel Metrics */
     .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
     .metric-box { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 13px; }
     .metric-box.highlight-lavender { background: var(--milk-lavender); border-color: var(--milk-lavender-border); }
     .metric-box.highlight-blue { background: var(--milk-blue); border-color: var(--milk-blue-border); }
     .metric-label { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
-    .metric-val { font-size: 1.25rem; font-weight: 700; color: #4a453e; }
+    .metric-val { font-size: 1.25rem; font-weight: 700; color: #433e38; }
 
     .chart-card { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
     .chart-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .chart-title { font-size: 0.86rem; font-weight: 700; color: #575047; }
+    .chart-title { font-size: 0.86rem; font-weight: 700; color: #4e473f; }
     .year-select { font-size: 0.76rem; font-weight: 600; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #fcfbf9; color: var(--text-main); outline: none; }
     
-    /* Milky Frosted Chart Bars */
     .bar-chart-container { display: flex; align-items: flex-end; gap: 6px; height: 160px; padding-top: 24px; border-bottom: 1px solid var(--border-card); overflow-x: auto; }
     .chart-column { min-width: 24px; flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
     .chart-bar { width: 100%; max-width: 22px; border-radius: 6px 6px 0 0; min-height: 2px; position: relative; transition: height 0.25s ease; }
-    .chart-bar-label { position: absolute; top: -17px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 700; color: #736b61; }
+    .chart-bar-label { position: absolute; top: -17px; width: 100%; text-align: center; font-size: 0.65rem; font-weight: 700; color: #70685e; }
     .chart-x-axis { font-size: 0.64rem; color: var(--text-muted); margin-top: 6px; text-align: center; }
 
     .year-group-box { margin-bottom: 12px; border: 1px solid var(--border-card); border-radius: 11px; overflow: hidden; background: #ffffff; }
-    .year-group-header { background: #faf7f2; padding: 9px 13px; font-size: 0.82rem; font-weight: 700; color: #575047; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-card); }
+    .year-group-header { background: #faf7f2; padding: 9px 13px; font-size: 0.82rem; font-weight: 700; color: #4e473f; display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-card); }
     .month-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 13px; border-bottom: 1px solid #fcfbf9; font-size: 0.78rem; }
     .month-row:last-child { border-bottom: none; }
 
-    /* Forms */
     .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border-card); margin-bottom: 14px; }
-    .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #575047; }
+    .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #4e473f; }
     .input-group { margin-bottom: 10px; }
     .input-group label { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
     .input-group input, .input-group select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 0.84rem; outline: none; background: #fdfdfc; color: var(--text-main); }
@@ -152,14 +144,12 @@
     .row .input-group { flex: 1; }
     .btn-submit { width: 100%; padding: 10px; background: var(--milk-lavender); color: var(--milk-lavender-text); font-weight: 600; border-radius: 9px; border: 1px solid var(--milk-lavender-border); cursor: pointer; font-size: 0.84rem; margin-top: 2px; }
 
-    /* Cards */
     .item-card { background: var(--card-bg); border-radius: var(--radius); padding: 13px; border: 1px solid var(--border-card); margin-bottom: 10px; }
     .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
-    .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; color: #3d3831; }
+    .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; color: #35302a; }
     .item-title.task-completed { text-decoration: line-through; opacity: 0.45; }
-    .item-author { font-size: 0.78rem; color: #8a8276; margin-top: 1px; }
+    .item-author { font-size: 0.78rem; color: #877f74; margin-top: 1px; font-weight: 400; }
 
-    /* Frosted Badges */
     .badge { font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 8px; white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
     .badge-rose { background: var(--milk-rose); color: var(--milk-rose-text); border-color: var(--milk-rose-border); }
     .badge-sage { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
@@ -167,36 +157,65 @@
     .badge-lavender { background: var(--milk-lavender); color: var(--milk-lavender-text); border-color: var(--milk-lavender-border); }
     .badge-butter { background: var(--milk-butter); color: var(--milk-butter-text); border-color: var(--milk-butter-border); }
     .badge-peach { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
-    .badge-gray { background: #f5f2eb; color: #7a7266; border-color: #eae5dc; }
+    .badge-gray { background: #f5f2eb; color: #756d61; border-color: #eae5dc; }
 
     .volumes-container { background: #faf8f5; border: 1px solid var(--border-card); border-radius: 10px; padding: 9px 11px; margin: 8px 0 4px 0; }
     .volumes-header { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
     .volume-chips-row { display: flex; gap: 5px; flex-wrap: wrap; }
-    .vol-chip { padding: 4px 10px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-card); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+    .vol-chip { padding: 4px 10px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-card); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
     .vol-chip.vol-unread { background: #ffffff; color: #9c9489; border-color: #ece6dc; }
     .vol-chip.vol-reading { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
+    .vol-chip.vol-rereading { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
     .vol-chip.vol-finished { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
 
     .item-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 5px; }
     .item-notes { font-size: 0.78rem; background: #faf8f5; padding: 6px 9px; border-radius: 8px; border-left: 2px solid #d4cdc3; margin-top: 6px; color: #575047; }
     
     .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
-    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); }
+    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; }
     .btn-edit { background: #ffffff; border-color: #e5dfd5; color: #575047; }
     .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
 
-    /* Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(50,45,40,0.25); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 16px; backdrop-filter: blur(1.5px); }
-    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; padding: 16px; border: 1px solid var(--border-card); }
+    .modal-box { background: #ffffff; border-radius: var(--radius); width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; padding: 16px; border: 1px solid var(--border-card); }
     .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-    .modal-title { font-size: 0.95rem; font-weight: 700; color: #4a453e; }
+    .modal-title { font-size: 0.95rem; font-weight: 700; color: #433e38; }
     .modal-close { background: none; border: none; font-size: 1.2rem; cursor: pointer; color: var(--text-muted); }
 
-    .vol-edit-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.78rem; }
-    .vol-edit-table th, .vol-edit-table td { border: 1px solid var(--border-card); padding: 6px; text-align: left; }
+    .vol-edit-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.76rem; }
+    .vol-edit-table th, .vol-edit-table td { border: 1px solid var(--border-card); padding: 5px; text-align: left; }
     .vol-edit-table th { background: #faf7f2; font-weight: 600; color: var(--text-muted); }
-    .vol-edit-table input, .vol-edit-table select { width: 100%; padding: 4px; font-size: 0.76rem; border: 1px solid var(--border-card); border-radius: 4px; background: #fff; }
+    .vol-edit-table input, .vol-edit-table select { width: 100%; padding: 4px; font-size: 0.74rem; border: 1px solid var(--border-card); border-radius: 4px; background: #fff; }
+
+    .btn-scroll-top {
+      position: fixed;
+      bottom: 24px;
+      right: 20px;
+      z-index: 50;
+      background: rgba(255, 255, 255, 0.88);
+      border: 1px solid var(--border-card);
+      color: var(--text-main);
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+    }
+    .btn-scroll-top.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -213,7 +232,6 @@
     </div>
   </header>
 
-  <!-- Minimal Line Art Nav Tabs -->
   <div class="nav-bar">
     <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">
       <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
@@ -345,7 +363,6 @@
   <!-- 2. SUMMARY / STATS SECTION -->
   <section id="sectionStats" style="display: none;">
     <div class="content-area">
-      <!-- Year Highlights -->
       <div class="metric-grid">
         <div class="metric-box highlight-lavender">
           <div class="metric-label">In <span id="statYearLabel">2026</span> (Read)</div>
@@ -357,7 +374,6 @@
         </div>
       </div>
 
-      <!-- All Time Stats -->
       <div class="metric-grid">
         <div class="metric-box">
           <div class="metric-label">All-Time Finished</div>
@@ -377,7 +393,6 @@
         </div>
       </div>
 
-      <!-- Graph Card with Year Selector -->
       <div class="chart-card">
         <div class="chart-header-row">
           <div class="chart-title">📊 Volumes Finished in <span id="displayYearText">2026</span></div>
@@ -386,7 +401,6 @@
         <div class="bar-chart-container" id="barChartBox"></div>
       </div>
 
-      <!-- Breakdown Grouped by Year -->
       <div class="chart-card">
         <div class="chart-title" style="margin-bottom:12px;">🗓️ Breakdown by Year & Month</div>
         <div id="detailedMonthlyGrid"></div>
@@ -454,10 +468,10 @@
   <!-- 4. TO-DO TASKS -->
   <section id="sectionTasks" style="display: none;">
     <div class="sub-tabs">
-      <div class="sub-tab active" id="taskFilterToday" onclick="filterTasks('Today')">Today</div>
+      <div class="sub-tab active" id="taskFilterAll" onclick="filterTasks('All')">All Tasks</div>
+      <div class="sub-tab" id="taskFilterToday" onclick="filterTasks('Today')">Today</div>
       <div class="sub-tab" id="taskFilterWeek" onclick="filterTasks('Week')">This Week</div>
       <div class="sub-tab" id="taskFilterMonth" onclick="filterTasks('Month')">This Month</div>
-      <div class="sub-tab" id="taskFilterAll" onclick="filterTasks('All')">All Tasks</div>
     </div>
     <div class="content-area">
       <div class="form-card">
@@ -617,6 +631,10 @@
     </div>
   </div>
 
+  <button id="btnScrollTop" class="btn-scroll-top" onclick="scrollToTop()">
+    <span>↑</span> Top
+  </button>
+
   <script>
     let rawBooks = JSON.parse(localStorage.getItem('track_books') || '[]');
     let serials = JSON.parse(localStorage.getItem('track_serials') || '[]');
@@ -626,50 +644,83 @@
     let subscriptions = JSON.parse(localStorage.getItem('track_subs') || '[]');
     let sales = JSON.parse(localStorage.getItem('track_sales') || '[]');
 
-    let books = rawBooks.map(b => {
-      if (b.volumes && Array.isArray(b.volumes)) return b;
+    function sanitizeVolumes(b) {
+      if (b.volumes && Array.isArray(b.volumes) && b.volumes.length > 0) {
+        return b.volumes.map(v => {
+          let hist = Array.isArray(v.readHistory) ? [...v.readHistory] : [];
+          if (v.finishedDate && !hist.includes(v.finishedDate)) {
+            hist.push(v.finishedDate);
+          }
+          return {
+            ...v,
+            readHistory: hist,
+            readCount: v.readCount || (hist.length > 0 ? hist.length : (v.status === 'Finished' ? 1 : 0))
+          };
+        });
+      }
       const total = parseInt(b.volTotal, 10) || 1;
       const owned = parseInt(b.volOwned, 10) || 1;
       const vols = [];
       for (let i = 1; i <= Math.max(total, owned); i++) {
+        const isFin = b.readStatus === 'Finished';
+        const finDate = b.finishedDate || null;
         vols.push({
           volNum: i,
           owned: i <= owned,
-          status: b.readStatus === 'Finished' ? 'Finished' : 'Unread',
+          status: isFin ? 'Finished' : 'Unread',
           price: '',
           buyDate: b.buyDate || null,
-          finishedDate: b.finishedDate || null
+          finishedDate: finDate,
+          readCount: isFin ? 1 : 0,
+          readHistory: (isFin && finDate) ? [finDate] : []
         });
       }
-      return { ...b, volTotal: total, volumes: vols };
-    });
+      return vols;
+    }
+
+    let books = rawBooks.map(b => ({
+      ...b,
+      volumes: sanitizeVolumes(b)
+    }));
 
     let currentMainTab = 'books';
     let currentBookSubTab = 'read';
     let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
-    let currentTaskFilter = 'Today';
+    let currentTaskFilter = 'All'; // Defaults to All so newly added tasks are visible
     let selectedGraphYear = new Date().getFullYear().toString();
     let currentEditingCategory = null;
     let currentEditingId = null;
 
     const monthShorts = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    // Milky Frosted Pastel Palette for Chart Bars
     const milkyPastelBars = [
-      { fill: "#d9ede0", border: "#b8d9c2" }, /* Matcha Cream */
-      { fill: "#fce3e7", border: "#f2bcc5" }, /* Strawberry Milk */
-      { fill: "#e5edf8", border: "#c2d6ed" }, /* Powdery Sky */
-      { fill: "#faedd8", border: "#eed1a2" }, /* Whipped Butter */
-      { fill: "#ede7fa", border: "#d4c8ef" }, /* Lavender Mist */
-      { fill: "#fae8de", border: "#ecc7b3" }, /* Peach Foam */
-      { fill: "#d7eee5", border: "#b2dccb" }, /* Mint Milk */
-      { fill: "#fbe4ec", border: "#f2bcca" }, /* Soft Rose */
-      { fill: "#e2ecf7", border: "#bcd4ec" }, /* Cloud Blue */
-      { fill: "#fbf0d8", border: "#eed8a3" }, /* Custard Cream */
-      { fill: "#eae2f8", border: "#cfbeed" }, /* Lilac Fog */
-      { fill: "#faeae1", border: "#ebc9b8" }  /* Sweet Apricot */
+      { fill: "#d9ede0", border: "#b8d9c2" },
+      { fill: "#fce3e7", border: "#f2bcc5" },
+      { fill: "#e5edf8", border: "#c2d6ed" },
+      { fill: "#faedd8", border: "#eed1a2" },
+      { fill: "#ede7fa", border: "#d4c8ef" },
+      { fill: "#fae8de", border: "#ecc7b3" },
+      { fill: "#d7eee5", border: "#b2dccb" },
+      { fill: "#fbe4ec", border: "#f2bcca" },
+      { fill: "#e2ecf7", border: "#bcd4ec" },
+      { fill: "#fbf0d8", border: "#eed8a3" },
+      { fill: "#eae2f8", border: "#cfbeed" },
+      { fill: "#faeae1", border: "#ebc9b8" }
     ];
+
+    const btnScrollTop = document.getElementById('btnScrollTop');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 280) {
+        btnScrollTop.classList.add('visible');
+      } else {
+        btnScrollTop.classList.remove('visible');
+      }
+    }, { passive: true });
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
     function togglePriceInputLabel() {
       const type = document.getElementById('bPriceType').value;
@@ -682,7 +733,7 @@
     }
 
     function parseTitleVolume(rawTitle) {
-      let title = String(rawTitle).trim();
+      let title = String(rawTitle || '').trim();
       let m = title.match(/^(.*?)\s*(\d+)\s*\(\1,\s*#\2\)$/);
       if (m) return { base: m[1].trim(), vol: parseInt(m[2], 10) };
       m = title.match(/^(.*?)\s*\(.*?#(\d+)\)$/);
@@ -703,6 +754,7 @@
       return { base: title, vol: 1 };
     }
 
+    // Flexible Date Parser handling YYYY-MM-DD, DD-MM-YYYY, and YYYY.MM.DD
     function parseDateStr(s) {
       if (!s) return null;
       let str = String(s).trim();
@@ -710,11 +762,15 @@
         let parts = str.split('~');
         str = parts[1].trim() || parts[0].trim();
       }
-      let m = str.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+      // YYYY-MM-DD or YYYY.MM.DD
+      let m = str.match(/^(\d{4})[-./](\d{1,2})[-./](\d{1,2})$/);
       if (m) {
-        let d = m[1].padStart(2, '0');
-        let mon = m[2].padStart(2, '0');
-        return `${m[3]}-${mon}-${d}`;
+        return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+      }
+      // DD-MM-YYYY or DD.MM.YYYY
+      m = str.match(/^(\d{1,2})[-./](\d{1,2})[-./](\d{4})$/);
+      if (m) {
+        return `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`;
       }
       return null;
     }
@@ -803,15 +859,25 @@
                 if (vMap[bv.volNum]) {
                   if (!vMap[bv.volNum].price && bv.price) vMap[bv.volNum].price = bv.price;
                   if (!vMap[bv.volNum].buyDate && bv.buyDate) vMap[bv.volNum].buyDate = bv.buyDate;
-                  if (bv.finishedDate) vMap[bv.volNum].finishedDate = bv.finishedDate;
+                  if (bv.finishedDate) {
+                    vMap[bv.volNum].finishedDate = bv.finishedDate;
+                    if (!vMap[bv.volNum].readHistory) vMap[bv.volNum].readHistory = [];
+                    if (!vMap[bv.volNum].readHistory.includes(bv.finishedDate)) {
+                      vMap[bv.volNum].readHistory.push(bv.finishedDate);
+                    }
+                    vMap[bv.volNum].readCount = Math.max(1, vMap[bv.volNum].readHistory.length);
+                  }
                 } else {
+                  const hist = bv.finishedDate ? [bv.finishedDate] : [];
                   b.volumes.push({
                     volNum: bv.volNum,
                     owned: bv.status === 'Finished' || !!bv.buyDate,
                     status: bv.status,
                     price: bv.price,
                     buyDate: bv.buyDate,
-                    finishedDate: bv.finishedDate
+                    finishedDate: bv.finishedDate,
+                    readCount: bv.status === 'Finished' ? 1 : 0,
+                    readHistory: hist
                   });
                 }
               });
@@ -831,13 +897,16 @@
                   if (isF) hasFin = true;
                   const isO = isF || !!v.buyDate || !!v.price;
                   if (isO) hasOwn = true;
+                  const hist = v.finishedDate ? [v.finishedDate] : [];
                   constructedVols.push({
                     volNum: i,
                     owned: isO,
                     status: v.status,
                     price: v.price,
                     buyDate: v.buyDate,
-                    finishedDate: v.finishedDate
+                    finishedDate: v.finishedDate,
+                    readCount: isF ? 1 : 0,
+                    readHistory: hist
                   });
                 } else {
                   constructedVols.push({
@@ -846,7 +915,9 @@
                     status: 'Unread',
                     price: '',
                     buyDate: null,
-                    finishedDate: null
+                    finishedDate: null,
+                    readCount: 0,
+                    readHistory: []
                   });
                 }
               }
@@ -915,7 +986,7 @@
             inc.forEach(item => map.set(item.id, item));
             return Array.from(map.values());
           };
-          books = mergeArrays(books, parsed.books);
+          books = mergeArrays(books, (parsed.books || []).map(b => ({ ...b, volumes: sanitizeVolumes(b) })));
           serials = mergeArrays(serials, parsed.serials);
           tasks = mergeArrays(tasks, parsed.tasks);
           chores = mergeArrays(chores, parsed.chores);
@@ -981,21 +1052,23 @@
 
     function filterTasks(horizon) {
       currentTaskFilter = horizon;
+      document.getElementById('taskFilterAll').classList.toggle('active', horizon === 'All');
       document.getElementById('taskFilterToday').classList.toggle('active', horizon === 'Today');
       document.getElementById('taskFilterWeek').classList.toggle('active', horizon === 'Week');
       document.getElementById('taskFilterMonth').classList.toggle('active', horizon === 'Month');
-      document.getElementById('taskFilterAll').classList.toggle('active', horizon === 'All');
       render();
     }
 
-    /* Save Entities */
     function saveBook() {
       const title = document.getElementById('bTitle').value.trim();
       if (!title) return alert('Enter series title');
 
       const isOwnedTab = currentBookSubTab === 'read';
       const volTotal = Math.max(1, parseInt(document.getElementById('bVolTotal').value, 10) || 1);
-      const volOwned = parseInt(document.getElementById('bVolOwned').value, 10) || (isOwnedTab ? volTotal : 0);
+      
+      const rawOwned = document.getElementById('bVolOwned').value.trim();
+      const volOwned = rawOwned !== '' ? Math.max(0, parseInt(rawOwned, 10)) : (isOwnedTab ? volTotal : 0);
+
       const priceType = document.getElementById('bPriceType').value;
       const rawPrice = parseFloat(document.getElementById('bPriceVal').value.trim()) || 0;
       const today = new Date().toISOString().split('T')[0];
@@ -1016,13 +1089,16 @@
       const volumes = [];
       for (let i = 1; i <= volTotal; i++) {
         const owned = i <= volOwned;
+        const isFin = owned && isOwnedTab;
         volumes.push({
           volNum: i,
           owned: owned,
           status: owned ? (isOwnedTab ? 'Finished' : 'Unread') : 'Unread',
           price: owned ? perVolPrice : '',
           buyDate: owned ? today : null,
-          finishedDate: (owned && isOwnedTab) ? today : null
+          finishedDate: isFin ? today : null,
+          readCount: isFin ? 1 : 0,
+          readHistory: isFin ? [today] : []
         });
       }
 
@@ -1053,14 +1129,33 @@
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
         if (b.id === bookId) {
-          const updatedVols = b.volumes.map(v => {
+          const updatedVols = (b.volumes || []).map(v => {
             if (v.volNum === volNum) {
+              let hist = Array.isArray(v.readHistory) ? [...v.readHistory] : [];
+              let curCount = v.readCount || hist.length;
               let nextStatus = 'Reading';
               let finDate = v.finishedDate;
-              if (v.status === 'Unread') nextStatus = 'Reading';
-              else if (v.status === 'Reading') { nextStatus = 'Finished'; finDate = finDate || today; }
-              else { nextStatus = 'Unread'; finDate = null; }
-              return { ...v, owned: true, status: nextStatus, finishedDate: finDate, buyDate: v.buyDate || today };
+
+              if (v.status === 'Unread') {
+                nextStatus = 'Reading';
+              } else if (v.status === 'Reading') {
+                nextStatus = 'Finished';
+                finDate = today;
+                if (!hist.includes(today)) hist.push(today);
+                curCount = Math.max(1, hist.length);
+              } else if (v.status === 'Finished') {
+                nextStatus = 'Reading';
+              }
+
+              return {
+                ...v,
+                owned: true,
+                status: nextStatus,
+                finishedDate: finDate,
+                readCount: curCount,
+                readHistory: hist,
+                buyDate: v.buyDate || today
+              };
             }
             return v;
           });
@@ -1110,16 +1205,18 @@
     function saveTask() {
       const title = document.getElementById('tTitle').value.trim();
       if (!title) return alert('Enter task description');
+      const horizon = document.getElementById('tHorizon').value;
       tasks.unshift({
         id: Date.now().toString(),
         title,
-        horizon: document.getElementById('tHorizon').value,
+        horizon: horizon,
         dueDate: document.getElementById('tDate').value || null,
         completed: false
       });
       localStorage.setItem('track_tasks', JSON.stringify(tasks));
       document.getElementById('tTitle').value = '';
       document.getElementById('tDate').value = '';
+      currentTaskFilter = 'All'; // Ensure newly added tasks are displayed
       render();
     }
 
@@ -1224,7 +1321,6 @@
       render();
     }
 
-    // Modal Edit Functions
     function openEditModal(category, id) {
       currentEditingCategory = category;
       currentEditingId = id;
@@ -1237,7 +1333,7 @@
         if (!b) return;
         title.innerText = 'Edit Series & Volumes';
 
-        const seriesSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+        const seriesSpend = (b.volumes || []).filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
 
         content.innerHTML = `
           <div class="input-group">
@@ -1287,23 +1383,24 @@
 
           <div style="margin-top: 14px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-              <label style="font-size:0.75rem; font-weight:700; color:#575047;">Volume Details</label>
+              <label style="font-size:0.75rem; font-weight:700; color:#4e473f;">Volume Details & Re-reads</label>
               <button type="button" class="btn-action" style="font-size:0.72rem; padding:3px 8px; background:#fff;" onclick="addVolumeRowToEditModal()">+ Add Volume</button>
             </div>
             <table class="vol-edit-table" id="editVolTable">
               <thead>
                 <tr>
-                  <th style="width: 48px;">Vol #</th>
-                  <th style="width: 42px;">Owned</th>
+                  <th style="width: 44px;">Vol</th>
+                  <th style="width: 38px;">Owned</th>
                   <th>Status</th>
-                  <th style="width: 65px;">Price (฿)</th>
-                  <th>Finished Date</th>
-                  <th style="width: 28px;"></th>
+                  <th style="width: 38px;">Reads</th>
+                  <th style="width: 60px;">Price (฿)</th>
+                  <th>Latest Read</th>
+                  <th style="width: 24px;"></th>
                 </tr>
               </thead>
               <tbody id="editVolTableBody">
-                ${b.volumes.map((v, idx) => `
-                  <tr data-row-idx="${idx}">
+                ${(b.volumes || []).map((v, idx) => `
+                  <tr data-row-idx="${idx}" data-history="${(v.readHistory || []).join(',')}">
                     <td>
                       <input type="number" class="vol-num-input" value="${v.volNum}" style="width:100%; text-align:center; font-weight:600;" min="1" />
                     </td>
@@ -1316,6 +1413,9 @@
                         <option value="Reading" ${v.status === 'Reading' ? 'selected' : ''}>Reading</option>
                         <option value="Finished" ${v.status === 'Finished' ? 'selected' : ''}>Finished</option>
                       </select>
+                    </td>
+                    <td>
+                      <input type="number" class="vol-readcount-input" value="${v.readCount || (v.status === 'Finished' ? 1 : 0)}" min="0" style="text-align:center;" title="Times Completed" />
                     </td>
                     <td>
                       <input type="number" class="vol-price-input" value="${v.price || ''}" placeholder="฿" />
@@ -1455,6 +1555,9 @@
           </select>
         </td>
         <td>
+          <input type="number" class="vol-readcount-input" value="0" min="0" style="text-align:center;" />
+        </td>
+        <td>
           <input type="number" class="vol-price-input" value="" placeholder="฿" />
         </td>
         <td>
@@ -1512,22 +1615,34 @@
               const numInput = row.querySelector('.vol-num-input');
               const ownedBox = row.querySelector('.vol-owned-box');
               const statusSelect = row.querySelector('.vol-status-select');
+              const readCountInput = row.querySelector('.vol-readcount-input');
               const priceInput = row.querySelector('.vol-price-input');
               const dateInput = row.querySelector('.vol-date-input');
 
               const volNum = parseInt(numInput?.value, 10) || (i + 1);
+              const histAttr = row.getAttribute('data-history') || '';
+              let hist = histAttr ? histAttr.split(',').filter(Boolean) : [];
+              const newDate = dateInput ? dateInput.value : '';
+
+              if (newDate && !hist.includes(newDate)) {
+                hist.push(newDate);
+              }
+
+              const rCount = parseInt(readCountInput?.value, 10) || (statusSelect?.value === 'Finished' ? Math.max(1, hist.length) : 0);
+
               updatedVols.push({
                 volNum: volNum,
                 owned: ownedBox ? ownedBox.checked : false,
                 status: statusSelect ? statusSelect.value : 'Unread',
+                readCount: rCount,
+                readHistory: hist,
                 price: priceInput ? priceInput.value.trim() : '',
-                buyDate: b.volumes.find(v => v.volNum === volNum)?.buyDate || null,
-                finishedDate: dateInput ? dateInput.value : null
+                buyDate: (b.volumes || []).find(v => v.volNum === volNum)?.buyDate || null,
+                finishedDate: newDate || (hist.length > 0 ? hist[hist.length - 1] : null)
               });
             });
 
             updatedVols.sort((x, y) => x.volNum - y.volNum);
-
             const totalSpend = updatedVols.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
 
             return {
@@ -1605,7 +1720,6 @@
       render();
     }
 
-    // ==================== MAIN RENDER ====================
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
@@ -1618,14 +1732,14 @@
       const allYearsSet = new Set();
 
       books.forEach(b => {
-        let allVolsFinished = b.volumes.length > 0;
-        b.volumes.forEach(v => {
+        let allVolsFinished = (b.volumes && b.volumes.length > 0);
+        (b.volumes || []).forEach(v => {
           const p = parseFloat(v.price) || 0;
           if (v.owned) {
             totalPurchasedVolsCount += 1;
             totalSpendAmount += p;
 
-            const targetDate = v.buyDate || v.finishedDate;
+            const targetDate = String(v.buyDate || v.finishedDate || '');
             if (targetDate && p > 0) {
               const parts = targetDate.split('-');
               if (parts.length >= 2) {
@@ -1640,10 +1754,12 @@
             }
           }
 
-          if (v.status === 'Finished') {
-            totalVolsReadCount += 1;
-            if (v.finishedDate) {
-              const parts = v.finishedDate.split('-');
+          const historyList = (v.readHistory && v.readHistory.length > 0) ? v.readHistory : (v.finishedDate ? [v.finishedDate] : []);
+          
+          if (historyList.length > 0) {
+            totalVolsReadCount += historyList.length;
+            historyList.forEach(fDate => {
+              const parts = String(fDate).split('-');
               if (parts.length >= 2) {
                 const yr = parts[0];
                 const mIdx = parseInt(parts[1], 10) - 1;
@@ -1653,15 +1769,16 @@
                 if (!yearlyStats[yr][mIdx]) yearlyStats[yr][mIdx] = { read: 0, spend: 0 };
                 yearlyStats[yr][mIdx].read += 1;
               }
-            }
-          } else {
+            });
+          }
+
+          if (v.status !== 'Finished') {
             allVolsFinished = false;
           }
         });
         if (allVolsFinished && b.volumes.length > 0) completedSeriesCount += 1;
       });
 
-      // Populate Graph Year Selector
       const graphYearSelect = document.getElementById('graphYearSelect');
       const sortedYears = Array.from(allYearsSet).sort((a, b) => b.localeCompare(a));
       if (sortedYears.length === 0) sortedYears.push(new Date().getFullYear().toString());
@@ -1673,7 +1790,6 @@
         graphYearSelect.innerHTML = sortedYears.map(yr => `<option value="${yr}" ${yr === selectedGraphYear ? 'selected' : ''}>${yr}</option>`).join('');
       }
 
-      // Year-to-Date Metrics for Selected Year
       const curYearData = yearlyStats[selectedGraphYear] || {};
       let curYearRead = 0;
       let curYearSpend = 0;
@@ -1687,7 +1803,6 @@
       document.getElementById('statYearVols').innerText = `${curYearRead} vols`;
       document.getElementById('statYearSpend').innerText = `฿${curYearSpend.toLocaleString()}`;
 
-      // All-Time Metrics
       document.getElementById('statTotalVols').innerText = `${totalVolsReadCount} vols`;
       document.getElementById('statTotalSpend').innerText = `฿${totalSpendAmount.toLocaleString()}`;
       document.getElementById('statCompleteSeries').innerText = `${completedSeriesCount} series`;
@@ -1696,7 +1811,6 @@
       const displayYearText = document.getElementById('displayYearText');
       if (displayYearText) displayYearText.innerText = selectedGraphYear;
 
-      // 1. Current Year Bar Chart with Milky Frosted Pastels
       const barChartBox = document.getElementById('barChartBox');
       if (barChartBox) {
         const yearMonths = yearlyStats[selectedGraphYear] || {};
@@ -1718,7 +1832,6 @@
         }).join('');
       }
 
-      // 2. Breakdown Separated by Year
       const detailedGrid = document.getElementById('detailedMonthlyGrid');
       if (detailedGrid) {
         if (sortedYears.length === 0 || Object.keys(yearlyStats).length === 0) {
@@ -1737,7 +1850,7 @@
                 yrSpend += data.spend;
                 rowsHtml.push(`
                   <div class="month-row">
-                    <span style="font-weight:600; color:#4a453e;">${monthShorts[mIdx]} ${yr}</span>
+                    <span style="font-weight:600; color:#433e38;">${monthShorts[mIdx]} ${yr}</span>
                     <div style="display:flex; gap:6px; align-items:center;">
                       ${data.read > 0 ? `<span class="badge badge-sage">✓ ${data.read} read</span>` : ''}
                       ${data.spend > 0 ? `<span class="badge badge-rose">฿${data.spend.toLocaleString()}</span>` : ''}
@@ -1763,16 +1876,15 @@
         }
       }
 
-      // 3. Books Shelf
       const bookContainer = document.getElementById('bookListContainer');
       const filteredBooks = books.filter(b => {
         const matchesTab = b.type === currentBookSubTab;
         const matchesSearch = !search || b.title.toLowerCase().includes(search) || (b.author && b.author.toLowerCase().includes(search));
         let matchesOwnedFilter = true;
         if (currentBookSubTab === 'read' && currentOwnedFilter !== 'All') {
-          const hasReading = b.volumes.some(v => v.status === 'Reading');
-          const hasUnread = b.volumes.some(v => v.status === 'Unread');
-          const allFinished = b.volumes.length > 0 && b.volumes.every(v => v.status === 'Finished');
+          const hasReading = (b.volumes || []).some(v => v.status === 'Reading');
+          const hasUnread = (b.volumes || []).some(v => v.status === 'Unread');
+          const allFinished = (b.volumes || []).length > 0 && (b.volumes || []).every(v => v.status === 'Finished');
           if (currentOwnedFilter === 'Reading') matchesOwnedFilter = hasReading;
           else if (currentOwnedFilter === 'Unread') matchesOwnedFilter = hasUnread && !hasReading;
           else if (currentOwnedFilter === 'Finished') matchesOwnedFilter = allFinished;
@@ -1784,10 +1896,10 @@
         bookContainer.innerHTML = `<div class="empty-state">No series found on this shelf.</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
-          const ownedCount = b.volumes.filter(v => v.owned).length;
-          const finishedCount = b.volumes.filter(v => v.status === 'Finished').length;
+          const ownedCount = (b.volumes || []).filter(v => v.owned).length;
+          const finishedCount = (b.volumes || []).filter(v => v.status === 'Finished').length;
           
-          const calculatedSpend = b.volumes.filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
+          const calculatedSpend = (b.volumes || []).filter(v => v.owned && v.price).reduce((acc, curr) => acc + (parseFloat(curr.price) || 0), 0);
           const displayTotalSpend = calculatedSpend > 0 ? calculatedSpend : (parseFloat(b.price) || 0);
 
           return `
@@ -1801,23 +1913,37 @@
                     ${b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Finished</span>' : ''}
                   </div>
                 </div>
-                <span class="badge badge-blue">📚 ${ownedCount}/${b.volumes.length} Owned</span>
+                <span class="badge badge-blue">📚 ${ownedCount}/${(b.volumes || []).length} Owned</span>
               </div>
 
               <div class="volumes-container">
                 <div class="volumes-header">
-                  <span>VOLUMES (${finishedCount}/${b.volumes.length} read)</span>
+                  <span>VOLUMES (${finishedCount}/${(b.volumes || []).length} read)</span>
                   <span>${displayTotalSpend > 0 ? `Total: ฿${displayTotalSpend.toLocaleString()}` : ''}</span>
                 </div>
                 <div class="volume-chips-row">
-                  ${b.volumes.map(v => {
+                  ${(b.volumes || []).map(v => {
                     let chipClass = 'vol-unread';
                     let icon = '⏳';
-                    if (v.status === 'Reading') { chipClass = 'vol-reading'; icon = '📖'; }
-                    if (v.status === 'Finished') { chipClass = 'vol-finished'; icon = '✓'; }
+                    const rCount = v.readCount || (v.readHistory ? v.readHistory.length : 0);
+                    const countTag = rCount > 1 ? ` (${rCount}x)` : '';
+
+                    if (v.status === 'Reading') {
+                      if (rCount > 0) {
+                        chipClass = 'vol-rereading';
+                        icon = '🔁';
+                      } else {
+                        chipClass = 'vol-reading';
+                        icon = '📖';
+                      }
+                    } else if (v.status === 'Finished') {
+                      chipClass = 'vol-finished';
+                      icon = '✓';
+                    }
+
                     return `
-                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="Click to toggle status">
-                        <span>${icon} V${v.volNum}</span>
+                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="Click to toggle status / re-read">
+                        <span>${icon} V${v.volNum}${countTag}</span>
                       </div>
                     `;
                   }).join('')}
@@ -1835,7 +1961,6 @@
         }).join('');
       }
 
-      // 4. Serials
       const serialContainer = document.getElementById('serialListContainer');
       const filteredSerials = serials.filter(s => {
         const matchesType = currentSerialFilter === 'All' || s.format === currentSerialFilter;
@@ -1868,7 +1993,6 @@
         `).join('');
       }
 
-      // 5. Tasks (with Complete Toggle)
       const taskContainer = document.getElementById('taskListContainer');
       const filteredTasks = tasks.filter(t => {
         const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
@@ -1898,7 +2022,6 @@
         `).join('');
       }
 
-      // 6. Chores
       const choreContainer = document.getElementById('choreListContainer');
       const filteredChores = chores.filter(c => !search || c.name.toLowerCase().includes(search));
       if (filteredChores.length === 0) {
@@ -1906,11 +2029,17 @@
       } else {
         const today = new Date();
         choreContainer.innerHTML = filteredChores.map(c => {
-          const lastDate = new Date(c.lastDone);
-          const nextDue = new Date(lastDate);
-          nextDue.setDate(lastDate.getDate() + c.frequency);
-          const daysLeft = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
-          const isOverdue = daysLeft < 0;
+          let daysLeft = 0;
+          let isOverdue = false;
+          if (c.lastDone) {
+            const lastDate = new Date(c.lastDone);
+            if (!isNaN(lastDate.getTime())) {
+              const nextDue = new Date(lastDate);
+              nextDue.setDate(lastDate.getDate() + (c.frequency || 7));
+              daysLeft = Math.ceil((nextDue - today) / (1000 * 60 * 60 * 24));
+              isOverdue = daysLeft < 0;
+            }
+          }
 
           return `
             <div class="item-card">
@@ -1918,7 +2047,7 @@
                 <div>
                   <div class="item-title">${c.name}</div>
                   <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">
-                    Last: ${c.lastDone} (Every ${c.frequency}d)
+                    Last: ${c.lastDone || 'Never'} (Every ${c.frequency || 7}d)
                   </div>
                 </div>
                 <span class="badge ${isOverdue ? 'badge-rose' : 'badge-sage'}">
@@ -1935,7 +2064,6 @@
         }).join('');
       }
 
-      // 7. Personal Care
       const careContainer = document.getElementById('careListContainer');
       const filteredCare = careItems.filter(c => !search || c.name.toLowerCase().includes(search));
       if (filteredCare.length === 0) {
@@ -1955,7 +2083,6 @@
         `).join('');
       }
 
-      // 8. Subscriptions
       const subsContainer = document.getElementById('subsListContainer');
       const filteredSubs = subscriptions.filter(s => !search || s.name.toLowerCase().includes(search));
       if (filteredSubs.length === 0) {
@@ -1977,9 +2104,8 @@
         `).join('');
       }
 
-      // 9. Sales Fests
       const salesContainer = document.getElementById('salesListContainer');
-      const filteredSales = sales.filter(s => !search || s.name.toLowerCase().includes(search) || s.platform.toLowerCase().includes(search));
+      const filteredSales = sales.filter(s => !search || s.name.toLowerCase().includes(search) || (s.platform && s.platform.toLowerCase().includes(search)));
       if (filteredSales.length === 0) {
         salesContainer.innerHTML = `<div class="empty-state">No sale campaigns logged.</div>`;
       } else {
