@@ -1,39 +1,671 @@
-<div class="form-card">
-        <h2>+ Add Product Bottle / Item</h2>
-        <div class="row">
-          <div class="input-group" style="flex: 2;">
-            <label>Product Name</label>
-            <input type="text" id="cName" placeholder="e.g. Toner, Serum, Shampoo" />
-          </div>
-          <div class="input-group" style="flex: 1.2;">
-            <label>Category</label>
-            <select id="cCategory">
-              <option value="Skincare">Skincare</option>
-              <option value="Haircare">Haircare</option>
-              <option value="Body & Bath">Body & Bath</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>TrackApp - Life & Daily Hub</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-main: #fcfbf9;
+      --card-bg: #ffffff;
+      --text-main: #3e3832;
+      --text-muted: #9c9488;
+      --border: #f4efe6;
+      --border-card: #eee8de;
+
+      --milk-sage: #e8f3ea;
+      --milk-sage-border: #d4e8d8;
+      --milk-sage-text: #4e7355;
+
+      --milk-rose: #faeaec;
+      --milk-rose-border: #f3d4d7;
+      --milk-rose-text: #94535b;
+
+      --milk-blue: #eaf1f8;
+      --milk-blue-border: #d2e2f1;
+      --milk-blue-text: #496b8c;
+
+      --milk-lavender: #f2eefa;
+      --milk-lavender-border: #ded5f2;
+      --milk-lavender-text: #6d5b8e;
+
+      --milk-butter: #fdf6e7;
+      --milk-butter-border: #fae9c4;
+      --milk-butter-text: #8c7137;
+
+      --tab-inactive: #b5ada2;
+      --radius: 14px;
+      --app-font: 'Bai Jamjuree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--app-font); letter-spacing: -0.01em; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: calc(85px + env(safe-area-inset-bottom)); -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    
+    header { 
+      background: #ffffff; 
+      padding-top: max(14px, env(safe-area-inset-top)); 
+      padding-bottom: 12px;
+      padding-left: max(16px, env(safe-area-inset-left));
+      padding-right: max(16px, env(safe-area-inset-right));
+      border-bottom: 1px solid var(--border-card); 
+      position: sticky; 
+      top: 0; 
+      z-index: 30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 600; color: #4e473f; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+    .btn-backup { font-size: 0.76rem; padding: 6px 12px; border-radius: 9px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; }
+
+    .nav-bar { 
+      display: flex; 
+      background: #ffffff; 
+      border-bottom: 1px solid var(--border-card); 
+      justify-content: flex-start;
+      padding: 4px 6px;
+      overflow-x: auto;
+      position: sticky;
+      top: calc(47px + env(safe-area-inset-top));
+      z-index: 25;
+      scrollbar-width: none;
+    }
+    .nav-bar::-webkit-scrollbar { display: none; }
+    .nav-tab { 
+      flex: 0 0 auto;
+      padding: 10px 14px;
+      cursor: pointer; 
+      border-bottom: 2.5px solid transparent; 
+      color: var(--tab-inactive);
+      font-size: 0.8rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .nav-tab.active { 
+      color: var(--milk-lavender-text); 
+      border-bottom-color: var(--milk-lavender-text); 
+      background: #faf8fd;
+    }
+
+    .sub-tabs { display: flex; gap: 8px; margin: 12px 16px 8px 16px; }
+    .sub-tab { flex: 1; padding: 9px 12px; text-align: center; border-radius: 20px; font-size: 0.8rem; font-weight: 600; background: #f3efe8; color: var(--text-muted); cursor: pointer; }
+    .sub-tab.active { background: var(--milk-lavender); color: var(--milk-lavender-text); border: 1px solid var(--milk-lavender-border); }
+
+    .shelf-filters { display: flex; gap: 6px; margin: 4px 16px 8px 16px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+    .shelf-filters::-webkit-scrollbar { display: none; }
+    .shelf-pill { padding: 6px 13px; border-radius: 16px; font-size: 0.76rem; font-weight: 500; background: #ffffff; border: 1px solid var(--border-card); color: var(--text-muted); cursor: pointer; white-space: nowrap; }
+    .shelf-pill.active { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); font-weight: 600; }
+
+    .search-wrapper { padding: 8px 16px 4px 16px; }
+    .search-input { width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border-card); font-size: 16px; background: #ffffff; color: var(--text-main); outline: none; }
+
+    .content-area { padding: 8px 16px 20px 16px; }
+
+    .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+    .metric-box { background: #ffffff; border: 1px solid var(--border-card); border-radius: var(--radius); padding: 14px; }
+    .metric-box.highlight-blue { background: var(--milk-blue); border-color: var(--milk-blue-border); }
+    .metric-box.highlight-rose { background: var(--milk-rose); border-color: var(--milk-rose-border); }
+    .metric-label { font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-bottom: 4px; }
+    .metric-val { font-size: 1.25rem; font-weight: 700; color: #433e38; }
+
+    .alert-card { background: var(--milk-rose); border: 1px solid var(--milk-rose-border); border-radius: var(--radius); padding: 13px 15px; margin-bottom: 14px; }
+    .alert-card-title { font-size: 0.82rem; font-weight: 700; color: var(--milk-rose-text); margin-bottom: 4px; }
+    .alert-card-content { font-size: 0.76rem; color: #5a3e42; line-height: 1.45; }
+
+    .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 15px; border: 1px solid var(--border-card); margin-bottom: 14px; }
+    .form-card h2 { font-size: 0.9rem; margin-bottom: 12px; font-weight: 600; color: #4e473f; }
+    .input-group { margin-bottom: 11px; }
+    .input-group label { display: block; font-size: 0.7rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+    .input-group input, .input-group select { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--border-card); font-size: 16px; outline: none; background: #fdfdfc; color: var(--text-main); }
+    .row { display: flex; gap: 8px; }
+    .row .input-group { flex: 1; }
+    .btn-submit { width: 100%; padding: 12px; background: var(--milk-lavender); color: var(--milk-lavender-text); font-weight: 600; border-radius: 10px; border: 1px solid var(--milk-lavender-border); cursor: pointer; font-size: 0.88rem; margin-top: 4px; }
+
+    .item-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border-card); margin-bottom: 11px; }
+    .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
+    .item-title { font-weight: 600; font-size: 0.94rem; color: #35302a; }
+    .item-title.task-completed { text-decoration: line-through; opacity: 0.45; }
+
+    .badge { font-size: 0.72rem; font-weight: 600; padding: 4px 9px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; border: 1px solid transparent; }
+    .badge-sage { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
+    .badge-rose { background: var(--milk-rose); color: var(--milk-rose-text); border-color: var(--milk-rose-border); }
+    .badge-blue { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
+    .badge-lavender { background: var(--milk-lavender); color: var(--milk-lavender-text); border-color: var(--milk-lavender-border); }
+    .badge-butter { background: var(--milk-butter); color: var(--milk-butter-text); border-color: var(--milk-butter-border); }
+    .badge-gray { background: #f5f2eb; color: #756d61; border-color: #eae5dc; }
+
+    .item-notes { font-size: 0.8rem; background: #faf8f5; padding: 7px 10px; border-radius: 8px; border-left: 2.5px solid #d4cdc3; margin-top: 6px; color: #575047; }
+    
+    .habit-week-row { display: flex; gap: 6px; margin-top: 10px; align-items: center; justify-content: space-between; background: #faf8f5; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border-card); }
+    .habit-day-box { display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; }
+    .habit-day-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
+    .habit-dot { width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border-card); background: #ffffff; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: #b0a89d; }
+    .habit-dot.done { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 700; }
+
+    .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .btn-action { font-size: 0.76rem; padding: 6px 11px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; }
+    .btn-own { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
+    .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
+    .empty-state { text-align: center; padding: 40px 16px; color: var(--text-muted); font-size: 0.86rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TrackApp — Life Hub</h1>
+    <div class="header-actions">
+      <button class="btn-backup" onclick="exportData()">Backup</button>
+      <input type="file" id="importFileInput" style="display:none;" onchange="importData(event)" accept=".json" />
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-tab active" id="tabNavTasks" onclick="switchMainTab('tasks')">To-Do</div>
+    <div class="nav-tab" id="tabNavSelfCare" onclick="switchMainTab('selfcare')">Self-Care</div>
+    <div class="nav-tab" id="tabNavGrocery" onclick="switchMainTab('grocery')">Grocery</div>
+    <div class="nav-tab" id="tabNavChores" onclick="switchMainTab('chores')">Chores</div>
+    <div class="nav-tab" id="tabNavCare" onclick="switchMainTab('care')">Personal Care</div>
+    <div class="nav-tab" id="tabNavSubs" onclick="switchMainTab('subs')">Subscriptions</div>
+    <div class="nav-tab" id="tabNavFinance" onclick="switchMainTab('finance')">Gaming Spend</div>
+    <div class="nav-tab" id="tabNavHealth" onclick="switchMainTab('health')">Vaccines / Health</div>
+  </div>
+
+  <div class="search-wrapper">
+    <input type="search" id="globalSearch" class="search-input" placeholder="Search Life Hub..." oninput="render()" />
+  </div>
+
+  <!-- 1. TASKS -->
+  <section id="sectionTasks">
+    <div class="sub-tabs">
+      <div class="sub-tab active" id="taskFilterAll" onclick="filterTasks('All')">All Tasks</div>
+      <div class="sub-tab" id="taskFilterToday" onclick="filterTasks('Today')">Today</div>
+      <div class="sub-tab" id="taskFilterWeek" onclick="filterTasks('Week')">This Week</div>
+      <div class="sub-tab" id="taskFilterMonth" onclick="filterTasks('Month')">This Month</div>
+    </div>
+    <div class="shelf-filters" id="taskTagPillBar"></div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Task</h2>
+        <div class="input-group">
+          <label>Task Description</label>
+          <input type="text" id="tTitle" placeholder="Task details" />
         </div>
         <div class="row">
-          <div class="input-group" style="flex: 1;">
-            <label>Price (฿)</label>
-            <input type="number" id="cPrice" placeholder="e.g. 450" min="0" />
-          </div>
-          <div class="input-group" style="flex: 1;">
-            <label>PAO (Months)</label>
-            <input type="number" id="cPaoMonths" placeholder="e.g. 6 or 12" min="1" />
-          </div>
+          <div class="input-group"><label>Tag</label><input type="text" id="tTag" placeholder="e.g. Study" /></div>
+          <div class="input-group"><label>Horizon</label><select id="tHorizon"><option value="Today">Today</option><option value="Week">This Week</option><option value="Month">This Month</option></select></div>
+          <div class="input-group"><label>Due Date</label><input type="date" id="tDate" /></div>
         </div>
-        <div class="row">
-          <div class="input-group">
-            <label>Date Bought</label>
-            <input type="date" id="cDateBought" />
-          </div>
-          <div class="input-group">
-            <label>Date Opened</label>
-            <input type="date" id="cDateOpened" />
-          </div>
-        </div>
-        <button class="btn-submit" onclick="saveCareItem()">Save Bottle to Care Tracker</button>
+        <div class="input-group"><label>Notes</label><input type="text" id="tNotes" placeholder="Context or link" /></div>
+        <button class="btn-submit" onclick="saveTask()">Save Task</button>
       </div>
+      <div id="taskListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 2. SELF-CARE (Haircut & Skincare Habits) -->
+  <section id="sectionSelfCare" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>💇‍♂️ Haircut Log</h2>
+        <div class="input-group"><label>Last Cut Date</label><input type="date" id="hairDateInput" /></div>
+        <button class="btn-submit" onclick="saveHaircutCustom()">Save Cut Date</button>
+      </div>
+      <div id="haircutStatusContainer"></div>
+
+      <div class="form-card" style="margin-top: 20px;">
+        <h2>+ Add Skincare Active / Routine</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;"><label>Active Name</label><input type="text" id="skinName" placeholder="Retinol 0.3%, AHA/BHA Scrub" /></div>
+          <div class="input-group" style="flex: 1;"><label>Category</label><select id="skinCat"><option value="Retinol">Retinol</option><option value="Exfoliant">Exfoliant</option><option value="Other">Other</option></select></div>
+        </div>
+        <button class="btn-submit" onclick="saveSkinActive()">Add Active Routine</button>
+      </div>
+      <div id="skinListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 3. GROCERY -->
+  <section id="sectionGrocery" style="display: none;">
+    <div class="shelf-filters">
+      <div class="shelf-pill active" id="filterGroceryAll" onclick="filterGroceryCategory('All')">All</div>
+      <div class="shelf-pill" id="filterGroceryProduce" onclick="filterGroceryCategory('Produce')">🥦 Produce</div>
+      <div class="shelf-pill" id="filterGroceryPantry" onclick="filterGroceryCategory('Pantry')">🥫 Pantry</div>
+      <div class="shelf-pill" id="filterGroceryHousehold" onclick="filterGroceryCategory('Household')">🧻 Household</div>
+    </div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Grocery Item</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;"><label>Item Name</label><input type="text" id="gName" placeholder="Milk, Eggs" /></div>
+          <div class="input-group" style="flex: 1;"><label>Category</label><select id="gCategory"><option value="Produce">Produce</option><option value="Pantry">Pantry</option><option value="Household">Household</option><option value="Other">Other</option></select></div>
+        </div>
+        <div class="input-group"><label>Quantity</label><input type="text" id="gQty" placeholder="2 cartons" /></div>
+        <button class="btn-submit" onclick="saveGroceryItem()">Add to Shopping List</button>
+      </div>
+      <div id="groceryListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 4. CHORES -->
+  <section id="sectionChores" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Recurring Chore</h2>
+        <div class="input-group"><label>Chore Name</label><input type="text" id="chName" placeholder="Clean Bathroom" /></div>
+        <div class="row">
+          <div class="input-group"><label>Last Done</label><input type="date" id="chDate" /></div>
+          <div class="input-group"><label>Repeat Every</label><select id="chFreq"><option value="7">7 Days</option><option value="14">14 Days</option><option value="30">30 Days</option></select></div>
+        </div>
+        <button class="btn-submit" onclick="saveChore()">Save Chore</button>
+      </div>
+      <div id="choreListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 5. PERSONAL CARE -->
+  <section id="sectionCare" style="display: none;">
+    <div class="content-area" style="padding-bottom: 0;">
+      <div id="careRestockAlertBox" style="display: none;" class="alert-card">
+        <div class="alert-card-title">🚨 Products Running Low:</div>
+        <div class="alert-card-content" id="careRestockList"></div>
+      </div>
+    </div>
+    <div class="shelf-filters" style="margin-top: 10px;">
+      <div class="shelf-pill active" id="filterCareAll" onclick="filterCareStatus('All')">All</div>
+      <div class="shelf-pill" id="filterCareInUse" onclick="filterCareStatus('InUse')">🧴 In Use</div>
+      <div class="shelf-pill" id="filterCareStock" onclick="filterCareStatus('Stock')">⏳ Stock</div>
+      <div class="shelf-pill" id="filterCareEmptied" onclick="filterCareStatus('Emptied')">✓ Emptied</div>
+    </div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Care Product</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;"><label>Product Name</label><input type="text" id="cName" placeholder="Serum, Toner" /></div>
+          <div class="input-group" style="flex: 1;"><label>Category</label><select id="cCategory"><option value="Skincare">Skincare</option><option value="Haircare">Haircare</option><option value="Body & Bath">Body & Bath</option><option value="Other">Other</option></select></div>
+        </div>
+        <div class="row">
+          <div class="input-group"><label>Price (฿)</label><input type="number" id="cPrice" placeholder="450" min="0" /></div>
+          <div class="input-group"><label>PAO (Months)</label><input type="number" id="cPaoMonths" placeholder="6" min="1" /></div>
+        </div>
+        <div class="row">
+          <div class="input-group"><label>Bought Date</label><input type="date" id="cDateBought" /></div>
+          <div class="input-group"><label>Opened Date</label><input type="date" id="cDateOpened" /></div>
+        </div>
+        <button class="btn-submit" onclick="saveCareItem()">Save Bottle</button>
+      </div>
+      <div id="careListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 6. SUBSCRIPTIONS -->
+  <section id="sectionSubs" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Subscription</h2>
+        <div class="input-group"><label>Service Name</label><input type="text" id="subName" placeholder="Netflix, iCloud" /></div>
+        <div class="row">
+          <div class="input-group"><label>Cost</label><input type="text" id="subCost" placeholder="Price" /></div>
+          <div class="input-group"><label>Status</label><select id="subStatus"><option value="Active">Active</option><option value="Cancelled">Cancelled</option></select></div>
+        </div>
+        <div class="input-group"><label>Renewal Date</label><input type="date" id="subDate" /></div>
+        <button class="btn-submit" onclick="saveSubscription()">Save Subscription</button>
+      </div>
+      <div id="subsListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 7. GAMING & FINANCE SPEND -->
+  <section id="sectionFinance" style="display: none;">
+    <div class="content-area">
+      <div class="metric-grid">
+        <div class="metric-box highlight-blue"><div class="metric-label">This Month Spent</div><div class="metric-val" id="spendMonthVal">฿0</div></div>
+        <div class="metric-box highlight-rose"><div class="metric-label">All-Time Total</div><div class="metric-val" id="spendAllVal">฿0</div></div>
+      </div>
+      <div class="form-card">
+        <h2>+ Log Gaming / Lezhin Spend</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;"><label>Item / Coins</label><input type="text" id="spendTitle" placeholder="Lezhin 100 Coins, Steam Game" /></div>
+          <div class="input-group" style="flex: 1.2;"><label>Platform</label><select id="spendPlatform"><option value="Lezhin Comics">Lezhin Comics</option><option value="Steam">Steam</option><option value="Nintendo eShop">Nintendo eShop</option><option value="Other">Other</option></select></div>
+        </div>
+        <div class="row">
+          <div class="input-group"><label>Cost (฿)</label><input type="number" id="spendAmount" placeholder="350" min="0" /></div>
+          <div class="input-group"><label>Date</label><input type="date" id="spendDate" /></div>
+        </div>
+        <button class="btn-submit" onclick="saveSpendRecord()">Log Purchase</button>
+      </div>
+      <div id="spendListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 8. HEALTH & VACCINE TRACKER (MOVED TO LAST) -->
+  <section id="sectionHealth" style="display: none;">
+    <div class="shelf-filters">
+      <div class="shelf-pill active" id="filterHealthAll" onclick="filterHealthType('All')">All</div>
+      <div class="shelf-pill" id="filterHealthAppt" onclick="filterHealthType('Appointment')">🏥 Appointments</div>
+      <div class="shelf-pill" id="filterHealthVac" onclick="filterHealthType('Vaccination')">💉 Vaccines</div>
+    </div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Health Event</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;"><label>Event Name</label><input type="text" id="hTitle" placeholder="Dental Checkup, Flu Booster" /></div>
+          <div class="input-group" style="flex: 1;"><label>Type</label><select id="hType"><option value="Appointment">Appointment</option><option value="Vaccination">Vaccination</option></select></div>
+        </div>
+        <div class="row">
+          <div class="input-group"><label>Date</label><input type="date" id="hDate" /></div>
+          <div class="input-group"><label>Location</label><input type="text" id="hLocation" placeholder="Hospital / Clinic" /></div>
+        </div>
+        <div class="input-group"><label>Notes</label><input type="text" id="hNotes" placeholder="Fasting required, etc." /></div>
+        <button class="btn-submit" onclick="saveHealthItem()">Save Health Record</button>
+      </div>
+      <div id="healthListContainer"></div>
+    </div>
+  </section>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem('track_tasks') || '[]');
+    let groceryItems = JSON.parse(localStorage.getItem('track_grocery') || '[]');
+    let healthRecords = JSON.parse(localStorage.getItem('track_health') || '[]');
+    let chores = JSON.parse(localStorage.getItem('track_chores') || '[]');
+    let careItems = JSON.parse(localStorage.getItem('track_care') || '[]');
+    let subscriptions = JSON.parse(localStorage.getItem('track_subs') || '[]');
+    let haircutLog = JSON.parse(localStorage.getItem('track_haircut') || '{"lastCutDate": null}');
+    let skinActives = JSON.parse(localStorage.getItem('track_skin_actives') || '[]');
+    let spendRecords = JSON.parse(localStorage.getItem('track_spend') || '[]');
+
+    let currentMainTab = 'tasks';
+    let currentTaskFilter = 'All';
+    let currentTaskTagFilter = 'All';
+    let currentGroceryCategory = 'All';
+    let currentHealthType = 'All';
+    let currentCareFilter = 'All';
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      const tabs = ['tasks', 'selfcare', 'grocery', 'chores', 'care', 'subs', 'finance', 'health'];
+      tabs.forEach(t => {
+        const navEl = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
+        const secEl = document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (navEl) navEl.classList.toggle('active', tab === t);
+        if (secEl) secEl.style.display = tab === t ? 'block' : 'none';
+      });
+      render();
+    }
+
+    function filterTasks(h) { currentTaskFilter = h; render(); }
+    function filterTaskByTag(t) { currentTaskTagFilter = t; render(); }
+    function filterGroceryCategory(c) { currentGroceryCategory = c; render(); }
+    function filterHealthType(t) { currentHealthType = t; render(); }
+    function filterCareStatus(s) { currentCareFilter = s; render(); }
+
+    function exportData() {
+      const data = { tasks, groceryItems, healthRecords, chores, careItems, subscriptions, haircutLog, skinActives, spendRecords, exportDate: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `trackapp_life_hub_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function saveTask() {
+      const title = document.getElementById('tTitle').value.trim();
+      if (!title) return alert('Enter task description');
+      tasks.unshift({ id: Date.now().toString(), title, tag: document.getElementById('tTag').value.trim().replace(/^#/, ''), notes: document.getElementById('tNotes').value.trim(), horizon: document.getElementById('tHorizon').value, dueDate: document.getElementById('tDate').value || null, completed: false });
+      localStorage.setItem('track_tasks', JSON.stringify(tasks));
+      document.getElementById('tTitle').value = ''; document.getElementById('tTag').value = ''; document.getElementById('tNotes').value = ''; document.getElementById('tDate').value = '';
+      render();
+    }
+    function toggleTask(id) { tasks = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t); localStorage.setItem('track_tasks', JSON.stringify(tasks)); render(); }
+    function deleteTask(id) { tasks = tasks.filter(t => t.id !== id); localStorage.setItem('track_tasks', JSON.stringify(tasks)); render(); }
+
+    function saveGroceryItem() {
+      const name = document.getElementById('gName').value.trim();
+      if (!name) return alert('Enter item name');
+      groceryItems.unshift({ id: Date.now().toString(), name, category: document.getElementById('gCategory').value, qty: document.getElementById('gQty').value.trim(), purchased: false });
+      localStorage.setItem('track_grocery', JSON.stringify(groceryItems));
+      document.getElementById('gName').value = ''; document.getElementById('gQty').value = ''; render();
+    }
+    function toggleGroceryItem(id) { groceryItems = groceryItems.map(g => g.id === id ? { ...g, purchased: !g.purchased } : g); localStorage.setItem('track_grocery', JSON.stringify(groceryItems)); render(); }
+    function deleteGroceryItem(id) { groceryItems = groceryItems.filter(g => g.id !== id); localStorage.setItem('track_grocery', JSON.stringify(groceryItems)); render(); }
+
+    function saveHealthItem() {
+      const title = document.getElementById('hTitle').value.trim();
+      if (!title) return alert('Enter record title');
+      healthRecords.unshift({ id: Date.now().toString(), title, type: document.getElementById('hType').value, date: document.getElementById('hDate').value || new Date().toISOString().split('T')[0], location: document.getElementById('hLocation').value.trim(), notes: document.getElementById('hNotes').value.trim(), completed: false });
+      localStorage.setItem('track_health', JSON.stringify(healthRecords));
+      document.getElementById('hTitle').value = ''; document.getElementById('hDate').value = ''; document.getElementById('hLocation').value = ''; document.getElementById('hNotes').value = ''; render();
+    }
+    function toggleHealthComplete(id) { healthRecords = healthRecords.map(h => h.id === id ? { ...h, completed: !h.completed } : h); localStorage.setItem('track_health', JSON.stringify(healthRecords)); render(); }
+    function deleteHealthItem(id) { healthRecords = healthRecords.filter(h => h.id !== id); localStorage.setItem('track_health', JSON.stringify(healthRecords)); render(); }
+
+    function saveChore() {
+      const name = document.getElementById('chName').value.trim();
+      if (!name) return alert('Enter chore name');
+      chores.unshift({ id: Date.now().toString(), name, lastDone: document.getElementById('chDate').value || new Date().toISOString().split('T')[0], frequency: parseInt(document.getElementById('chFreq').value, 10) || 7 });
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      document.getElementById('chName').value = ''; render();
+    }
+    function markChoreDone(id) { const today = new Date().toISOString().split('T')[0]; chores = chores.map(c => c.id === id ? { ...c, lastDone: today } : c); localStorage.setItem('track_chores', JSON.stringify(chores)); render(); }
+    function deleteChore(id) { chores = chores.filter(c => c.id !== id); localStorage.setItem('track_chores', JSON.stringify(chores)); render(); }
+
+    function saveCareItem() {
+      const name = document.getElementById('cName').value.trim();
+      if (!name) return alert('Enter product name');
+      careItems.unshift({ id: Date.now().toString(), name, category: document.getElementById('cCategory').value, price: parseFloat(document.getElementById('cPrice').value) || 0, dateBought: document.getElementById('cDateBought').value || new Date().toISOString().split('T')[0], dateOpened: document.getElementById('cDateOpened').value || null, paoMonths: parseInt(document.getElementById('cPaoMonths').value, 10) || null, dateFinished: null, needRestock: false });
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      document.getElementById('cName').value = ''; document.getElementById('cPrice').value = ''; document.getElementById('cDateBought').value = ''; document.getElementById('cDateOpened').value = ''; document.getElementById('cPaoMonths').value = ''; render();
+    }
+    function toggleCareRestock(id) { careItems = careItems.map(c => c.id === id ? { ...c, needRestock: !c.needRestock } : c); localStorage.setItem('track_care', JSON.stringify(careItems)); render(); }
+    function markCareOpened(id) { const today = new Date().toISOString().split('T')[0]; careItems = careItems.map(c => c.id === id ? { ...c, dateOpened: today } : c); localStorage.setItem('track_care', JSON.stringify(careItems)); render(); }
+    function markCareFinished(id) { const today = new Date().toISOString().split('T')[0]; careItems = careItems.map(c => c.id === id ? { ...c, dateOpened: c.dateOpened || today, dateFinished: today, needRestock: false } : c); localStorage.setItem('track_care', JSON.stringify(careItems)); render(); }
+    function deleteCare(id) { careItems = careItems.filter(c => c.id !== id); localStorage.setItem('track_care', JSON.stringify(careItems)); render(); }
+
+    function saveSubscription() {
+      const name = document.getElementById('subName').value.trim();
+      if (!name) return alert('Enter service name');
+      subscriptions.unshift({ id: Date.now().toString(), name, cost: document.getElementById('subCost').value.trim(), renewalDate: document.getElementById('subDate').value || null, status: document.getElementById('subStatus').value });
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      document.getElementById('subName').value = ''; document.getElementById('subCost').value = ''; document.getElementById('subDate').value = ''; render();
+    }
+    function deleteSub(id) { subscriptions = subscriptions.filter(s => s.id !== id); localStorage.setItem('track_subs', JSON.stringify(subscriptions)); render(); }
+
+    function saveHaircutCustom() {
+      const val = document.getElementById('hairDateInput').value;
+      if (!val) return alert('Select date');
+      haircutLog.lastCutDate = val; localStorage.setItem('track_haircut', JSON.stringify(haircutLog)); document.getElementById('hairDateInput').value = ''; render();
+    }
+    function cutHairToday() { haircutLog.lastCutDate = new Date().toISOString().split('T')[0]; localStorage.setItem('track_haircut', JSON.stringify(haircutLog)); render(); }
+
+    function saveSkinActive() {
+      const name = document.getElementById('skinName').value.trim();
+      if (!name) return alert('Enter active name');
+      skinActives.unshift({ id: Date.now().toString(), name, category: document.getElementById('skinCat').value, history: {} });
+      localStorage.setItem('track_skin_actives', JSON.stringify(skinActives));
+      document.getElementById('skinName').value = ''; render();
+    }
+    function toggleHabitDate(id, dateStr) {
+      skinActives = skinActives.map(item => {
+        if (item.id === id) {
+          const hist = { ...item.history };
+          if (hist[dateStr]) delete hist[dateStr]; else hist[dateStr] = true;
+          return { ...item, history: hist };
+        }
+        return item;
+      });
+      localStorage.setItem('track_skin_actives', JSON.stringify(skinActives));
+      render();
+    }
+    function deleteSkinActive(id) { skinActives = skinActives.filter(i => i.id !== id); localStorage.setItem('track_skin_actives', JSON.stringify(skinActives)); render(); }
+
+    function saveSpendRecord() {
+      const title = document.getElementById('spendTitle').value.trim();
+      const amount = parseFloat(document.getElementById('spendAmount').value);
+      if (!title || isNaN(amount) || amount <= 0) return alert('Enter valid details');
+      spendRecords.unshift({ id: Date.now().toString(), title, platform: document.getElementById('spendPlatform').value, amount, date: document.getElementById('spendDate').value || new Date().toISOString().split('T')[0] });
+      localStorage.setItem('track_spend', JSON.stringify(spendRecords));
+      document.getElementById('spendTitle').value = ''; document.getElementById('spendAmount').value = ''; document.getElementById('spendDate').value = ''; render();
+    }
+    function deleteSpendRecord(id) { spendRecords = spendRecords.filter(s => s.id !== id); localStorage.setItem('track_spend', JSON.stringify(spendRecords)); render(); }
+
+    function getWeekDates() {
+      const curr = new Date(); const week = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(curr); d.setDate(curr.getDate() - i);
+        const yyyy = d.getFullYear(); const mm = String(d.getMonth() + 1).padStart(2, '0'); const dd = String(d.getDate()).padStart(2, '0');
+        week.push({ dateStr: `${yyyy}-${mm}-${dd}`, dayLabel: d.toLocaleDateString('en-US', { weekday: 'short' }), dayNum: dd });
+      }
+      return week;
+    }
+
+    function render() {
+      const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
+
+      // Tasks
+      const taskContainer = document.getElementById('taskListContainer');
+      const filteredTasks = tasks.filter(t => (currentTaskFilter === 'All' || t.horizon === currentTaskFilter) && (currentTaskTagFilter === 'All' || t.tag === currentTaskTagFilter) && (!search || t.title.toLowerCase().includes(search)));
+      taskContainer.innerHTML = filteredTasks.length === 0 ? `<div class="empty-state">No tasks found.</div>` : filteredTasks.map(t => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="display:flex; gap:10px; flex:1;">
+            <input type="checkbox" style="width:18px; height:18px; margin-top:3px;" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" />
+            <div>
+              <div class="item-title ${t.completed ? 'task-completed' : ''}">${t.title}</div>
+              <div style="font-size:0.74rem; color:var(--text-muted); margin-top:3px; display:flex; gap:6px;">
+                <span class="badge badge-gray">${t.horizon}</span>
+                ${t.tag ? `<span class="badge badge-lavender">#${t.tag}</span>` : ''}
+                ${t.dueDate ? `<span>Due: ${t.dueDate}</span>` : ''}
+              </div>
+              ${t.notes ? `<div class="item-notes">${t.notes}</div>` : ''}
+            </div>
+          </div>
+          <button class="btn-action btn-delete" onclick="deleteTask('${t.id}')">✕</button>
+        </div>`).join('');
+
+      // Grocery
+      const groceryContainer = document.getElementById('groceryListContainer');
+      const filteredGrocery = groceryItems.filter(g => (currentGroceryCategory === 'All' || g.category === currentGroceryCategory) && (!search || g.name.toLowerCase().includes(search)));
+      groceryContainer.innerHTML = filteredGrocery.length === 0 ? `<div class="empty-state">No grocery items.</div>` : filteredGrocery.map(g => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <input type="checkbox" style="width:18px; height:18px;" ${g.purchased ? 'checked' : ''} onchange="toggleGroceryItem('${g.id}')" />
+            <div>
+              <div class="item-title ${g.purchased ? 'task-completed' : ''}">${g.name} ${g.qty ? `(${g.qty})` : ''}</div>
+              <span class="badge badge-sage">${g.category}</span>
+            </div>
+          </div>
+          <button class="btn-action btn-delete" onclick="deleteGroceryItem('${g.id}')">✕</button>
+        </div>`).join('');
+
+      // Health
+      const healthContainer = document.getElementById('healthListContainer');
+      const filteredHealth = healthRecords.filter(h => (currentHealthType === 'All' || h.type === currentHealthType) && (!search || h.title.toLowerCase().includes(search)));
+      healthContainer.innerHTML = filteredHealth.length === 0 ? `<div class="empty-state">No health records.</div>` : filteredHealth.map(h => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div style="display:flex; gap:10px; flex:1;">
+            <input type="checkbox" style="width:18px; height:18px; margin-top:3px;" ${h.completed ? 'checked' : ''} onchange="toggleHealthComplete('${h.id}')" />
+            <div>
+              <div class="item-title ${h.completed ? 'task-completed' : ''}">${h.title}</div>
+              <div style="margin-top:4px; display:flex; gap:6px;"><span class="badge ${h.type === 'Vaccination' ? 'badge-lavender' : 'badge-blue'}">${h.type}</span> ${h.date ? `<span>📅 ${h.date}</span>` : ''}</div>
+              ${h.location ? `<div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">📍 ${h.location}</div>` : ''}
+            </div>
+          </div>
+          <button class="btn-action btn-delete" onclick="deleteHealthItem('${h.id}')">✕</button>
+        </div>`).join('');
+
+      // Chores
+      const choreContainer = document.getElementById('choreListContainer');
+      const filteredChores = chores.filter(c => !search || c.name.toLowerCase().includes(search));
+      choreContainer.innerHTML = filteredChores.length === 0 ? `<div class="empty-state">No chores logged.</div>` : filteredChores.map(c => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="item-title">${c.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:3px;">Last: ${c.lastDone || 'Never'} (Every ${c.frequency}d)</div>
+          </div>
+          <div style="display:flex; gap:6px;"><button class="btn-action btn-own" onclick="markChoreDone('${c.id}')">✓ Done</button><button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">✕</button></div>
+        </div>`).join('');
+
+      // Personal Care
+      const careContainer = document.getElementById('careListContainer');
+      const filteredCare = careItems.filter(c => !search || c.name.toLowerCase().includes(search));
+      careContainer.innerHTML = filteredCare.length === 0 ? `<div class="empty-state">No care items.</div>` : filteredCare.map(c => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="item-title">${c.name}</div>
+            <div style="margin-top:4px; display:flex; gap:4px;"><span class="badge badge-lavender">${c.category}</span> ${c.price ? `<span class="badge badge-rose">฿${c.price}</span>` : ''}</div>
+          </div>
+          <div style="display:flex; gap:6px;"><button class="btn-action btn-delete" onclick="deleteCare('${c.id}')">✕</button></div>
+        </div>`).join('');
+
+      // Subscriptions
+      const subsContainer = document.getElementById('subsListContainer');
+      const filteredSubs = subscriptions.filter(s => !search || s.name.toLowerCase().includes(search));
+      subsContainer.innerHTML = filteredSubs.length === 0 ? `<div class="empty-state">No subscriptions.</div>` : filteredSubs.map(s => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="item-title">${s.name}</div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;"><span class="badge ${s.status === 'Cancelled' ? 'badge-gray' : 'badge-sage'}">${s.status || 'Active'}</span></div>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;">${s.cost ? `<span class="badge badge-rose">฿${s.cost}</span>` : ''}<button class="btn-action btn-delete" onclick="deleteSub('${s.id}')">✕</button></div>
+        </div>`).join('');
+
+      // Self-Care (Haircut & Skin Habits)
+      const hairContainer = document.getElementById('haircutStatusContainer');
+      const lastDate = haircutLog.lastCutDate;
+      let daysAgoText = lastDate ? `Last cut on ${lastDate}` : 'No haircut logged yet.';
+      hairContainer.innerHTML = `
+        <div class="item-card" style="text-align: center; padding: 18px;">
+          <div style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">HAIRCUT STATUS</div>
+          <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 10px;">${daysAgoText}</div>
+          <button class="btn-submit" style="max-width: 200px; margin: 0 auto; background: var(--milk-sage); color: var(--milk-sage-text);" onclick="cutHairToday()">✂️ Cut Today</button>
+        </div>`;
+
+      const skinContainer = document.getElementById('skinListContainer');
+      const weekDays = getWeekDates();
+      skinContainer.innerHTML = skinActives.length === 0 ? `<div class="empty-state">No skincare habits added.</div>` : skinActives.map(item => `
+        <div class="item-card">
+          <div class="item-header">
+            <div class="item-title">${item.name} <span class="badge badge-lavender">${item.category}</span></div>
+            <button class="btn-action btn-delete" onclick="deleteSkinActive('${item.id}')">✕</button>
+          </div>
+          <div class="habit-week-row">
+            ${weekDays.map(day => {
+              const isDone = !!(item.history && item.history[day.dateStr]);
+              return `<div class="habit-day-box" onclick="toggleHabitDate('${item.id}', '${day.dateStr}')"><span class="habit-day-label">${day.dayLabel}</span><div class="habit-dot ${isDone ? 'done' : ''}">${isDone ? '✓' : day.dayNum}</div></div>`;
+            }).join('')}
+          </div>
+        </div>`).join('');
+
+      // Finance
+      const spendContainer = document.getElementById('spendListContainer');
+      const currentMonthPrefix = new Date().toISOString().substring(0, 7);
+      let mTotal = 0, aTotal = 0;
+      spendRecords.forEach(s => {
+        const amt = parseFloat(s.amount) || 0; aTotal += amt;
+        if (s.date && s.date.startsWith(currentMonthPrefix)) mTotal += amt;
+      });
+      document.getElementById('spendMonthVal').innerText = `฿${mTotal.toLocaleString()}`;
+      document.getElementById('spendAllVal').innerText = `฿${aTotal.toLocaleString()}`;
+
+      spendContainer.innerHTML = spendRecords.length === 0 ? `<div class="empty-state">No purchases logged.</div>` : spendRecords.map(s => `
+        <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div class="item-title">${s.title}</div>
+            <span class="badge badge-gray">${s.platform}</span> <span style="font-size:0.75rem; color:var(--text-muted);">${s.date}</span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center;"><span class="badge badge-rose">฿${s.amount.toLocaleString()}</span><button class="btn-action btn-delete" onclick="deleteSpendRecord('${s.id}')">✕</button></div>
+        </div>`).join('');
+    }
+
+    render();
+  </script>
+</body>
+</html>
