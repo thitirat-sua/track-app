@@ -85,7 +85,6 @@
 
     .content-area { padding: 6px 16px 20px 16px; }
 
-    /* Summary Card Styling */
     .summary-card {
       background: #ffffff;
       border-radius: var(--radius);
@@ -102,7 +101,7 @@
     .summary-title { font-size: 0.86rem; font-weight: 700; color: #374151; }
     .summary-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
       gap: 8px;
     }
     .summary-month-box {
@@ -111,11 +110,13 @@
       padding: 9px 10px;
       border-radius: 8px;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      flex-direction: column;
+      gap: 4px;
     }
     .summary-month-name { font-size: 0.78rem; font-weight: 600; color: #475569; }
-    .summary-month-count { font-size: 0.85rem; font-weight: 700; color: var(--pastel-blue-text); background: var(--pastel-blue); padding: 2px 7px; border-radius: 6px; }
+    .summary-month-metrics { display: flex; justify-content: space-between; align-items: center; }
+    .summary-month-count { font-size: 0.82rem; font-weight: 700; color: var(--pastel-blue-text); background: var(--pastel-blue); padding: 2px 6px; border-radius: 6px; }
+    .summary-month-spend { font-size: 0.74rem; font-weight: 600; color: var(--pastel-sage-text); }
 
     .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
     .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #4b5563; }
@@ -133,12 +134,7 @@
     .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; }
     .item-author { font-size: 0.78rem; color: #717d91; margin-top: 1px; }
 
-    /* Task Item Checkbox Styling */
-    .task-item-card {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
+    .task-item-card { display: flex; align-items: flex-start; gap: 10px; }
     .task-check-circle {
       width: 20px;
       height: 20px;
@@ -150,21 +146,11 @@
       justify-content: center;
       flex-shrink: 0;
       margin-top: 2px;
-      transition: all 0.15s ease;
       background: #fff;
     }
-    .task-check-circle.completed {
-      background: var(--pastel-sage-text);
-      border-color: var(--pastel-sage-text);
-      color: #fff;
-      font-size: 0.72rem;
-    }
+    .task-check-circle.completed { background: var(--pastel-sage-text); border-color: var(--pastel-sage-text); color: #fff; font-size: 0.72rem; }
     .task-content { flex: 1; min-width: 0; }
-    .task-text.completed {
-      text-decoration: line-through;
-      color: var(--text-muted);
-      opacity: 0.7;
-    }
+    .task-text.completed { text-decoration: line-through; color: var(--text-muted); opacity: 0.7; }
 
     .badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
     .badge-rose { background: var(--pastel-rose); color: var(--pastel-rose-text); }
@@ -210,7 +196,6 @@
     </div>
   </header>
 
-  <!-- Navigation with Minimal Emojis -->
   <div class="nav-bar">
     <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">📖</div>
     <div class="nav-tab" id="tabNavSerials" title="Serials & Manhwa" onclick="switchMainTab('serials')">🎨</div>
@@ -236,7 +221,7 @@
     <div id="monthlySummaryWrapper" style="display: none; padding: 0 16px;">
       <div class="summary-card">
         <div class="summary-header">
-          <span class="summary-title">📊 Monthly Reading Breakdown</span>
+          <span class="summary-title">📊 Reading & Spending Summary</span>
           <span id="totalFinishedBadge" class="badge badge-sage">0 Finished Total</span>
         </div>
         <div id="monthlyGrid" class="summary-grid"></div>
@@ -270,10 +255,11 @@
             <input type="text" id="bVol" placeholder="Vol." />
           </div>
           <div class="input-group">
-            <label>Store</label>
+            <label>Store / App</label>
             <input type="text" id="bPlatform" placeholder="MEB, Kindle, etc." />
           </div>
         </div>
+        
         <div id="buyingFields">
           <div class="row">
             <div class="input-group">
@@ -296,6 +282,10 @@
           </div>
           <div class="row">
             <div class="input-group">
+              <label>Est. Price</label>
+              <input type="text" id="bWishPrice" placeholder="e.g. 250" />
+            </div>
+            <div class="input-group">
               <label>Launch</label>
               <select id="bReleaseType" onchange="toggleDateInput()">
                 <option value="TBA">TBA</option>
@@ -303,13 +293,24 @@
                 <option value="Out Now">Out Now</option>
               </select>
             </div>
-            <div class="input-group" id="releaseDateGroup" style="display: none;">
-              <label>Date</label>
-              <input type="date" id="bReleaseDate" />
-            </div>
+          </div>
+          <div class="input-group" id="releaseDateGroup" style="display: none;">
+            <label>Release Date</label>
+            <input type="date" id="bReleaseDate" />
           </div>
         </div>
+
         <div id="readingFields" style="display: none;">
+          <div class="row">
+            <div class="input-group">
+              <label>Price Paid</label>
+              <input type="number" id="bPrice" placeholder="e.g. 219" />
+            </div>
+            <div class="input-group">
+              <label>Date Bought</label>
+              <input type="date" id="bBuyDate" />
+            </div>
+          </div>
           <div class="row">
             <div class="input-group">
               <label>Reading Status</label>
@@ -325,9 +326,10 @@
             </div>
           </div>
         </div>
+
         <div class="input-group">
           <label>Notes</label>
-          <input type="text" id="bNotes" placeholder="Price, promo, or reading thoughts" />
+          <input type="text" id="bNotes" placeholder="Promo coins, notes, or thoughts" />
         </div>
         <button class="btn-submit" onclick="saveBook()">Save</button>
       </div>
@@ -756,11 +758,20 @@
         releaseDisplay = d || 'Unset';
       }
 
-      const readStatus = currentBookSubTab === 'read' ? document.getElementById('bReadStatus').value : 'Unread';
+      const isOwnedTab = currentBookSubTab === 'read';
+      const readStatus = isOwnedTab ? document.getElementById('bReadStatus').value : 'Unread';
       let finishedDate = null;
       if (readStatus === 'Finished') {
         finishedDate = document.getElementById('bFinishedDate').value || new Date().toISOString().split('T')[0];
       }
+
+      const price = isOwnedTab 
+        ? document.getElementById('bPrice').value.trim() 
+        : document.getElementById('bWishPrice').value.trim();
+
+      const buyDate = isOwnedTab 
+        ? (document.getElementById('bBuyDate').value || new Date().toISOString().split('T')[0]) 
+        : null;
 
       books.unshift({
         id: Date.now().toString(),
@@ -773,20 +784,40 @@
         buyStatus: document.getElementById('bBuyStatus').value,
         digitalStatus: document.getElementById('bDigitalStatus').value,
         release: releaseDisplay,
+        price: price || '',
+        buyDate: buyDate,
         readStatus,
         finishedDate
       });
+
       localStorage.setItem('track_books', JSON.stringify(books));
       document.getElementById('bTitle').value = '';
       document.getElementById('bAuthor').value = '';
       document.getElementById('bVol').value = '';
       document.getElementById('bPlatform').value = '';
       document.getElementById('bNotes').value = '';
+      document.getElementById('bPrice').value = '';
+      document.getElementById('bWishPrice').value = '';
       render();
     }
 
     function markAsBought(id) {
-      books = books.map(b => b.id === id ? { ...b, type: 'read', readStatus: 'Unread' } : b);
+      const today = new Date().toISOString().split('T')[0];
+      const target = books.find(b => b.id === id);
+      const promptPrice = prompt('Price paid (optional):', target ? target.price : '');
+      
+      books = books.map(b => {
+        if (b.id === id) {
+          return {
+            ...b,
+            type: 'read',
+            readStatus: 'Unread',
+            buyDate: today,
+            price: promptPrice !== null && promptPrice.trim() !== '' ? promptPrice.trim() : b.price
+          };
+        }
+        return b;
+      });
       localStorage.setItem('track_books', JSON.stringify(books));
       render();
     }
@@ -809,6 +840,26 @@
       const newDate = prompt('When did you finish this book? (YYYY-MM-DD)', currentVal || new Date().toISOString().split('T')[0]);
       if (!newDate) return;
       books = books.map(b => b.id === id ? { ...b, finishedDate: newDate.trim(), readStatus: 'Finished' } : b);
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function editBuyDetails(id) {
+      const book = books.find(b => b.id === id);
+      if (!book) return;
+      const newPrice = prompt('Update price paid:', book.price || '');
+      const newDate = prompt('Update purchase date (YYYY-MM-DD):', book.buyDate || new Date().toISOString().split('T')[0]);
+      
+      books = books.map(b => {
+        if (b.id === id) {
+          return {
+            ...b,
+            price: newPrice !== null ? newPrice.trim() : b.price,
+            buyDate: newDate !== null ? newDate.trim() : b.buyDate
+          };
+        }
+        return b;
+      });
       localStorage.setItem('track_books', JSON.stringify(books));
       render();
     }
@@ -1123,12 +1174,14 @@
     function render() {
       const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
 
-      // Monthly Summary (Books)
+      // Monthly Summary (Books & Spending)
       const finishedBooks = books.filter(b => b.type === 'read' && b.readStatus === 'Finished');
       const totalFinishedBadge = document.getElementById('totalFinishedBadge');
       if (totalFinishedBadge) totalFinishedBadge.innerText = `${finishedBooks.length} Total Finished`;
 
-      const monthlyCounts = {};
+      const monthlyData = {};
+      
+      // Calculate read counts
       finishedBooks.forEach(b => {
         let mKey = 'No Date Logged';
         if (b.finishedDate) {
@@ -1139,21 +1192,41 @@
             mKey = `${monthName} ${year}`;
           }
         }
-        monthlyCounts[mKey] = (monthlyCounts[mKey] || 0) + 1;
+        if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0 };
+        monthlyData[mKey].readCount += 1;
+      });
+
+      // Calculate spend by purchase date
+      books.filter(b => b.type === 'read' && b.buyDate).forEach(b => {
+        const parts = b.buyDate.split('-');
+        if (parts.length >= 2) {
+          const year = parts[0];
+          const monthName = new Date(b.buyDate + 'T00:00:00').toLocaleString('default', { month: 'short' });
+          const mKey = `${monthName} ${year}`;
+          if (!monthlyData[mKey]) monthlyData[mKey] = { readCount: 0, spend: 0 };
+          const numericPrice = parseFloat(b.price) || 0;
+          monthlyData[mKey].spend += numericPrice;
+        }
       });
 
       const mGrid = document.getElementById('monthlyGrid');
       if (mGrid) {
-        const monthKeys = Object.keys(monthlyCounts);
+        const monthKeys = Object.keys(monthlyData);
         if (monthKeys.length === 0) {
-          mGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); grid-column: 1/-1;">No completed books logged with dates yet.</div>`;
+          mGrid.innerHTML = `<div style="font-size:0.75rem; color:var(--text-muted); grid-column: 1/-1;">No completed books or purchases logged with dates yet.</div>`;
         } else {
-          mGrid.innerHTML = monthKeys.map(k => `
-            <div class="summary-month-box">
-              <span class="summary-month-name">${k}</span>
-              <span class="summary-month-count">${monthlyCounts[k]} ${monthlyCounts[k] === 1 ? 'book' : 'books'}</span>
-            </div>
-          `).join('');
+          mGrid.innerHTML = monthKeys.map(k => {
+            const data = monthlyData[k];
+            return `
+              <div class="summary-month-box">
+                <span class="summary-month-name">${k}</span>
+                <div class="summary-month-metrics">
+                  <span class="summary-month-count">${data.readCount} read</span>
+                  ${data.spend > 0 ? `<span class="summary-month-spend">฿${data.spend.toLocaleString()}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
         }
       }
 
@@ -1215,8 +1288,15 @@
 
               <div class="item-sub">
                 ${b.platform} ${isBuy ? `· ${b.release}` : ''}
-                ${!isBuy && b.finishedDate ? `· Finished: <strong style="cursor:pointer; text-decoration:underline;" onclick="editFinishedDate('${b.id}', '${b.finishedDate}')">${b.finishedDate} ✏️</strong>` : ''}
+                ${isBuy && b.price ? `· Est. ฿${b.price}` : ''}
+                ${!isBuy && (b.price || b.buyDate) ? `· <span style="cursor:pointer;" onclick="editBuyDetails('${b.id}')" title="Edit price or purchase date">🏷️ ${b.price ? '฿' + b.price : 'Price unset'} ${b.buyDate ? '(' + b.buyDate + ')' : ''} ✏️</span>` : ''}
               </div>
+
+              ${!isBuy && b.finishedDate ? `
+                <div class="item-sub">
+                  Finished on: <strong style="cursor:pointer; text-decoration:underline;" onclick="editFinishedDate('${b.id}', '${b.finishedDate}')">${b.finishedDate} ✏️</strong>
+                </div>
+              ` : ''}
 
               ${b.notes ? `<div class="item-notes">${b.notes}</div>` : ''}
 
@@ -1474,10 +1554,11 @@
       }
     }
 
-    // Default dates on startup
+    // Default dates
     document.getElementById('cOpened').value = new Date().toISOString().split('T')[0];
     document.getElementById('chDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('tDate').value = new Date().toISOString().split('T')[0];
+    document.getElementById('bBuyDate').value = new Date().toISOString().split('T')[0];
     render();
   </script>
 </body>
