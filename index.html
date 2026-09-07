@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>TrackApp</title>
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <style>
+    :root {
+      --bg-main: #f4f5f7;
+      --card-bg: #ffffff;
+      --text-main: #2b303a;
+      --text-muted: #8c93a0;
+      --border: #e6e9ee;
+
+      --pastel-sage: #e8efe8;
+      --pastel-sage-text: #415e45;
+      --pastel-rose: #f9e8e9;
+      --pastel-rose-text: #82474f;
+      --pastel-blue: #e8f0f8;
+      --pastel-blue-text: #3c5d79;
+      --pastel-lavender: #eeeaf7;
+      --pastel-lavender-text: #59487c;
+      --pastel-butter: #faf2dc;
+      --pastel-butter-text: #786127;
+
+      --tab-active: #4a5260;
+      --radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-main); color: var(--text-main); padding-bottom: 70px; }
+    
+    header { 
+      background: #ffffff; 
+      padding: 12px 16px; 
+      border-bottom: 1px solid var(--border); 
+      position: sticky; 
+      top: 0; 
+      z-index: 10;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.2px; color: #374151; }
+    .header-actions { display: flex; gap: 6px; }
+    .btn-backup { font-size: 0.75rem; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); background: #fbfcfd; cursor: pointer; color: var(--text-muted); }
+
+    .nav-bar { 
+      display: flex; 
+      background: #ffffff; 
+      border-bottom: 1px solid var(--border); 
+      justify-content: space-around;
+      padding: 0 4px;
+    }
+    .nav-tab { 
+      flex: 1; 
+      text-align: center; 
+      padding: 11px 0; 
+      font-size: 1.25rem; 
+      cursor: pointer; 
+      border-bottom: 2.5px solid transparent; 
+      transition: all 0.15s ease;
+      opacity: 0.45;
+    }
+    .nav-tab.active { 
+      opacity: 1; 
+      border-bottom-color: var(--tab-active); 
+      background: #fbfcfd; 
+      transform: translateY(-1px);
+    }
+
+    .sub-tabs { display: flex; gap: 8px; margin: 12px 16px 8px 16px; }
+    .sub-tab { flex: 1; padding: 7px 10px; text-align: center; border-radius: 20px; font-size: 0.76rem; font-weight: 600; background: #e8ebf0; color: var(--text-muted); cursor: pointer; }
+    .sub-tab.active { background: var(--tab-active); color: #ffffff; }
+
+    .search-wrapper { padding: 8px 16px 4px 16px; }
+    .search-input { width: 100%; padding: 8px 12px; border-radius: 9px; border: 1px solid var(--border); font-size: 0.84rem; background: #ffffff; outline: none; }
+    .search-input:focus { border-color: #a0aec0; }
+
+    .content-area { padding: 6px 16px 20px 16px; }
+
+    .form-card { background: var(--card-bg); border-radius: var(--radius); padding: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .form-card h2 { font-size: 0.86rem; margin-bottom: 11px; font-weight: 600; color: #4b5563; }
+    .input-group { margin-bottom: 10px; }
+    .input-group label { display: block; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.3px; }
+    .input-group input, .input-group select { width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 0.84rem; outline: none; background: #fafbfc; color: var(--text-main); }
+    .input-group input:focus, .input-group select:focus { border-color: #94a3b8; background: #fff; }
+    .row { display: flex; gap: 8px; }
+    .row .input-group { flex: 1; }
+    
+    .btn-submit { width: 100%; padding: 9px; background: var(--tab-active); color: #ffffff; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; font-size: 0.84rem; margin-top: 2px; }
+
+    .item-card { background: var(--card-bg); border-radius: var(--radius); padding: 13px; border: 1px solid var(--border); margin-bottom: 10px; }
+    .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; gap: 8px; }
+    .item-title { font-weight: 600; font-size: 0.92rem; line-height: 1.35; }
+    .item-author { font-size: 0.78rem; color: #717d91; margin-top: 1px; }
+
+    .badge { font-size: 0.7rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
+    .badge-rose { background: var(--pastel-rose); color: var(--pastel-rose-text); }
+    .badge-sage { background: var(--pastel-sage); color: var(--pastel-sage-text); }
+    .badge-blue { background: var(--pastel-blue); color: var(--pastel-blue-text); }
+    .badge-lavender { background: var(--pastel-lavender); color: var(--pastel-lavender-text); }
+    .badge-butter { background: var(--pastel-butter); color: var(--pastel-butter-text); }
+    .badge-gray { background: #e9ecef; color: #555e6d; }
+
+    .chapter-hero {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--pastel-blue);
+      color: var(--pastel-blue-text);
+      padding: 3px 7px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    .item-sub { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 5px; }
+    .item-notes { font-size: 0.78rem; background: #f8fafc; padding: 6px 9px; border-radius: 7px; border-left: 2px solid #cbd5e1; margin-top: 6px; color: #475569; }
+    
+    .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
+    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 6px; border: 1px solid var(--border); background: #ffffff; cursor: pointer; color: var(--text-main); text-decoration: none; }
+    .btn-action-primary { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); font-weight: 600; }
+    .btn-bought { background: var(--pastel-sage); border-color: #d2e4d2; color: var(--pastel-sage-text); font-weight: 600; }
+    .btn-cal { background: var(--pastel-blue); border-color: #d1e2f3; color: var(--pastel-blue-text); }
+    .btn-link { background: var(--pastel-lavender); border-color: #ded7ef; color: var(--pastel-lavender-text); }
+    .btn-delete { color: #b91c1c; border-color: #fed7d7; }
+    .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>TrackApp</h1>
+    <div class="header-actions">
+      <button class="btn-backup" onclick="exportData()">Backup</button>
+      <button class="btn-backup" onclick="document.getElementById('importFileInput').click()">Restore</button>
+      <input type="file" id="importFileInput" style="display:none;" onchange="importData(event)" accept=".json" />
+    </div>
+  </header>
+
+  <div class="nav-bar">
+    <div class="nav-tab active" id="tabNavBooks" title="Ebooks" onclick="switchMainTab('books')">📖</div>
+    <div class="nav-tab" id="tabNavSerials" title="Serials & Manhwa" onclick="switchMainTab('serials')">🎨</div>
+    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">🧴</div>
+    <div class="nav-tab" id="tabNavChores" title="House Chores" onclick="switchMainTab('chores')">🧹</div>
+    <div class="nav-tab" id="tabNavSubs" title="Subscriptions" onclick="switchMainTab('subs')">💳</div>
+    <div class="nav-tab" id="tabNavSales" title="Sales Fests" onclick="switchMainTab('sales')">🏷️</div>
+  </div>
+
+  <div class="search-wrapper">
+    <input type="search" id="globalSearch" class="search-input" placeholder="Search..." oninput="render()" />
+  </div>
+
+  <!-- 1. EBOOKS -->
+  <section id="sectionBooks">
+    <div class="sub-tabs">
+      <div class="sub-tab active" id="subTabBuy" onclick="switchBookSubTab('buy')">Wishlist</div>
+      <div class="sub-tab" id="subTabRead" onclick="switchBookSubTab('read')">Owned</div>
+    </div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2 id="bookFormTitle">+ Add Ebook</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;">
+            <label>Title</label>
+            <input type="text" id="bTitle" placeholder="Title / Series" />
+          </div>
+          <div class="input-group" style="flex: 1.2;">
+            <label>Author</label>
+            <input type="text" id="bAuthor" placeholder="Author" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Volume</label>
+            <input type="text" id="bVol" placeholder="Vol." />
+          </div>
+          <div class="input-group">
+            <label>Store</label>
+            <input type="text" id="bPlatform" placeholder="MEB, Kindle, etc." />
+          </div>
+        </div>
+        <div id="buyingFields">
+          <div class="row">
+            <div class="input-group">
+              <label>Decision</label>
+              <select id="bBuyStatus">
+                <option value="Decided to Buy">Decided</option>
+                <option value="Wait for Fest">Wait for Sale</option>
+                <option value="Considering">Considering</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Digital Status</label>
+              <select id="bDigitalStatus">
+                <option value="Available">Available</option>
+                <option value="Paper Only">Paper Only</option>
+                <option value="In Negotiation">Negotiation</option>
+                <option value="Awaiting Translation">Translating</option>
+              </select>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Launch</label>
+              <select id="bReleaseType" onchange="toggleDateInput()">
+                <option value="TBA">TBA</option>
+                <option value="Date">Specific Date</option>
+                <option value="Out Now">Out Now</option>
+              </select>
+            </div>
+            <div class="input-group" id="releaseDateGroup" style="display: none;">
+              <label>Date</label>
+              <input type="date" id="bReleaseDate" />
+            </div>
+          </div>
+        </div>
+        <div id="readingFields" style="display: none;">
+          <div class="input-group">
+            <label>Progress</label>
+            <select id="bReadStatus">
+              <option value="Unread">Unread</option>
+              <option value="Reading">Reading</option>
+              <option value="Finished">Finished</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <input type="text" id="bNotes" placeholder="Price, promo, decision details" />
+        </div>
+        <button class="btn-submit" onclick="saveBook()">Save</button>
+      </div>
+      <div id="bookListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 2. SERIALS & MANHWA -->
+  <section id="sectionSerials" style="display: none;">
+    <div class="sub-tabs">
+      <div class="sub-tab active" id="serialFilterAll" onclick="filterSerials('All')">All</div>
+      <div class="sub-tab" id="serialFilterManhwa" onclick="filterSerials('Manhwa / Webtoon')">Manhwa</div>
+      <div class="sub-tab" id="serialFilterNovel" onclick="filterSerials('Web Novel')">Novels</div>
+    </div>
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Serial</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;">
+            <label>Title</label>
+            <input type="text" id="sTitle" placeholder="Story title" />
+          </div>
+          <div class="input-group" style="flex: 1.2;">
+            <label>Author</label>
+            <input type="text" id="sAuthor" placeholder="Creator / Author" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group" style="flex: 1;">
+            <label>Format</label>
+            <select id="sFormat">
+              <option value="Manhwa / Webtoon">Manhwa</option>
+              <option value="Web Novel">Novel</option>
+            </select>
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Last Chapter</label>
+            <input type="text" id="sChapter" placeholder="e.g. 142" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Platform</label>
+            <input type="text" id="sPlatform" placeholder="Webtoon, ReadAWrite, etc." />
+          </div>
+          <div class="input-group">
+            <label>Status</label>
+            <select id="sStatus">
+              <option value="Stacking Chapters">Stacking</option>
+              <option value="On Hiatus">Hiatus</option>
+              <option value="Completed">Finished</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Link (Optional)</label>
+          <input type="url" id="sLink" placeholder="https://..." />
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <input type="text" id="sNotes" placeholder="Cliffhanger notes, arc details" />
+        </div>
+        <button class="btn-submit" onclick="saveSerial()">Save</button>
+      </div>
+      <div id="serialListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 3. PERSONAL CARE -->
+  <section id="sectionCare" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Care Item</h2>
+        <div class="row">
+          <div class="input-group" style="flex: 2;">
+            <label>Product</label>
+            <input type="text" id="cName" placeholder="Item name" />
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Category</label>
+            <select id="cCategory">
+              <option value="Skincare">Skin</option>
+              <option value="Haircare">Hair</option>
+              <option value="Body & Bath">Body</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Where Bought</label>
+            <input type="text" id="cStore" placeholder="Store" />
+          </div>
+          <div class="input-group">
+            <label>Price</label>
+            <input type="text" id="cPrice" placeholder="Price" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Opened</label>
+            <input type="date" id="cOpened" />
+          </div>
+          <div class="input-group">
+            <label>Finished</label>
+            <input type="date" id="cFinished" />
+          </div>
+        </div>
+        <button class="btn-submit" onclick="saveCareItem()">Save</button>
+      </div>
+      <div id="careListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 4. HOUSE CHORES -->
+  <section id="sectionChores" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Chore</h2>
+        <div class="input-group">
+          <label>Chore Name</label>
+          <input type="text" id="chName" placeholder="e.g. Bedsheets, Bathroom, Delicates" />
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Last Done</label>
+            <input type="date" id="chDate" />
+          </div>
+          <div class="input-group">
+            <label>Repeat Every</label>
+            <select id="chFreq">
+              <option value="7">7 Days</option>
+              <option value="14">14 Days</option>
+              <option value="21">21 Days</option>
+              <option value="30">30 Days</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <input type="text" id="chNotes" placeholder="Wash cycle or cleaning tips" />
+        </div>
+        <button class="btn-submit" onclick="saveChore()">Save</button>
+      </div>
+      <div id="choreListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 5. SUBSCRIPTIONS -->
+  <section id="sectionSubs" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Subscription</h2>
+        <div class="input-group">
+          <label>Service</label>
+          <input type="text" id="subName" placeholder="Service name" />
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Cost</label>
+            <input type="text" id="subCost" placeholder="Price" />
+          </div>
+          <div class="input-group">
+            <label>Intent</label>
+            <select id="subIntent">
+              <option value="Must Cancel">Must Cancel</option>
+              <option value="Keep Active">Keep Active</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Renewal Date</label>
+          <input type="date" id="subDate" />
+        </div>
+        <div class="input-group">
+          <label>Notes</label>
+          <input type="text" id="subNotes" placeholder="Cancel instructions / links" />
+        </div>
+        <button class="btn-submit" onclick="saveSubscription()">Save</button>
+      </div>
+      <div id="subsListContainer"></div>
+    </div>
+  </section>
+
+  <!-- 6. SALES FESTS -->
+  <section id="sectionSales" style="display: none;">
+    <div class="content-area">
+      <div class="form-card">
+        <h2>+ Add Sale Period</h2>
+        <div class="input-group">
+          <label>Campaign</label>
+          <input type="text" id="sName" placeholder="e.g. Mid-Year Sale, Book Expo" />
+        </div>
+        <div class="row">
+          <div class="input-group">
+            <label>Platform</label>
+            <input type="text" id="sPlatform" placeholder="Store" />
+          </div>
+          <div class="input-group">
+            <label>Month</label>
+            <select id="sMonth">
+              <option value="January">January</option>
+              <option value="February">February</option>
+              <option value="March">March</option>
+              <option value="April">April</option>
+              <option value="May">May</option>
+              <option value="June">June</option>
+              <option value="July">July</option>
+              <option value="August">August</option>
+              <option value="September">September</option>
+              <option value="October">October</option>
+              <option value="November">November</option>
+              <option value="December">December</option>
+            </select>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>Deal Pattern</label>
+          <input type="text" id="sDeal" placeholder="Discount / Coin promo" />
+        </div>
+        <div class="input-group">
+          <label>Strategy</label>
+          <input type="text" id="sNotes" placeholder="Reminder for next year" />
+        </div>
+        <button class="btn-submit" onclick="saveSaleEvent()">Save</button>
+      </div>
+      <div id="salesListContainer"></div>
+    </div>
+  </section>
+
+  <script>
+    let books = JSON.parse(localStorage.getItem('track_books') || '[]');
+    let serials = JSON.parse(localStorage.getItem('track_serials') || '[]');
+    let careItems = JSON.parse(localStorage.getItem('track_care') || '[]');
+    let chores = JSON.parse(localStorage.getItem('track_chores') || '[]');
+    let subscriptions = JSON.parse(localStorage.getItem('track_subs') || '[]');
+    let sales = JSON.parse(localStorage.getItem('track_sales') || '[]');
+    
+    let currentMainTab = 'books';
+    let currentBookSubTab = 'buy';
+    let currentSerialFilter = 'All';
+
+    const monthOrder = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+    function exportData() {
+      const data = { books, serials, careItems, chores, subscriptions, sales, exportDate: new Date().toISOString() };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `trackapp_backup_${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const parsed = JSON.parse(e.target.result);
+          if (confirm('Restore backup and overwrite current entries?')) {
+            books = parsed.books || [];
+            serials = parsed.serials || [];
+            careItems = parsed.careItems || [];
+            chores = parsed.chores || [];
+            subscriptions = parsed.subscriptions || [];
+            sales = parsed.sales || [];
+            
+            localStorage.setItem('track_books', JSON.stringify(books));
+            localStorage.setItem('track_serials', JSON.stringify(serials));
+            localStorage.setItem('track_care', JSON.stringify(careItems));
+            localStorage.setItem('track_chores', JSON.stringify(chores));
+            localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+            localStorage.setItem('track_sales', JSON.stringify(sales));
+            render();
+          }
+        } catch (err) {
+          alert('Invalid file format.');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function switchMainTab(tab) {
+      currentMainTab = tab;
+      const tabs = ['books', 'serials', 'care', 'chores', 'subs', 'sales'];
+      tabs.forEach(t => {
+        const navEl = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
+        const secEl = document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (navEl) navEl.classList.toggle('active', tab === t);
+        if (secEl) secEl.style.display = tab === t ? 'block' : 'none';
+      });
+      render();
+    }
+
+    function switchBookSubTab(sub) {
+      currentBookSubTab = sub;
+      document.getElementById('subTabBuy').classList.toggle('active', sub === 'buy');
+      document.getElementById('subTabRead').classList.toggle('active', sub === 'read');
+      document.getElementById('buyingFields').style.display = sub === 'buy' ? 'block' : 'none';
+      document.getElementById('readingFields').style.display = sub === 'read' ? 'block' : 'none';
+      document.getElementById('bookFormTitle').innerText = sub === 'buy' ? '+ Add to Wishlist' : '+ Add to Owned';
+      render();
+    }
+
+    function filterSerials(filter) {
+      currentSerialFilter = filter;
+      document.getElementById('serialFilterAll').classList.toggle('active', filter === 'All');
+      document.getElementById('serialFilterManhwa').classList.toggle('active', filter === 'Manhwa / Webtoon');
+      document.getElementById('serialFilterNovel').classList.toggle('active', filter === 'Web Novel');
+      render();
+    }
+
+    function toggleDateInput() {
+      const type = document.getElementById('bReleaseType').value;
+      document.getElementById('releaseDateGroup').style.display = (type === 'Date') ? 'block' : 'none';
+    }
+
+    function saveBook() {
+      const title = document.getElementById('bTitle').value.trim();
+      if (!title) return alert('Enter title');
+      const releaseType = document.getElementById('bReleaseType').value;
+      let releaseDisplay = 'Available';
+      if (releaseType === 'TBA') releaseDisplay = 'TBA';
+      else if (releaseType === 'Date') {
+        const d = document.getElementById('bReleaseDate').value;
+        releaseDisplay = d || 'Unset';
+      }
+
+      books.unshift({
+        id: Date.now().toString(),
+        title,
+        author: document.getElementById('bAuthor').value.trim(),
+        volume: document.getElementById('bVol').value.trim(),
+        platform: document.getElementById('bPlatform').value.trim() || 'Ebook',
+        notes: document.getElementById('bNotes').value.trim(),
+        type: currentBookSubTab,
+        buyStatus: document.getElementById('bBuyStatus').value,
+        digitalStatus: document.getElementById('bDigitalStatus').value,
+        release: releaseDisplay,
+        readStatus: document.getElementById('bReadStatus').value
+      });
+      localStorage.setItem('track_books', JSON.stringify(books));
+      document.getElementById('bTitle').value = '';
+      document.getElementById('bAuthor').value = '';
+      document.getElementById('bVol').value = '';
+      document.getElementById('bPlatform').value = '';
+      document.getElementById('bNotes').value = '';
+      render();
+    }
+
+    function markAsBought(id) {
+      books = books.map(b => b.id === id ? { ...b, type: 'read', readStatus: 'Unread' } : b);
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function deleteBook(id) {
+      books = books.filter(b => b.id !== id);
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
+    function saveSerial() {
+      const title = document.getElementById('sTitle').value.trim();
+      if (!title) return alert('Enter title');
+
+      let rawCh = document.getElementById('sChapter').value.trim() || '1';
+      const format = document.getElementById('sFormat').value;
+
+      if (!rawCh.toLowerCase().startsWith('ch') && !rawCh.toLowerCase().startsWith('ep')) {
+        rawCh = (format === 'Manhwa / Webtoon' ? 'Ep. ' : 'Ch. ') + rawCh;
+      }
+
+      const today = new Date().toISOString().split('T')[0];
+      serials.unshift({
+        id: Date.now().toString(),
+        title,
+        author: document.getElementById('sAuthor').value.trim(),
+        format,
+        chapter: rawCh,
+        platform: document.getElementById('sPlatform').value.trim() || 'Online',
+        status: document.getElementById('sStatus').value,
+        link: document.getElementById('sLink').value.trim(),
+        notes: document.getElementById('sNotes').value.trim(),
+        lastChecked: today
+      });
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+
+      document.getElementById('sTitle').value = '';
+      document.getElementById('sAuthor').value = '';
+      document.getElementById('sChapter').value = '';
+      document.getElementById('sPlatform').value = '';
+      document.getElementById('sLink').value = '';
+      document.getElementById('sNotes').value = '';
+      render();
+    }
+
+    function incrementSerialChapter(id) {
+      const today = new Date().toISOString().split('T')[0];
+      serials = serials.map(w => {
+        if (w.id === id) {
+          const match = w.chapter.match(/\d+/);
+          if (match) {
+            const nextNum = parseInt(match[0], 10) + 1;
+            return { ...w, chapter: w.chapter.replace(match[0], nextNum), lastChecked: today };
+          }
+          return { ...w, chapter: w.chapter + ' (+1)', lastChecked: today };
+        }
+        return w;
+      });
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      render();
+    }
+
+    function editSerialChapterManually(id, currentVal) {
+      const newCh = prompt('Update chapter:', currentVal);
+      if (newCh === null || newCh.trim() === '') return;
+      const today = new Date().toISOString().split('T')[0];
+      serials = serials.map(w => w.id === id ? { ...w, chapter: newCh.trim(), lastChecked: today } : w);
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      render();
+    }
+
+    function toggleSerialStatus(id) {
+      serials = serials.map(w => {
+        if (w.id === id) {
+          const current = w.status;
+          let next = 'Stacking Chapters';
+          if (current === 'Stacking Chapters') next = 'Completed';
+          else if (current === 'Completed') next = 'On Hiatus';
+          else next = 'Stacking Chapters';
+          return { ...w, status: next, lastChecked: new Date().toISOString().split('T')[0] };
+        }
+        return w;
+      });
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      render();
+    }
+
+    function deleteSerial(id) {
+      serials = serials.filter(w => w.id !== id);
+      localStorage.setItem('track_serials', JSON.stringify(serials));
+      render();
+    }
+
+    function saveCareItem() {
+      const name = document.getElementById('cName').value.trim();
+      if (!name) return alert('Enter product name');
+      careItems.unshift({
+        id: Date.now().toString(),
+        name,
+        category: document.getElementById('cCategory').value,
+        store: document.getElementById('cStore').value.trim() || '',
+        price: document.getElementById('cPrice').value.trim(),
+        opened: document.getElementById('cOpened').value,
+        finished: document.getElementById('cFinished').value
+      });
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      document.getElementById('cName').value = '';
+      document.getElementById('cStore').value = '';
+      document.getElementById('cPrice').value = '';
+      document.getElementById('cFinished').value = '';
+      render();
+    }
+
+    function deleteCareItem(id) {
+      careItems = careItems.filter(s => s.id !== id);
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      render();
+    }
+
+    function markCareFinished(id) {
+      const today = new Date().toISOString().split('T')[0];
+      careItems = careItems.map(s => s.id === id ? { ...s, finished: today } : s);
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      render();
+    }
+
+    function saveChore() {
+      const name = document.getElementById('chName').value.trim();
+      const date = document.getElementById('chDate').value;
+      if (!name || !date) return alert('Enter chore and date');
+
+      chores.unshift({
+        id: Date.now().toString(),
+        name,
+        lastDone: date,
+        frequency: parseInt(document.getElementById('chFreq').value, 10),
+        notes: document.getElementById('chNotes').value.trim()
+      });
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      document.getElementById('chName').value = '';
+      document.getElementById('chNotes').value = '';
+      render();
+    }
+
+    function resetChoreToday(id) {
+      const today = new Date().toISOString().split('T')[0];
+      chores = chores.map(c => c.id === id ? { ...c, lastDone: today } : c);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    function deleteChore(id) {
+      chores = chores.filter(c => c.id !== id);
+      localStorage.setItem('track_chores', JSON.stringify(chores));
+      render();
+    }
+
+    function saveSubscription() {
+      const name = document.getElementById('subName').value.trim();
+      const date = document.getElementById('subDate').value;
+      if (!name || !date) return alert('Enter service and date');
+
+      subscriptions.unshift({
+        id: Date.now().toString(),
+        name,
+        cost: document.getElementById('subCost').value.trim(),
+        intent: document.getElementById('subIntent').value,
+        date,
+        notes: document.getElementById('subNotes').value.trim()
+      });
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      document.getElementById('subName').value = '';
+      document.getElementById('subCost').value = '';
+      document.getElementById('subNotes').value = '';
+      render();
+    }
+
+    function deleteSubscription(id) {
+      subscriptions = subscriptions.filter(s => s.id !== id);
+      localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      render();
+    }
+
+    function downloadCalendarReminder(name, dateStr) {
+      const cleanDate = dateStr.replace(/-/g, '');
+      const icsData = [
+        'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//TrackApp//EN',
+        'BEGIN:VEVENT', `SUMMARY:Cancel: ${name}`,
+        `DTSTART;VALUE=DATE:${cleanDate}`, `DTEND;VALUE=DATE:${cleanDate}`,
+        'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:Reminder',
+        'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'
+      ].join('\r\n');
+
+      const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(blob);
+      link.setAttribute('download', `cancel_${name.toLowerCase().replace(/\s+/g, '_')}.ics`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function saveSaleEvent() {
+      const name = document.getElementById('sName').value.trim();
+      if (!name) return alert('Enter campaign name');
+
+      sales.push({
+        id: Date.now().toString(),
+        name,
+        platform: document.getElementById('sPlatform').value.trim() || '',
+        month: document.getElementById('sMonth').value,
+        deal: document.getElementById('sDeal').value.trim(),
+        notes: document.getElementById('sNotes').value.trim()
+      });
+
+      sales.sort((a, b) => {
+        const getBaseMonth = m => m.split(' ')[0];
+        return monthOrder.indexOf(getBaseMonth(a.month)) - monthOrder.indexOf(getBaseMonth(b.month));
+      });
+
+      localStorage.setItem('track_sales', JSON.stringify(sales));
+      document.getElementById('sName').value = '';
+      document.getElementById('sPlatform').value = '';
+      document.getElementById('sDeal').value = '';
+      document.getElementById('sNotes').value = '';
+      render();
+    }
+
+    function deleteSaleEvent(id) {
+      sales = sales.filter(s => s.id !== id);
+      localStorage.setItem('track_sales', JSON.stringify(sales));
+      render();
+    }
+
+    function calculateDays(opened, finished) {
+      if (!opened) return 'No date logged';
+      const start = new Date(opened);
+      const end = finished ? new Date(finished) : new Date();
+      const diffDays = Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24));
+      return finished ? `Lasted ${diffDays}d` : `${diffDays}d in use`;
+    }
+
+    function render() {
+      const search = (document.getElementById('globalSearch')?.value || '').toLowerCase().trim();
+
+      // Books
+      const bookContainer = document.getElementById('bookListContainer');
+      const filteredBooks = books.filter(b => {
+        const matchesTab = b.type === currentBookSubTab;
+        const matchesSearch = !search || 
+          b.title.toLowerCase().includes(search) || 
+          (b.author && b.author.toLowerCase().includes(search)) ||
+          b.platform.toLowerCase().includes(search);
+        return matchesTab && matchesSearch;
+      });
+
+      if (filteredBooks.length === 0) {
+        bookContainer.innerHTML = `<div class="empty-state">No entries.</div>`;
+      } else {
+        bookContainer.innerHTML = filteredBooks.map(b => {
+          const isBuy = b.type === 'buy';
+          let statusBadge = isBuy ? (b.buyStatus === 'Decided to Buy' ? 'badge-sage' : 'badge-butter') : 'badge-sage';
+
+          let digitalBadgeHtml = '';
+          if (isBuy && b.digitalStatus && b.digitalStatus !== 'Available') {
+            let dClass = 'badge-gray';
+            if (b.digitalStatus === 'In Negotiation') dClass = 'badge-rose';
+            if (b.digitalStatus === 'Paper Only') dClass = 'badge-butter';
+            if (b.digitalStatus === 'Awaiting Translation') dClass = 'badge-lavender';
+            digitalBadgeHtml = `<span class="badge ${dClass}">${b.digitalStatus}</span>`;
+          }
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <div>
+                  <div class="item-title">${b.title} ${b.volume ? '· ' + b.volume : ''}</div>
+                  ${b.author ? `<div class="item-author">${b.author}</div>` : ''}
+                  <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
+                    ${digitalBadgeHtml}
+                  </div>
+                </div>
+                <span class="badge ${statusBadge}">${isBuy ? b.buyStatus : b.readStatus}</span>
+              </div>
+              <div class="item-sub">
+                ${b.platform} ${isBuy ? `· ${b.release}` : ''}
+              </div>
+              ${b.notes ? `<div class="item-notes">${b.notes}</div>` : ''}
+              <div class="card-actions">
+                ${isBuy ? `<button class="btn-action btn-bought" onclick="markAsBought('${b.id}')">✓ Owned</button>` : ''}
+                <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Serials
+      const serialContainer = document.getElementById('serialListContainer');
+      const filteredSerials = serials.filter(s => {
+        const matchesType = currentSerialFilter === 'All' || s.format === currentSerialFilter;
+        const matchesSearch = !search || 
+          s.title.toLowerCase().includes(search) || 
+          (s.author && s.author.toLowerCase().includes(search)) ||
+          s.platform.toLowerCase().includes(search);
+        return matchesType && matchesSearch;
+      });
+
+      if (filteredSerials.length === 0) {
+        serialContainer.innerHTML = `<div class="empty-state">No serials.</div>`;
+      } else {
+        serialContainer.innerHTML = filteredSerials.map(s => {
+          let statusClass = 'badge-butter';
+          if (s.status === 'Completed') statusClass = 'badge-sage';
+          if (s.status === 'On Hiatus') statusClass = 'badge-rose';
+
+          const isManhwa = s.format === 'Manhwa / Webtoon';
+          const formatBadgeClass = isManhwa ? 'badge-lavender' : 'badge-blue';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <div>
+                  <div class="item-title">${s.title}</div>
+                  ${s.author ? `<div class="item-author">${s.author}</div>` : ''}
+                  <div style="margin-top: 5px; display:flex; gap: 5px; align-items: center; flex-wrap: wrap;">
+                    <span class="badge ${formatBadgeClass}">${isManhwa ? 'Manhwa' : 'Novel'}</span>
+                    <span class="chapter-hero" onclick="editSerialChapterManually('${s.id}', '${s.chapter.replace(/'/g, "\\'")}')" style="cursor:pointer;" title="Click to edit">
+                      ${s.chapter} ✏️
+                    </span>
+                  </div>
+                </div>
+                <span class="badge ${statusClass}" style="cursor:pointer;" onclick="toggleSerialStatus('${s.id}')">
+                  ${s.status} ⟳
+                </span>
+              </div>
+              <div class="item-sub" style="margin-top: 5px;">
+                ${s.platform} · Checked ${s.lastChecked || 'N/A'}
+              </div>
+              ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
+              <div class="card-actions">
+                <button class="btn-action btn-action-primary" onclick="incrementSerialChapter('${s.id}')">+1</button>
+                ${s.link ? `<a href="${s.link}" target="_blank" class="btn-action btn-link">Open</a>` : ''}
+                <button class="btn-action btn-delete" onclick="deleteSerial('${s.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Care
+      const careContainer = document.getElementById('careListContainer');
+      const filteredCare = careItems.filter(s => !search || s.name.toLowerCase().includes(search) || s.store.toLowerCase().includes(search));
+      if (filteredCare.length === 0) {
+        careContainer.innerHTML = `<div class="empty-state">No care items.</div>`;
+      } else {
+        careContainer.innerHTML = filteredCare.map(s => {
+          const duration = calculateDays(s.opened, s.finished);
+          let catBadge = 'badge-butter';
+          if (s.category === 'Haircare') catBadge = 'badge-lavender';
+          if (s.category === 'Body & Bath') catBadge = 'badge-blue';
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-title">${s.name}</span>
+                <div>
+                  <span class="badge ${catBadge}">${s.category || 'Care'}</span>
+                  <span class="badge ${s.finished ? 'badge-gray' : 'badge-sage'}">${s.finished ? 'Empty' : 'In Use'}</span>
+                </div>
+              </div>
+              <div class="item-sub">${s.store} ${s.price ? `· ${s.price}` : ''}</div>
+              <div class="item-sub">Opened ${s.opened || 'N/A'} ${s.finished ? `· Finished ${s.finished}` : ''}</div>
+              <div class="item-notes">⏳ ${duration}</div>
+              <div class="card-actions">
+                ${!s.finished ? `<button class="btn-action btn-bought" onclick="markCareFinished('${s.id}')">Mark Empty</button>` : ''}
+                <button class="btn-action btn-delete" onclick="deleteCareItem('${s.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Chores
+      const choreContainer = document.getElementById('choreListContainer');
+      const filteredChores = chores.filter(c => !search || c.name.toLowerCase().includes(search));
+      if (filteredChores.length === 0) {
+        choreContainer.innerHTML = `<div class="empty-state">No chores logged.</div>`;
+      } else {
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
+        choreContainer.innerHTML = filteredChores.map(c => {
+          const last = new Date(c.lastDone);
+          last.setHours(0,0,0,0);
+          const daysPassed = Math.floor((today - last) / (1000 * 60 * 60 * 24));
+          const target = c.frequency || 14;
+
+          let badgeClass = 'badge-sage';
+          let statusText = `${daysPassed}d ago`;
+
+          if (daysPassed >= target) {
+            badgeClass = 'badge-rose';
+            statusText = `Due (${daysPassed}d)`;
+          } else if (daysPassed >= target - 3) {
+            badgeClass = 'badge-butter';
+            statusText = `Soon (${daysPassed}d)`;
+          }
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-title">${c.name}</span>
+                <span class="badge ${badgeClass}">${statusText}</span>
+              </div>
+              <div class="item-sub">
+                Last: ${c.lastDone} · Every ${c.frequency}d
+              </div>
+              ${c.notes ? `<div class="item-notes">${c.notes}</div>` : ''}
+              <div class="card-actions">
+                <button class="btn-action btn-bought" onclick="resetChoreToday('${c.id}')">✓ Done Today</button>
+                <button class="btn-action btn-delete" onclick="deleteChore('${c.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Subscriptions
+      const subsContainer = document.getElementById('subsListContainer');
+      const filteredSubs = subscriptions.filter(s => !search || s.name.toLowerCase().includes(search));
+      if (filteredSubs.length === 0) {
+        subsContainer.innerHTML = `<div class="empty-state">No subscriptions.</div>`;
+      } else {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const sortedSubs = [...filteredSubs].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        subsContainer.innerHTML = sortedSubs.map(sub => {
+          const renDate = new Date(sub.date);
+          renDate.setHours(0, 0, 0, 0);
+          const diffDays = Math.ceil((renDate - today) / (1000 * 60 * 60 * 24));
+
+          let alertBadge = 'badge-blue';
+          let alertText = `${diffDays}d left`;
+          if (diffDays < 0) { alertBadge = 'badge-gray'; alertText = 'Overdue'; }
+          else if (diffDays <= 3) { alertBadge = 'badge-rose'; alertText = `⚠️ ${diffDays}d`; }
+          else if (diffDays <= 7) { alertBadge = 'badge-butter'; alertText = `${diffDays}d`; }
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-title">${sub.name}</span>
+                <span class="badge ${alertBadge}">${alertText}</span>
+              </div>
+              <div class="item-sub">
+                ${sub.cost || ''} · <span class="badge ${sub.intent === 'Must Cancel' ? 'badge-rose' : 'badge-sage'}">${sub.intent}</span>
+              </div>
+              <div class="item-sub">Renewal: ${sub.date}</div>
+              ${sub.notes ? `<div class="item-notes">${sub.notes}</div>` : ''}
+              <div class="card-actions">
+                <button class="btn-action btn-cal" onclick="downloadCalendarReminder('${sub.name.replace(/'/g, "\\'")}', '${sub.date}')">Alert</button>
+                <button class="btn-action btn-delete" onclick="deleteSubscription('${sub.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Sales Fests
+      const salesContainer = document.getElementById('salesListContainer');
+      const filteredSales = sales.filter(s => !search || s.name.toLowerCase().includes(search) || s.platform.toLowerCase().includes(search));
+      if (filteredSales.length === 0) {
+        salesContainer.innerHTML = `<div class="empty-state">No sales logged.</div>`;
+      } else {
+        salesContainer.innerHTML = filteredSales.map(s => {
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <span class="item-title">${s.name}</span>
+                <span class="badge badge-lavender">${s.month}</span>
+              </div>
+              <div class="item-sub">
+                ${s.platform} ${s.deal ? `· ${s.deal}` : ''}
+              </div>
+              ${s.notes ? `<div class="item-notes">${s.notes}</div>` : ''}
+              <div class="card-actions">
+                <button class="btn-action btn-delete" onclick="deleteSaleEvent('${s.id}')">Delete</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    document.getElementById('cOpened').value = new Date().toISOString().split('T')[0];
+    document.getElementById('chDate').value = new Date().toISOString().split('T')[0];
+    render();
+  </script>
+</body>
+</html>
