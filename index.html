@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   
-  <!-- Bai Jamjuree from Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -164,7 +163,8 @@
     .volumes-header { display: flex; justify-content: space-between; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
     .volume-chips-row { display: flex; gap: 5px; flex-wrap: wrap; }
     .vol-chip { padding: 4px 10px; border-radius: 7px; font-size: 0.75rem; font-weight: 600; border: 1px solid var(--border-card); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; transition: all 0.15s; }
-    .vol-chip.vol-unread { background: #ffffff; color: #9c9489; border-color: #ece6dc; }
+    .vol-chip.vol-notowned { background: #ffffff; color: #b0a89d; border-style: dashed; border-color: #d8d0c4; }
+    .vol-chip.vol-unread { background: #ffffff; color: #7a7266; border-color: #ddd5c9; }
     .vol-chip.vol-reading { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
     .vol-chip.vol-rereading { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
     .vol-chip.vol-finished { background: var(--milk-sage); color: var(--milk-sage-text); border-color: var(--milk-sage-border); }
@@ -173,7 +173,9 @@
     .item-notes { font-size: 0.78rem; background: #faf8f5; padding: 6px 9px; border-radius: 8px; border-left: 2px solid #d4cdc3; margin-top: 6px; color: #575047; }
     
     .card-actions { display: flex; justify-content: flex-end; gap: 6px; margin-top: 9px; flex-wrap: wrap; }
-    .btn-action { font-size: 0.73rem; padding: 4px 9px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; }
+    .btn-action { font-size: 0.73rem; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; transition: all 0.1s; }
+    .btn-action:hover { background: #faf8f5; }
+    .btn-own { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
     .btn-edit { background: #ffffff; border-color: #e5dfd5; color: #575047; }
     .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
@@ -589,16 +591,16 @@
         <h2>+ Add Sale Period</h2>
         <div class="input-group">
           <label>Campaign</label>
-          <input type="text" id="sName" placeholder="e.g. Mid-Year Sale" />
+          <input type="text" id="saleCampaignName" placeholder="e.g. Mid-Year Sale" />
         </div>
         <div class="row">
           <div class="input-group">
             <label>Platform</label>
-            <input type="text" id="sPlatform" placeholder="Store" />
+            <input type="text" id="saleStorePlatform" placeholder="Store" />
           </div>
           <div class="input-group">
             <label>Month</label>
-            <select id="sMonth">
+            <select id="saleMonthSelect">
               <option value="January">January</option>
               <option value="February">February</option>
               <option value="March">March</option>
@@ -654,6 +656,7 @@
           }
           return {
             ...v,
+            owned: (v.owned === true || v.owned === 'true'),
             readHistory: hist,
             readCount: v.readCount || (hist.length > 0 ? hist.length : (v.status === 'Finished' ? 1 : 0))
           };
@@ -1057,6 +1060,29 @@
       render();
     }
 
+    // Direct 1-Click "Move to Owned" (Bought) button action
+    function markBookAsOwned(bookId) {
+      const today = new Date().toISOString().split('T')[0];
+      books = books.map(b => {
+        if (b.id === bookId) {
+          const updatedVols = (b.volumes || []).map(v => ({
+            ...v,
+            owned: true,
+            buyDate: v.buyDate || today
+          }));
+          return {
+            ...b,
+            type: 'read',
+            volOwned: updatedVols.length,
+            volumes: updatedVols
+          };
+        }
+        return b;
+      });
+      localStorage.setItem('track_books', JSON.stringify(books));
+      render();
+    }
+
     function saveBook() {
       const title = document.getElementById('bTitle').value.trim();
       if (!title) return alert('Enter series title');
@@ -1123,6 +1149,7 @@
       render();
     }
 
+    // Toggle Volume Status: Unowned -> Owned Unread -> Reading -> Finished -> (Re-reading / Cycle)
     function toggleVolStatus(bookId, volNum) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -1131,23 +1158,29 @@
             if (v.volNum === volNum) {
               let hist = Array.isArray(v.readHistory) ? [...v.readHistory] : [];
               let curCount = v.readCount || hist.length;
-              let nextStatus = 'Reading';
+              let nextStatus = v.status;
+              let isOwned = v.owned;
               let finDate = v.finishedDate;
 
-              if (v.status === 'Unread') {
+              if (!isOwned) {
+                // If clicked while not owned, mark as owned!
+                isOwned = true;
+                nextStatus = 'Unread';
+              } else if (v.status === 'Unread') {
                 nextStatus = 'Reading';
               } else if (v.status === 'Reading') {
                 nextStatus = 'Finished';
                 finDate = today;
-                if (!hist.includes(today)) hist.push(today);
-                curCount = Math.max(1, hist.length);
+                hist.push(today);
+                curCount = curCount + 1;
               } else if (v.status === 'Finished') {
+                // Allows Re-reading or cycling back
                 nextStatus = 'Reading';
               }
 
               return {
                 ...v,
-                owned: true,
+                owned: isOwned,
                 status: nextStatus,
                 finishedDate: finDate,
                 readCount: curCount,
@@ -1157,7 +1190,12 @@
             }
             return v;
           });
-          return { ...b, volumes: updatedVols, type: 'read' };
+          return {
+            ...b,
+            volOwned: updatedVols.filter(v => v.owned).length,
+            volumes: updatedVols,
+            type: updatedVols.some(v => v.owned) ? 'read' : b.type
+          };
         }
         return b;
       });
@@ -1299,17 +1337,17 @@
     }
 
     function saveSaleEvent() {
-      const name = document.getElementById('sName').value.trim();
+      const name = document.getElementById('saleCampaignName').value.trim();
       if (!name) return alert('Enter campaign name');
       sales.unshift({
         id: Date.now().toString(),
         name,
-        platform: document.getElementById('sPlatform').value.trim(),
-        month: document.getElementById('sMonth').value
+        platform: document.getElementById('saleStorePlatform').value.trim(),
+        month: document.getElementById('saleMonthSelect').value
       });
       localStorage.setItem('track_sales', JSON.stringify(sales));
-      document.getElementById('sName').value = '';
-      document.getElementById('sPlatform').value = '';
+      document.getElementById('saleCampaignName').value = '';
+      document.getElementById('saleStorePlatform').value = '';
       render();
     }
 
@@ -1453,6 +1491,14 @@
             <label>Platform</label>
             <input type="text" id="edit_sPlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
           </div>
+          <div class="input-group">
+            <label>Status</label>
+            <select id="edit_sStatus">
+              <option value="Stacking Chapters" ${s.status === 'Stacking Chapters' ? 'selected' : ''}>Stacking Chapters</option>
+              <option value="On Hiatus" ${s.status === 'On Hiatus' ? 'selected' : ''}>On Hiatus</option>
+              <option value="Completed" ${s.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+          </div>
         `;
       } else if (category === 'task') {
         const t = tasks.find(x => x.id === id);
@@ -1520,6 +1566,50 @@
               <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
               <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
             </select>
+          </div>
+        `;
+      } else if (category === 'sub') {
+        const sub = subscriptions.find(x => x.id === id);
+        if (!sub) return;
+        title.innerText = 'Edit Subscription';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Service Name</label>
+            <input type="text" id="edit_subName" value="${(sub.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Cost</label>
+              <input type="text" id="edit_subCost" value="${(sub.cost || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Renewal Date</label>
+              <input type="date" id="edit_subDate" value="${sub.renewalDate || ''}" />
+            </div>
+          </div>
+        `;
+      } else if (category === 'sale') {
+        const s = sales.find(x => x.id === id);
+        if (!s) return;
+        title.innerText = 'Edit Sale Period';
+        content.innerHTML = `
+          <div class="input-group">
+            <label>Campaign</label>
+            <input type="text" id="edit_saleName" value="${(s.name || '').replace(/"/g, '&quot;')}" />
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Platform</label>
+              <input type="text" id="edit_salePlatform" value="${(s.platform || '').replace(/"/g, '&quot;')}" />
+            </div>
+            <div class="input-group">
+              <label>Month</label>
+              <select id="edit_saleMonth">
+                ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"].map(m => `
+                  <option value="${m}" ${s.month === m ? 'selected' : ''}>${m}</option>
+                `).join('')}
+              </select>
+            </div>
           </div>
         `;
       }
@@ -1668,7 +1758,8 @@
               title: document.getElementById('edit_sTitle').value.trim() || s.title,
               author: document.getElementById('edit_sAuthor').value.trim(),
               chapter: document.getElementById('edit_sChapter').value.trim(),
-              platform: document.getElementById('edit_sPlatform').value.trim()
+              platform: document.getElementById('edit_sPlatform').value.trim(),
+              status: document.getElementById('edit_sStatus').value
             };
           }
           return s;
@@ -1712,6 +1803,32 @@
           return c;
         });
         localStorage.setItem('track_care', JSON.stringify(careItems));
+      } else if (currentEditingCategory === 'sub') {
+        subscriptions = subscriptions.map(sub => {
+          if (sub.id === currentEditingId) {
+            return {
+              ...sub,
+              name: document.getElementById('edit_subName').value.trim() || sub.name,
+              cost: document.getElementById('edit_subCost').value.trim(),
+              renewalDate: document.getElementById('edit_subDate').value
+            };
+          }
+          return sub;
+        });
+        localStorage.setItem('track_subs', JSON.stringify(subscriptions));
+      } else if (currentEditingCategory === 'sale') {
+        sales = sales.map(s => {
+          if (s.id === currentEditingId) {
+            return {
+              ...s,
+              name: document.getElementById('edit_saleName').value.trim() || s.name,
+              platform: document.getElementById('edit_salePlatform').value.trim(),
+              month: document.getElementById('edit_saleMonth').value
+            };
+          }
+          return s;
+        });
+        localStorage.setItem('track_sales', JSON.stringify(sales));
       }
 
       closeEditModal();
@@ -1894,6 +2011,7 @@
         bookContainer.innerHTML = `<div class="empty-state">No series found on this shelf.</div>`;
       } else {
         bookContainer.innerHTML = filteredBooks.map(b => {
+          const isWishlist = (b.type === 'buy');
           const ownedCount = (b.volumes || []).filter(v => v.owned).length;
           const finishedCount = (b.volumes || []).filter(v => v.status === 'Finished').length;
           
@@ -1908,10 +2026,14 @@
                   ${b.author ? `<div class="item-author">${b.author}</div>` : ''}
                   <div style="margin-top: 4px; display:flex; gap: 4px; flex-wrap: wrap;">
                     <span class="badge badge-gray">${b.platform}</span>
-                    ${b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Finished</span>' : ''}
+                    ${isWishlist && b.buyStatus ? `<span class="badge badge-peach">${b.buyStatus}</span>` : ''}
+                    ${isWishlist && b.digitalStatus ? `<span class="badge badge-blue">${b.digitalStatus}</span>` : ''}
+                    ${!isWishlist && b.seriesStatus === 'Completed Series' ? '<span class="badge badge-sage">Series Finished</span>' : ''}
                   </div>
                 </div>
-                <span class="badge badge-blue">📚 ${ownedCount}/${(b.volumes || []).length} Owned</span>
+                <span class="badge ${isWishlist ? 'badge-peach' : 'badge-blue'}">
+                  ${isWishlist ? '🛒 Wishlist' : `📚 ${ownedCount}/${(b.volumes || []).length} Owned`}
+                </span>
               </div>
 
               <div class="volumes-container">
@@ -1926,7 +2048,10 @@
                     const rCount = v.readCount || (v.readHistory ? v.readHistory.length : 0);
                     const countTag = rCount > 1 ? ` (${rCount}x)` : '';
 
-                    if (v.status === 'Reading') {
+                    if (!v.owned) {
+                      chipClass = 'vol-notowned';
+                      icon = '+';
+                    } else if (v.status === 'Reading') {
                       if (rCount > 0) {
                         chipClass = 'vol-rereading';
                         icon = '🔁';
@@ -1940,7 +2065,7 @@
                     }
 
                     return `
-                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="Click to toggle status / re-read">
+                      <div class="vol-chip ${chipClass}" onclick="toggleVolStatus('${b.id}', ${v.volNum})" title="${!v.owned ? 'Click to mark as owned' : 'Click to toggle reading status'}">
                         <span>${icon} V${v.volNum}${countTag}</span>
                       </div>
                     `;
@@ -1951,6 +2076,9 @@
               ${b.notes ? `<div class="item-notes">${b.notes}</div>` : ''}
 
               <div class="card-actions">
+                ${isWishlist ? `
+                  <button class="btn-action btn-own" onclick="markBookAsOwned('${b.id}')">✓ Mark as Owned</button>
+                ` : ''}
                 <button class="btn-action btn-edit" onclick="openEditModal('book', '${b.id}')">✏️ Edit</button>
                 <button class="btn-action btn-delete" onclick="deleteBook('${b.id}')">Delete</button>
               </div>
@@ -2096,6 +2224,7 @@
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
               ${s.cost ? `<span class="badge badge-rose">฿${s.cost}</span>` : ''}
+              <button class="btn-action btn-edit" onclick="openEditModal('sub', '${s.id}')">✏️</button>
               <button class="btn-action btn-delete" onclick="deleteSub('${s.id}')">✕</button>
             </div>
           </div>
@@ -2116,7 +2245,10 @@
                 ${s.platform ? `<span class="badge badge-gray">${s.platform}</span>` : ''}
               </div>
             </div>
-            <button class="btn-action btn-delete" onclick="deleteSale('${s.id}')">✕</button>
+            <div class="card-actions" style="margin-top:0;">
+              <button class="btn-action btn-edit" onclick="openEditModal('sale', '${s.id}')">✏️</button>
+              <button class="btn-action btn-delete" onclick="deleteSale('${s.id}')">✕</button>
+            </div>
           </div>
         `).join('');
       }
