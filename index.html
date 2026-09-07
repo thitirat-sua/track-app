@@ -176,6 +176,7 @@
     .btn-action { font-size: 0.73rem; padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border-card); background: #ffffff; cursor: pointer; color: var(--text-main); font-weight: 500; transition: all 0.1s; }
     .btn-action:hover { background: #faf8f5; }
     .btn-own { background: var(--milk-sage); border-color: var(--milk-sage-border); color: var(--milk-sage-text); font-weight: 600; }
+    .btn-open { background: var(--milk-blue); border-color: var(--milk-blue-border); color: var(--milk-blue-text); font-weight: 600; }
     .btn-edit { background: #ffffff; border-color: #e5dfd5; color: #575047; }
     .btn-delete { color: #a34848; border-color: #f7dcdb; background: #fffdfd; }
     .empty-state { text-align: center; padding: 36px 16px; color: var(--text-muted); font-size: 0.84rem; }
@@ -251,7 +252,7 @@
     <div class="nav-tab" id="tabNavChores" title="House Chores" onclick="switchMainTab('chores')">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
     </div>
-    <div class="nav-tab" id="tabNavCare" title="Personal Care" onclick="switchMainTab('care')">
+    <div class="nav-tab" id="tabNavCare" title="Personal Care & Lifespan" onclick="switchMainTab('care')">
       <svg viewBox="0 0 24 24"><path d="M12 2v6"></path><path d="M16.5 10.5a5 5 0 0 1 .5 2.5 5 5 0 0 1-10 0 5 5 0 0 1 .5-2.5c.8-1.5 2.5-3.5 4.5-5.5 2 2 3.7 4 4.5 5.5z"></path></svg>
     </div>
     <div class="nav-tab" id="tabNavSubs" title="Subscriptions" onclick="switchMainTab('subs')">
@@ -497,6 +498,10 @@
             <input type="date" id="tDate" />
           </div>
         </div>
+        <div class="input-group">
+          <label>Notes (Optional)</label>
+          <input type="text" id="tNotes" placeholder="Sub-tasks, links, or context notes" />
+        </div>
         <button class="btn-submit" onclick="saveTask()">Save Task</button>
       </div>
       <div id="taskListContainer"></div>
@@ -533,27 +538,48 @@
     </div>
   </section>
 
-  <!-- 6. PERSONAL CARE -->
+  <!-- 6. PERSONAL CARE & LIFESPAN TRACKER (WITH PAO AUTO-CALCULATION) -->
   <section id="sectionCare" style="display: none;">
+    <div class="shelf-filters" style="margin-top: 10px;">
+      <div class="shelf-pill active" id="filterCareAll" onclick="filterCareStatus('All')">All Products</div>
+      <div class="shelf-pill" id="filterCareInUse" onclick="filterCareStatus('InUse')">🧴 In Use</div>
+      <div class="shelf-pill" id="filterCareStock" onclick="filterCareStatus('Stock')">⏳ Stock (Unopened)</div>
+      <div class="shelf-pill" id="filterCareEmptied" onclick="filterCareStatus('Emptied')">✓ Emptied</div>
+    </div>
+
     <div class="content-area">
       <div class="form-card">
-        <h2>+ Add Care Item</h2>
+        <h2>+ Add Product Bottle / Item</h2>
         <div class="row">
           <div class="input-group" style="flex: 2;">
-            <label>Product</label>
-            <input type="text" id="cName" placeholder="Item name" />
+            <label>Product Name</label>
+            <input type="text" id="cName" placeholder="e.g. Toner, Serum, Shampoo, Moisturizer" />
           </div>
-          <div class="input-group" style="flex: 1;">
+          <div class="input-group" style="flex: 1.2;">
             <label>Category</label>
             <select id="cCategory">
-              <option value="Skincare">Skin</option>
-              <option value="Haircare">Hair</option>
-              <option value="Body & Bath">Body</option>
+              <option value="Skincare">Skincare</option>
+              <option value="Haircare">Haircare</option>
+              <option value="Body & Bath">Body & Bath</option>
               <option value="Other">Other</option>
             </select>
           </div>
         </div>
-        <button class="btn-submit" onclick="saveCareItem()">Save Item</button>
+        <div class="row">
+          <div class="input-group" style="flex: 1;">
+            <label>Date Bought</label>
+            <input type="date" id="cDateBought" />
+          </div>
+          <div class="input-group" style="flex: 1;">
+            <label>Date Opened (Optional)</label>
+            <input type="date" id="cDateOpened" />
+          </div>
+          <div class="input-group" style="flex: 0.9;">
+            <label>PAO (Months)</label>
+            <input type="number" id="cPaoMonths" placeholder="e.g. 6 or 12" min="1" />
+          </div>
+        </div>
+        <button class="btn-submit" onclick="saveCareItem()">Save Bottle to Care Tracker</button>
       </div>
       <div id="careListContainer"></div>
     </div>
@@ -692,6 +718,7 @@
     let currentOwnedFilter = 'All';
     let currentSerialFilter = 'All';
     let currentTaskFilter = 'All';
+    let currentCareFilter = 'All';
     let selectedGraphYear = new Date().getFullYear().toString();
     let currentEditingCategory = null;
     let currentEditingId = null;
@@ -781,6 +808,19 @@
       let s = String(p).replace(/[฿,]/g, '').trim();
       let num = parseFloat(s);
       return isNaN(num) ? '' : (Number.isInteger(num) ? String(num) : num.toFixed(2));
+    }
+
+    // Helper: calculate target expiry date given an opened date string and PAO months
+    function calculatePaoExpiry(openedDateStr, paoMonths) {
+      if (!openedDateStr || !paoMonths) return null;
+      const parts = openedDateStr.split('-');
+      if (parts.length < 3) return null;
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      d.setMonth(d.getMonth() + parseInt(paoMonths, 10));
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
     }
 
     function importBookmoryExcel(event) {
@@ -1060,7 +1100,15 @@
       render();
     }
 
-    // Direct 1-Click "Move to Owned" (Bought) button action
+    function filterCareStatus(status) {
+      currentCareFilter = status;
+      document.getElementById('filterCareAll').classList.toggle('active', status === 'All');
+      document.getElementById('filterCareInUse').classList.toggle('active', status === 'InUse');
+      document.getElementById('filterCareStock').classList.toggle('active', status === 'Stock');
+      document.getElementById('filterCareEmptied').classList.toggle('active', status === 'Emptied');
+      render();
+    }
+
     function markBookAsOwned(bookId) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -1149,7 +1197,6 @@
       render();
     }
 
-    // Toggle Volume Status: Unowned -> Owned Unread -> Reading -> Finished -> (Re-reading / Cycle)
     function toggleVolStatus(bookId, volNum) {
       const today = new Date().toISOString().split('T')[0];
       books = books.map(b => {
@@ -1163,7 +1210,6 @@
               let finDate = v.finishedDate;
 
               if (!isOwned) {
-                // If clicked while not owned, mark as owned!
                 isOwned = true;
                 nextStatus = 'Unread';
               } else if (v.status === 'Unread') {
@@ -1174,7 +1220,6 @@
                 hist.push(today);
                 curCount = curCount + 1;
               } else if (v.status === 'Finished') {
-                // Allows Re-reading or cycling back
                 nextStatus = 'Reading';
               }
 
@@ -1242,9 +1287,11 @@
       const title = document.getElementById('tTitle').value.trim();
       if (!title) return alert('Enter task description');
       const horizon = document.getElementById('tHorizon').value;
+      const notes = document.getElementById('tNotes').value.trim();
       tasks.unshift({
         id: Date.now().toString(),
         title,
+        notes: notes,
         horizon: horizon,
         dueDate: document.getElementById('tDate').value || null,
         completed: false
@@ -1252,6 +1299,7 @@
       localStorage.setItem('track_tasks', JSON.stringify(tasks));
       document.getElementById('tTitle').value = '';
       document.getElementById('tDate').value = '';
+      document.getElementById('tNotes').value = '';
       currentTaskFilter = 'All';
       render();
     }
@@ -1295,21 +1343,55 @@
       render();
     }
 
+    // --- Personal Care Bottle Lifespan Actions ---
     function saveCareItem() {
       const name = document.getElementById('cName').value.trim();
       if (!name) return alert('Enter product name');
+      const today = new Date().toISOString().split('T')[0];
+      const paoVal = parseInt(document.getElementById('cPaoMonths').value, 10) || null;
+
       careItems.unshift({
         id: Date.now().toString(),
         name,
         category: document.getElementById('cCategory').value,
-        price: ''
+        dateBought: document.getElementById('cDateBought').value || today,
+        dateOpened: document.getElementById('cDateOpened').value || null,
+        paoMonths: paoVal,
+        dateFinished: null
       });
       localStorage.setItem('track_care', JSON.stringify(careItems));
       document.getElementById('cName').value = '';
+      document.getElementById('cDateBought').value = '';
+      document.getElementById('cDateOpened').value = '';
+      document.getElementById('cPaoMonths').value = '';
+      render();
+    }
+
+    function markCareOpened(id) {
+      const today = new Date().toISOString().split('T')[0];
+      careItems = careItems.map(c => c.id === id ? { ...c, dateOpened: today } : c);
+      localStorage.setItem('track_care', JSON.stringify(careItems));
+      render();
+    }
+
+    function markCareFinished(id) {
+      const today = new Date().toISOString().split('T')[0];
+      careItems = careItems.map(c => {
+        if (c.id === id) {
+          return {
+            ...c,
+            dateOpened: c.dateOpened || today,
+            dateFinished: today
+          };
+        }
+        return c;
+      });
+      localStorage.setItem('track_care', JSON.stringify(careItems));
       render();
     }
 
     function deleteCare(id) {
+      if (!confirm('Delete this care product?')) return;
       careItems = careItems.filter(c => c.id !== id);
       localStorage.setItem('track_care', JSON.stringify(careItems));
       render();
@@ -1331,6 +1413,7 @@
     }
 
     function deleteSub(id) {
+      if (!confirm('Delete this subscription?')) return;
       subscriptions = subscriptions.filter(s => s.id !== id);
       localStorage.setItem('track_subs', JSON.stringify(subscriptions));
       render();
@@ -1352,6 +1435,7 @@
     }
 
     function deleteSale(id) {
+      if (!confirm('Delete this sale festival pattern?')) return;
       sales = sales.filter(s => s.id !== id);
       localStorage.setItem('track_sales', JSON.stringify(sales));
       render();
@@ -1523,6 +1607,10 @@
               <input type="date" id="edit_tDate" value="${t.dueDate || ''}" />
             </div>
           </div>
+          <div class="input-group">
+            <label>Notes</label>
+            <input type="text" id="edit_tNotes" value="${(t.notes || '').replace(/"/g, '&quot;')}" placeholder="Context, details, or checklist" />
+          </div>
         `;
       } else if (category === 'chore') {
         const ch = chores.find(x => x.id === id);
@@ -1552,20 +1640,40 @@
       } else if (category === 'care') {
         const c = careItems.find(x => x.id === id);
         if (!c) return;
-        title.innerText = 'Edit Care Item';
+        title.innerText = 'Edit Care Bottle / Item';
         content.innerHTML = `
           <div class="input-group">
             <label>Product Name</label>
             <input type="text" id="edit_cName" value="${(c.name || '').replace(/"/g, '&quot;')}" />
           </div>
+          <div class="row">
+            <div class="input-group" style="flex: 1.5;">
+              <label>Category</label>
+              <select id="edit_cCategory">
+                <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
+                <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
+                <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
+                <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
+              </select>
+            </div>
+            <div class="input-group" style="flex: 1;">
+              <label>PAO (Months)</label>
+              <input type="number" id="edit_cPaoMonths" value="${c.paoMonths || ''}" placeholder="e.g. 6" min="1" />
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-group">
+              <label>Date Bought</label>
+              <input type="date" id="edit_cDateBought" value="${c.dateBought || ''}" />
+            </div>
+            <div class="input-group">
+              <label>Date Opened</label>
+              <input type="date" id="edit_cDateOpened" value="${c.dateOpened || ''}" />
+            </div>
+          </div>
           <div class="input-group">
-            <label>Category</label>
-            <select id="edit_cCategory">
-              <option value="Skincare" ${c.category === 'Skincare' ? 'selected' : ''}>Skincare</option>
-              <option value="Haircare" ${c.category === 'Haircare' ? 'selected' : ''}>Haircare</option>
-              <option value="Body & Bath" ${c.category === 'Body & Bath' ? 'selected' : ''}>Body & Bath</option>
-              <option value="Other" ${c.category === 'Other' ? 'selected' : ''}>Other</option>
-            </select>
+            <label>Date Finished / Emptied</label>
+            <input type="date" id="edit_cDateFinished" value="${c.dateFinished || ''}" />
           </div>
         `;
       } else if (category === 'sub') {
@@ -1771,6 +1879,7 @@
             return {
               ...t,
               title: document.getElementById('edit_tTitle').value.trim() || t.title,
+              notes: document.getElementById('edit_tNotes').value.trim(),
               horizon: document.getElementById('edit_tHorizon').value,
               dueDate: document.getElementById('edit_tDate').value
             };
@@ -1797,7 +1906,11 @@
             return {
               ...c,
               name: document.getElementById('edit_cName').value.trim() || c.name,
-              category: document.getElementById('edit_cCategory').value
+              category: document.getElementById('edit_cCategory').value,
+              paoMonths: parseInt(document.getElementById('edit_cPaoMonths').value, 10) || null,
+              dateBought: document.getElementById('edit_cDateBought').value || c.dateBought,
+              dateOpened: document.getElementById('edit_cDateOpened').value || null,
+              dateFinished: document.getElementById('edit_cDateFinished').value || null
             };
           }
           return c;
@@ -2122,22 +2235,23 @@
       const taskContainer = document.getElementById('taskListContainer');
       const filteredTasks = tasks.filter(t => {
         const matchesHorizon = currentTaskFilter === 'All' || t.horizon === currentTaskFilter;
-        const matchesSearch = !search || t.title.toLowerCase().includes(search);
+        const matchesSearch = !search || t.title.toLowerCase().includes(search) || (t.notes && t.notes.toLowerCase().includes(search));
         return matchesHorizon && matchesSearch;
       });
       if (filteredTasks.length === 0) {
         taskContainer.innerHTML = `<div class="empty-state">No tasks in this view.</div>`;
       } else {
         taskContainer.innerHTML = filteredTasks.map(t => `
-          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <input type="checkbox" style="width:18px; height:18px; cursor:pointer;" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" />
-              <div>
+          <div class="item-card" style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+            <div style="display:flex; align-items:flex-start; gap:10px; flex:1;">
+              <input type="checkbox" style="width:18px; height:18px; cursor:pointer; margin-top:3px;" ${t.completed ? 'checked' : ''} onchange="toggleTask('${t.id}')" />
+              <div style="flex:1;">
                 <div class="item-title ${t.completed ? 'task-completed' : ''}">${t.title}</div>
-                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:2px;">
+                <div style="font-size:0.72rem; color:var(--text-muted); margin-top:3px; display:flex; gap:6px; align-items:center;">
                   <span class="badge badge-gray">${t.horizon}</span>
                   ${t.dueDate ? `<span>Due: ${t.dueDate}</span>` : ''}
                 </div>
+                ${t.notes ? `<div class="item-notes" style="margin-top:6px;">${t.notes}</div>` : ''}
               </div>
             </div>
             <div class="card-actions" style="margin-top:0;">
@@ -2190,23 +2304,94 @@
         }).join('');
       }
 
+      // --- Personal Care Bottle Lifespan Render with PAO Auto-Calculation ---
       const careContainer = document.getElementById('careListContainer');
-      const filteredCare = careItems.filter(c => !search || c.name.toLowerCase().includes(search));
+      const today = new Date();
+
+      const filteredCare = careItems.filter(c => {
+        const matchesSearch = !search || c.name.toLowerCase().includes(search) || (c.category && c.category.toLowerCase().includes(search));
+        let matchesStatus = true;
+        const isEmptied = !!c.dateFinished;
+        const isInUse = !!c.dateOpened && !c.dateFinished;
+        const isStock = !c.dateOpened && !c.dateFinished;
+
+        if (currentCareFilter === 'InUse') matchesStatus = isInUse;
+        else if (currentCareFilter === 'Stock') matchesStatus = isStock;
+        else if (currentCareFilter === 'Emptied') matchesStatus = isEmptied;
+
+        return matchesSearch && matchesStatus;
+      });
+
       if (filteredCare.length === 0) {
-        careContainer.innerHTML = `<div class="empty-state">No personal care products logged.</div>`;
+        careContainer.innerHTML = `<div class="empty-state">No care items found in this view.</div>`;
       } else {
-        careContainer.innerHTML = filteredCare.map(c => `
-          <div class="item-card" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div class="item-title">${c.name}</div>
-              <span class="badge badge-lavender" style="margin-top:3px;">${c.category}</span>
+        careContainer.innerHTML = filteredCare.map(c => {
+          let durationText = '';
+          let statusBadge = '';
+          let actionBtn = '';
+          let paoBadge = '';
+
+          // Calculate PAO Target Expiry Date if dateOpened & paoMonths are present
+          if (c.dateOpened && c.paoMonths) {
+            const expDateStr = calculatePaoExpiry(c.dateOpened, c.paoMonths);
+            if (expDateStr) {
+              const expDate = new Date(expDateStr);
+              const daysToExpiry = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
+              if (!c.dateFinished) {
+                if (daysToExpiry < 0) {
+                  paoBadge = `<span class="badge badge-rose">⚠️ Expired ${Math.abs(daysToExpiry)}d ago (${expDateStr})</span>`;
+                } else {
+                  paoBadge = `<span class="badge badge-butter">⏳ Expires in ${daysToExpiry}d (${expDateStr})</span>`;
+                }
+              } else {
+                paoBadge = `<span class="badge badge-gray">PAO: ${c.paoMonths}M</span>`;
+              }
+            }
+          } else if (c.paoMonths) {
+            paoBadge = `<span class="badge badge-gray">PAO: ${c.paoMonths}M</span>`;
+          }
+
+          if (c.dateFinished) {
+            const startDate = new Date(c.dateOpened || c.dateBought);
+            const endDate = new Date(c.dateFinished);
+            const daysLasted = Math.max(1, Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)));
+            statusBadge = `<span class="badge badge-sage">✓ Lasted ${daysLasted} days</span>`;
+            durationText = `Emptied on ${c.dateFinished} (Opened: ${c.dateOpened || c.dateBought})`;
+          } else if (c.dateOpened) {
+            const openDate = new Date(c.dateOpened);
+            const daysOpen = Math.max(0, Math.floor((today - openDate) / (1000 * 60 * 60 * 24)));
+            statusBadge = `<span class="badge badge-blue">🧴 Open for ${daysOpen} days</span>`;
+            durationText = `Opened on ${c.dateOpened} (Bought: ${c.dateBought || 'Earlier'})`;
+            actionBtn = `<button class="btn-action btn-own" onclick="markCareFinished('${c.id}')">✓ Emptied Today</button>`;
+          } else {
+            statusBadge = `<span class="badge badge-gray">⏳ Unopened Stock</span>`;
+            durationText = `Bought on ${c.dateBought || 'Recorded'}`;
+            actionBtn = `<button class="btn-action btn-open" onclick="markCareOpened('${c.id}')">🧴 Open Today</button>`;
+          }
+
+          return `
+            <div class="item-card">
+              <div class="item-header">
+                <div>
+                  <div class="item-title">${c.name}</div>
+                  <div style="margin-top: 4px; display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+                    <span class="badge badge-lavender">${c.category || 'Product'}</span>
+                    ${statusBadge}
+                    ${paoBadge}
+                  </div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 5px;">
+                    ${durationText}
+                  </div>
+                </div>
+              </div>
+              <div class="card-actions">
+                ${actionBtn}
+                <button class="btn-action btn-edit" onclick="openEditModal('care', '${c.id}')">✏️ Edit</button>
+                <button class="btn-action btn-delete" onclick="deleteCare('${c.id}')">✕</button>
+              </div>
             </div>
-            <div class="card-actions" style="margin-top:0;">
-              <button class="btn-action btn-edit" onclick="openEditModal('care', '${c.id}')">✏️</button>
-              <button class="btn-action btn-delete" onclick="deleteCare('${c.id}')">✕</button>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       const subsContainer = document.getElementById('subsListContainer');
@@ -2222,7 +2407,7 @@
                 ${s.renewalDate ? `Renews: ${s.renewalDate}` : ''}
               </div>
             </div>
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display:flex; align-items:center; gap:6px;">
               ${s.cost ? `<span class="badge badge-rose">฿${s.cost}</span>` : ''}
               <button class="btn-action btn-edit" onclick="openEditModal('sub', '${s.id}')">✏️</button>
               <button class="btn-action btn-delete" onclick="deleteSub('${s.id}')">✕</button>
