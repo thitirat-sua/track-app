@@ -40,10 +40,6 @@
       --milk-butter-border: #fae9c4;
       --milk-butter-text: #8c7137;
 
-      --milk-peach: #faeee7;
-      --milk-peach-border: #f5dad0;
-      --milk-peach-text: #96604a;
-
       --tab-inactive: #b5ada2;
       --radius: 14px;
       --app-font: 'Bai Jamjuree', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -144,7 +140,6 @@
     .badge-blue { background: var(--milk-blue); color: var(--milk-blue-text); border-color: var(--milk-blue-border); }
     .badge-lavender { background: var(--milk-lavender); color: var(--milk-lavender-text); border-color: var(--milk-lavender-border); }
     .badge-butter { background: var(--milk-butter); color: var(--milk-butter-text); border-color: var(--milk-butter-border); }
-    .badge-peach { background: var(--milk-peach); color: var(--milk-peach-text); border-color: var(--milk-peach-border); }
     .badge-gray { background: #f5f2eb; color: #756d61; border-color: #eae5dc; }
 
     .item-notes { font-size: 0.8rem; background: #faf8f5; padding: 7px 10px; border-radius: 8px; border-left: 2.5px solid #d4cdc3; margin-top: 6px; color: #575047; }
@@ -183,7 +178,7 @@
 
   <div class="nav-bar">
     <div class="nav-tab active" id="tabNavTasks" onclick="switchMainTab('tasks')">✅ To-Do</div>
-    <div class="nav-tab" id="tabNavSelfCare" onclick="switchMainTab('selfcare')">💇‍♂️✨ Self-Care</div>
+    <div class="nav-tab" id="tabNavSelfCare" onclick="switchMainTab('selfCare')">💇‍♂️✨ Self-Care</div>
     <div class="nav-tab" id="tabNavGrocery" onclick="switchMainTab('grocery')">🛒 Grocery</div>
     <div class="nav-tab" id="tabNavChores" onclick="switchMainTab('chores')">🧹 Chores</div>
     <div class="nav-tab" id="tabNavCare" onclick="switchMainTab('care')">🧴 Personal Care</div>
@@ -221,7 +216,7 @@
     </div>
   </section>
 
-  <!-- 2. SELF-CARE (Haircut & Skincare Habits) -->
+  <!-- 2. SELF-CARE -->
   <section id="sectionSelfCare" style="display: none;">
     <div class="content-area">
       <!-- Haircut Module -->
@@ -454,12 +449,23 @@
 
     function switchMainTab(tab) {
       currentMainTab = tab;
-      const tabs = ['tasks', 'selfcare', 'grocery', 'chores', 'care', 'subs', 'finance', 'health'];
-      tabs.forEach(t => {
-        const navEl = document.getElementById('tabNav' + t.charAt(0).toUpperCase() + t.slice(1));
-        const secEl = document.getElementById('section' + t.charAt(0).toUpperCase() + t.slice(1));
-        if (navEl) navEl.classList.toggle('active', tab === t);
-        if (secEl) secEl.style.display = tab === t ? 'block' : 'none';
+      const tabMap = {
+        'tasks': { nav: 'tabNavTasks', sec: 'sectionTasks' },
+        'selfCare': { nav: 'tabNavSelfCare', sec: 'sectionSelfCare' },
+        'grocery': { nav: 'tabNavGrocery', sec: 'sectionGrocery' },
+        'chores': { nav: 'tabNavChores', sec: 'sectionChores' },
+        'care': { nav: 'tabNavCare', sec: 'sectionCare' },
+        'subs': { nav: 'tabNavSubs', sec: 'sectionSubs' },
+        'finance': { nav: 'tabNavFinance', sec: 'sectionFinance' },
+        'health': { nav: 'tabNavHealth', sec: 'sectionHealth' }
+      };
+
+      Object.keys(tabMap).forEach(k => {
+        const item = tabMap[k];
+        const navEl = document.getElementById(item.nav);
+        const secEl = document.getElementById(item.sec);
+        if (navEl) navEl.classList.toggle('active', tab === k);
+        if (secEl) secEl.style.display = (tab === k) ? 'block' : 'none';
       });
       render();
     }
@@ -663,7 +669,7 @@
     }
     function deleteSpendRecord(id) { spendRecords = spendRecords.filter(s => s.id !== id); localStorage.setItem('track_spend', JSON.stringify(spendRecords)); render(); }
 
-    // --- Edit Modal Handlers ---
+    // --- Universal Edit Modal Handlers ---
     function openEditModal(category, id) {
       currentEditingCategory = category; currentEditingId = id;
       const modal = document.getElementById('editModalOverlay');
